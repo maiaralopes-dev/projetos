@@ -1,0 +1,40 @@
+### Catálogo de processadores
+$ curl localhost:5080/processadores
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+
+[{"categoria":"Padrao","versao":1,"tipo":"ProcessadorPadrao"},{"categoria":"Atacado","versao":1,"tipo":"ProcessadorPadrao"},{"categoria":"Expresso","versao":2,"tipo":"ProcessadorExpresso"},{"categoria":"AltoValor","versao":1,"tipo":"ProcessadorAntifraude"},{"categoria":"Internacional","versao":1,"tipo":"ProcessadorInternacional"},{"categoria":"RevisaoManual","versao":1,"tipo":"ProcessadorAntifraude"}]
+
+
+### Pedido padrão (Sudeste/Normal)
+$ curl -H 'Content-Type: application/json' -d '{"clienteId":"CLI-001","regiao":"Sudeste","prioridade":"Normal","itens":[{"sku":"caneta-azul","quantidade":10,"precoUnitario":2.50}]}' localhost:5080/pedidos
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+
+{"id":"01a1b93d-ea44-73f9-b0db-2a91426451f2","clienteId":"CLI-001","regiao":"Sudeste","prioridade":"Normal","total":25.00,"categoria":"Padrao","processador":"ProcessadorPadrao","versaoProcessador":1,"mensagem":"Pedido com 1 item(ns) enviado para separação padrão (SLA 48h).","itens":[{"sku":"CANETA-AZUL","quantidade":10,"precoUnitario":2.50,"subtotal":25.00}]}
+
+
+### Pedido urgente -> Expresso
+$ curl -H 'Content-Type: application/json' -d '{"clienteId":"CLI-002","regiao":"Sul","prioridade":"Urgente","itens":[{"sku":"notebook","quantidade":1,"precoUnitario":3999.90}]}' localhost:5080/pedidos
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+
+{"id":"01a1b93d-ea5b-7a53-94b0-709b3933deb5","clienteId":"CLI-002","regiao":"Sul","prioridade":"Urgente","total":3999.90,"categoria":"Expresso","processador":"ProcessadorExpresso","versaoProcessador":2,"mensagem":"Prioridade Urgente: separação expressa (SLA 4h).","itens":[{"sku":"NOTEBOOK","quantidade":1,"precoUnitario":3999.90,"subtotal":3999.90}]}
+
+
+### Internacional >= 10.000 -> RevisaoManual
+$ curl -H 'Content-Type: application/json' -d '{"clienteId":"CLI-003","regiao":"internacional","prioridade":"Normal","itens":[{"sku":"servidor","quantidade":2,"precoUnitario":5000}]}' localhost:5080/pedidos
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+
+{"id":"01a1b93d-ea62-7424-bcb4-2893e18110d1","clienteId":"CLI-003","regiao":"Internacional","prioridade":"Normal","total":10000,"categoria":"RevisaoManual","processador":"ProcessadorAntifraude","versaoProcessador":1,"mensagem":"Total 10,000.00 retido para análise antifraude antes da separação.","itens":[{"sku":"SERVIDOR","quantidade":2,"precoUnitario":5000,"subtotal":10000}]}
+
+
+### DTO inválido -> 400 (rejeitado antes do domínio)
+$ curl -H 'Content-Type: application/json' -d '{"clienteId":"","regiao":"Marte","prioridade":"99","itens":[{"sku":"x","quantidade":0,"precoUnitario":1.999}]}' localhost:5080/pedidos
+HTTP/1.1 400 Bad Request
+Content-Type: application/problem+json
+
+{"type":"https://tools.ietf.org/html/rfc9110#section-15.5.1","title":"One or more validation errors occurred.","status":400,"errors":{"clienteId":["Obrigatório, até 64 caracteres."],"regiao":["Valor inválido. Aceitos: Sul, Sudeste, CentroOeste, Nordeste, Norte, Internacional."],"prioridade":["Valor inválido. Aceitos: Normal, Alta, Urgente."],"itens[0].quantidade":["Deve estar entre 1 e 1000."],"itens[0].precoUnitario":["Deve ser positivo, com até 2 casas decimais."]},"traceId":"00-f088cce6081eb34dc5f660f571cbf635-2a6b6ca3e09d8620-00"}
+
+

@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/HubPedidos.Api/HubPedidos.Api.csproj" />
+    <Project Path="src/HubPedidos.Application/HubPedidos.Application.csproj" />
+    <Project Path="src/HubPedidos.Domain/HubPedidos.Domain.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/HubPedidos.Tests/HubPedidos.Tests.csproj" />
+  </Folder>
+</Solution>

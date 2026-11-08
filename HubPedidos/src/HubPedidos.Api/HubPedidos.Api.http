@@ -1,0 +1,24 @@
+@host = http://localhost:5080
+
+### Catálogo de processadores
+GET {{host}}/processadores
+
+### Pedido padrão
+POST {{host}}/pedidos
+Content-Type: application/json
+
+{ "clienteId": "CLI-001", "regiao": "Sudeste", "prioridade": "Normal",
+  "itens": [ { "sku": "caneta-azul", "quantidade": 10, "precoUnitario": 2.50 } ] }
+
+### Pedido urgente -> Expresso
+POST {{host}}/pedidos
+Content-Type: application/json
+
+{ "clienteId": "CLI-002", "regiao": "Sul", "prioridade": "Urgente",
+  "itens": [ { "sku": "notebook", "quantidade": 1, "precoUnitario": 3999.90 } ] }
+
+### Pedido inválido -> 400
+POST {{host}}/pedidos
+Content-Type: application/json
+
+{ "clienteId": "", "regiao": "Marte", "prioridade": "99", "itens": [] }
