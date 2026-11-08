@@ -1,0 +1,13 @@
+Data: 2026-11-08T04:39Z
+SO: Ubuntu 24.04.5 LTS x86_64
+SDK: 10.0.114
+Microsoft.AspNetCore.App 10.0.14 [/usr/lib/dotnet/shared/Microsoft.AspNetCore.App]
+Microsoft.NETCore.App 10.0.14 [/usr/lib/dotnet/shared/Microsoft.NETCore.App]
+Pacotes de teste:
+Include="coverlet.collector" Version="6.0.4"
+Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.14"
+Include="Microsoft.NET.Test.Sdk" Version="17.14.1"
+Include="xunit" Version="2.9.3"
+Include="xunit.runner.visualstudio" Version="3.1.4"
+CPU: Intel(R) Xeon(R) Processor @ 2.30GHz (4 núcleos lógicos)
+BenchmarkDotNet: 0.15.8 (Job: Warmup=3, Iterations=15, Launch=1, Release, sem depurador)

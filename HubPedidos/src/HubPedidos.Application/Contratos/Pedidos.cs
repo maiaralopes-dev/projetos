@@ -27,3 +27,11 @@ public sealed record PedidoResponse(
     IReadOnlyList<ItemPedidoResponse> Itens);
 
 public sealed record ProcessadorInfoResponse(string Categoria, int Versao, string Tipo);
+
+/// <summary>Uma linha da resposta NDJSON de importação de lote.</summary>
+public sealed record ResultadoImportacaoResponse(
+    int Linha,
+    string Status,
+    string? Id,
+    string? Categoria,
+    IReadOnlyList<string>? Erros);

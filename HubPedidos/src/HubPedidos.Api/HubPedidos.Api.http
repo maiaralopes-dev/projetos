@@ -22,3 +22,12 @@ POST {{host}}/pedidos
 Content-Type: application/json
 
 { "clienteId": "", "regiao": "Marte", "prioridade": "99", "itens": [] }
+
+### Importação de lote (atividade 2)
+POST {{host}}/pedidos/lote
+Content-Type: text/plain; charset=utf-8
+
+CLI-001;Sudeste;Normal;CANETA:10:2.50|LAPIS:5:1.20
+JOÃO-ÇÃ;Sul;Urgente;CAFÉ:1:19.90
+CLI-003;Marte;Normal;X:1:1
+linha-quebrada;sem campos

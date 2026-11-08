@@ -1,0 +1,34 @@
+### Lote misto (6 linhas, 1 em branco)
+$ curl -i -H "Content-Type: text/plain; charset=utf-8" --data-binary @lote.txt localhost:5080/pedidos/lote
+--- lote.txt
+CLI-001;Sudeste;Normal;CANETA:10:2.50|LAPIS:5:1.20
+JOÃO-ÇÃ;Sul;Urgente;CAFÉ:1:19.90
+
+CLI-003;Marte;Normal;X:1:1
+linha-quebrada;sem campos
+CLI-005;Norte;Normal;A:1:2,50
+--- resposta
+HTTP/1.1 200 OK
+Content-Type: application/x-ndjson; charset=utf-8
+Transfer-Encoding: chunked
+
+{"linha":1,"status":"aceito","id":"01a1b975-1308-7f1b-a33b-153dbb1522e2","categoria":"Padrao","erros":null}
+{"linha":2,"status":"aceito","id":"01a1b975-130f-71cf-be9c-1dd0d9f29ce8","categoria":"Expresso","erros":null}
+{"linha":4,"status":"rejeitado","id":null,"categoria":null,"erros":["regiao: Valor inválido. Aceitos: Sul, Sudeste, CentroOeste, Nordeste, Norte, Internacional."]}
+{"linha":5,"status":"rejeitado","id":null,"categoria":null,"erros":["Esperados 4 campos separados por \u0027;\u0027."]}
+{"linha":6,"status":"rejeitado","id":null,"categoria":null,"erros":["Item 1: preço \u00272,50\u0027 inválido."]}
+
+
+### Lote de 12000000 bytes (acima do limite de 10 MiB) com Content-Length
+HTTP/1.1 413 Payload Too Large
+Content-Type: application/problem+json
+Transfer-Encoding: chunked
+
+{"type":"https://tools.ietf.org/html/rfc9110#section-15.5.14","title":"Lote muito grande","status":413,"detail":"O limite é 10485760 bytes.","traceId":"00-1cdf5eae1f42c9ca303f5643e19e1450-85bef7cc88b55431-00"}
+
+
+### Mesmo lote enviado em chunked (sem Content-Length): processa até o limite e aborta
+$ curl -H "Transfer-Encoding: chunked" --data-binary @grande.txt localhost:5080/pedidos/lote | tail -2
+{"linha":436467,"status":"aceito","id":"01a1b975-1c06-768f-a052-f4e0d4bfac69","categoria":"Padrao","erros":null}
+{"linha":0,"status":"abortado","id":null,"categoria":null,"erros":["Lote excede o limite de 10485760 bytes."]}
+

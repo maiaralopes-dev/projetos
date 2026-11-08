@@ -1,0 +1,4 @@
+// Trecho isolado (fora da solução) usado para demonstrar a regra do compilador:
+// Span<byte> janela = buffer.AsSpan(0, 8); await stream.ReadAsync(...); Console.WriteLine(janela[0]);
+
+Program.cs(9,23): error CS4007: Instance of type 'System.Span<byte>' cannot be preserved across 'await' or 'yield' boundary.

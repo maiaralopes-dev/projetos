@@ -16,6 +16,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Mesmo gerador de dados usado pelos benchmarks. -->
+    <Compile Include="..\..\benchmarks\HubPedidos.Benchmarks\GeradorLote.cs" Link="Importacao\GeradorLote.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
 

@@ -1,5 +1,6 @@
 using HubPedidos.Application.Classificacao;
 using HubPedidos.Application.Contratos;
+using HubPedidos.Application.Importacao;
 using HubPedidos.Application.Mapeamento;
 using HubPedidos.Application.Processadores;
 using HubPedidos.Application.Processadores.Implementacoes;
@@ -29,9 +30,18 @@ foreach (var registro in catalogo.Registros)
 
 builder.Services.AddProblemDetails();
 
+var opcoesImportacao = builder.Configuration.GetSection("Importacao").Get<OpcoesImportacao>() ?? new OpcoesImportacao();
+builder.Services.AddSingleton(opcoesImportacao);
+
 var app = builder.Build();
 
 app.MapPost("/pedidos", CriarPedidoAsync).WithName("CriarPedido");
+
+app.MapPost("/pedidos/lote", ImportarLoteAsync)
+    .Accepts<string>("text/plain")
+    .Produces(StatusCodes.Status200OK, contentType: "application/x-ndjson")
+    .ProducesProblem(StatusCodes.Status413PayloadTooLarge)
+    .WithName("ImportarLote");
 
 app.MapGet("/processadores", (CatalogoProcessadores c) =>
     c.Registros.Select(r => new ProcessadorInfoResponse(r.Categoria.ToString(), r.Versao, r.Tipo.Name)));
@@ -72,6 +82,57 @@ static async Task<Results<Ok<PedidoResponse>, ValidationProblem, ProblemHttpResu
 
     // 4) Resposta tipada, sem expor tipos do domínio
     return TypedResults.Ok(MapeadorPedidos.ParaResposta(pedido, categoria, processamento));
+}
+
+// Lê o corpo de forma incremental (nunca carrega o lote inteiro) e responde em NDJSON,
+// agrupando a escrita: um flush a cada OpcoesImportacao.ItensPorFlush linhas.
+static async Task<IResult> ImportarLoteAsync(HttpContext http, OpcoesImportacao opcoes, CancellationToken cancellationToken)
+{
+    // Corpo com tamanho declarado acima do limite: recusa antes de ler qualquer byte.
+    if (http.Request.ContentLength > opcoes.LimiteBytes)
+    {
+        return TypedResults.Problem(
+            title: "Lote muito grande",
+            detail: $"O limite é {opcoes.LimiteBytes} bytes.",
+            statusCode: StatusCodes.Status413PayloadTooLarge);
+    }
+
+    http.Response.ContentType = "application/x-ndjson; charset=utf-8";
+    await using var escritor = new EscritorNdjson(http.Response.Body, opcoes.ItensPorFlush);
+    var importador = new ImportadorUtf8Pool(opcoes);
+
+    try
+    {
+        await foreach (var linha in importador.LerAsync(http.Request.Body, cancellationToken))
+        {
+            await escritor.EscreverAsync(Avaliar(linha), cancellationToken);
+        }
+    }
+    catch (LoteInvalidoException ex)
+    {
+        // Corpo sem Content-Length (chunked) que estourou o limite no meio: a resposta
+        // já começou com 200, então o erro vira a última linha do NDJSON.
+        await escritor.EscreverAsync(new ResultadoImportacaoResponse(0, "abortado", null, null, [ex.Message]), cancellationToken);
+    }
+
+    return TypedResults.Empty;
+
+    static ResultadoImportacaoResponse Avaliar(ResultadoLinha linha)
+    {
+        if (linha.Erro is not null)
+        {
+            return new(linha.Linha, "rejeitado", null, null, [linha.Erro]);
+        }
+
+        var resultado = MapeadorPedidos.ParaDominio(linha.Pedido);
+        if (!resultado.Sucesso)
+        {
+            return new(linha.Linha, "rejeitado", null, null, [.. resultado.Erros.Select(e => $"{e.Campo}: {e.Mensagem}")]);
+        }
+
+        var categoria = ClassificadorPedidos.Classificar(resultado.Valor);
+        return new(linha.Linha, "aceito", resultado.Valor!.Id.ToString(), categoria.ToString(), null);
+    }
 }
 
 /// <summary>Exposto para WebApplicationFactory nos testes.</summary>
