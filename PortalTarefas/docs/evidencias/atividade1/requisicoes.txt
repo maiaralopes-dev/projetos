@@ -2,7 +2,7 @@
 $ curl https://localhost:7080/api/v1/tarefas/1
 HTTP/2 200 
 content-type: application/json; charset=utf-8
-x-correlation-id: 4d007d4295b24589a5c89f717b71c120
+x-correlation-id: 743110bbf7474c22bdcf3ac95efcf7d6
 {
     "id": 1,
     "titulo": "Configurar ambiente .NET 10",
@@ -14,29 +14,29 @@ x-correlation-id: 4d007d4295b24589a5c89f717b71c120
 $ curl https://localhost:7080/api/v1/tarefas/999
 HTTP/2 404 
 content-type: application/problem+json
-x-correlation-id: 2d5755a5eb0d481d90790258c69da472
+x-correlation-id: 5b8199e18a16459c9d9acf9fefe74111
 {
     "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
     "title": "Tarefa não encontrada.",
     "status": 404,
     "detail": "Não existe tarefa com id 999.",
     "instance": "GET /api/v1/tarefas/999",
-    "traceId": "00-f263345851e54ef14703627aeb43423b-15e704445860a6e8-00",
-    "correlationId": "2d5755a5eb0d481d90790258c69da472"
+    "traceId": "00-c01af482631f87a1959a05addc3562f7-9b4c5a8720b19e85-00",
+    "correlationId": "5b8199e18a16459c9d9acf9fefe74111"
 }
 
 ### Parâmetro de rota inválido (não numérico)
 $ curl https://localhost:7080/api/v1/tarefas/abc
 HTTP/2 404 
 content-type: application/problem+json
-x-correlation-id: c092d5fa5be649c287dc3cc11c181d50
+x-correlation-id: 08ee4ca55ccb4b02b4c98490d860938c
 {
     "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
     "title": "Not Found",
     "status": 404,
     "instance": "GET /api/v1/tarefas/abc",
-    "traceId": "00-bcee542c3e72ecc0fb2c0f939f6d8b83-17a349358fc53125-00",
-    "correlationId": "c092d5fa5be649c287dc3cc11c181d50"
+    "traceId": "00-6c9fb5361502c0cd7ea5def849933aef-e00b47fd004e568d-00",
+    "correlationId": "08ee4ca55ccb4b02b4c98490d860938c"
 }
 
 ### Filtro por query string + cabeçalho opcional
@@ -44,7 +44,7 @@ $ curl -H X-Cliente-Id: app-relatorio https://localhost:7080/api/v1/tarefas?situ
 HTTP/2 200 
 content-type: application/json; charset=utf-8
 x-cliente-atendido: app-relatorio
-x-correlation-id: d9f3521954d34e73806ed80000e83588
+x-correlation-id: ac61f0c8e9804e0bb02b8e5765871706
 [
     {
         "id": 3,
@@ -58,7 +58,7 @@ x-correlation-id: d9f3521954d34e73806ed80000e83588
 $ curl https://localhost:7080/api/v1/tarefas?situacao=Concluida
 HTTP/2 200 
 content-type: application/json; charset=utf-8
-x-correlation-id: 8a75edc877cb430e86d10b02ed07962a
+x-correlation-id: c0abc3b91f0c4c1f8cabc1587e2bc39e
 [
     {
         "id": 1,
@@ -73,15 +73,15 @@ $ curl https://localhost:7080/api/v1/tarefas?situacao=Arquivada
 HTTP/2 400 
 content-type: application/problem+json
 cache-control: no-cache,no-store
-x-correlation-id: 1bd85dbfd84a4918a47f4f398e60f5e1
+x-correlation-id: 4004a02b097e4e579f26ba446f1e8bf0
 {
     "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
     "title": "Requisição inválida.",
     "status": 400,
     "detail": "Verifique o formato dos parâmetros e do corpo JSON.",
     "instance": "GET /api/v1/tarefas",
-    "traceId": "00-88d06fe6cc6e4a19ab6669a2e079d01d-fd8136b82e1e8176-00",
-    "correlationId": "1bd85dbfd84a4918a47f4f398e60f5e1"
+    "traceId": "00-479fa923ef8825729e958a7bb6a0fd5e-2a923556f319d7f3-00",
+    "correlationId": "4004a02b097e4e579f26ba446f1e8bf0"
 }
 
 ### POST com corpo válido
@@ -89,7 +89,7 @@ $ curl -X POST -H Content-Type: application/json -d {"titulo":"Estudar middlewar
 HTTP/2 201 
 content-type: application/json; charset=utf-8
 location: /api/v1/tarefas/4
-x-correlation-id: fb546100a059473fbc687b42d277b305
+x-correlation-id: 9d785f63a8d647159eb74f641f9c4149
 {
     "id": 4,
     "titulo": "Estudar middleware",
@@ -101,7 +101,7 @@ x-correlation-id: fb546100a059473fbc687b42d277b305
 $ curl -X POST -H Content-Type: application/json -d {"titulo":"","descricao":null} https://localhost:7080/api/v1/tarefas
 HTTP/2 400 
 content-type: application/problem+json
-x-correlation-id: 26a85bfeb324457591a666efaf7d77ad
+x-correlation-id: c48e3f51f8d54a0db2bfc4dba7ec5807
 {
     "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
     "title": "One or more validation errors occurred.",
@@ -112,8 +112,8 @@ x-correlation-id: 26a85bfeb324457591a666efaf7d77ad
             "O título é obrigatório."
         ]
     },
-    "traceId": "00-44959949c75f7639ea329601f7689677-b4f43b81f0ffa21b-00",
-    "correlationId": "26a85bfeb324457591a666efaf7d77ad"
+    "traceId": "00-40bd72dc563a213c91dd89c20953fa99-f6821b3d909ff78e-00",
+    "correlationId": "c48e3f51f8d54a0db2bfc4dba7ec5807"
 }
 
 ### POST com JSON malformado
@@ -121,15 +121,15 @@ $ curl -X POST -H Content-Type: application/json -d {"titulo": https://localhost
 HTTP/2 400 
 content-type: application/problem+json
 cache-control: no-cache,no-store
-x-correlation-id: 1460b6188f6e43ca87013077b9b2663a
+x-correlation-id: 9dd45ca0fea6459db3bd6e7c5f3e5151
 {
     "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
     "title": "Requisição inválida.",
     "status": 400,
     "detail": "Verifique o formato dos parâmetros e do corpo JSON.",
     "instance": "POST /api/v1/tarefas",
-    "traceId": "00-691c9cf5f42376b9106c7a8b1043efd5-b62eaefe5bfa3f05-00",
-    "correlationId": "1460b6188f6e43ca87013077b9b2663a"
+    "traceId": "00-c4c1709be1e1e1eb85107ba8e8ae40db-f931b94168831624-00",
+    "correlationId": "9dd45ca0fea6459db3bd6e7c5f3e5151"
 }
 
 ### Exceção controlada pelo middleware
@@ -144,7 +144,7 @@ x-correlation-id: teste-erro-001
     "status": 500,
     "detail": "Informe o identificador de correlação ao suporte.",
     "instance": "GET /api/minimal/diagnostico/erro",
-    "traceId": "00-fdad554504c05bd9e92b9264269d1df5-fd8e46bcc93bbaf6-00",
+    "traceId": "00-2aef7b5397dfb73ef246357969670116-212a5de7bc534fea-00",
     "correlationId": "teste-erro-001"
 }
 
@@ -152,26 +152,26 @@ x-correlation-id: teste-erro-001
 $ curl -H X-Cliente-Id: cli-42 https://localhost:7080/api/minimal/diagnostico
 HTTP/2 200 
 content-type: application/json; charset=utf-8
-x-correlation-id: aaf5904c7cb8492da0f38686852c89bc
+x-correlation-id: e36befb9641b42bca18cf4a5a2c485a7
 {
     "abordagem": "MinimalAPI",
     "ambiente": "Development",
-    "correlationId": "aaf5904c7cb8492da0f38686852c89bc",
+    "correlationId": "e36befb9641b42bca18cf4a5a2c485a7",
     "clienteId": "cli-42",
-    "horario": "2026-11-09T01:11:17.7835954+00:00"
+    "horario": "2026-11-09T01:15:31.8679985+00:00"
 }
 
 ### Diagnóstico MVC (controller)
 $ curl -H X-Cliente-Id: cli-42 https://localhost:7080/api/mvc/diagnostico
 HTTP/2 200 
 content-type: application/json; charset=utf-8
-x-correlation-id: 0da0d49070f44e4bbcf10240be8c9e3f
+x-correlation-id: 87513aa777cf4524b9674b199888fa1a
 {
     "abordagem": "MVC",
     "ambiente": "Development",
-    "correlationId": "0da0d49070f44e4bbcf10240be8c9e3f",
+    "correlationId": "87513aa777cf4524b9674b199888fa1a",
     "clienteId": "cli-42",
-    "horario": "2026-11-09T01:11:17.8425571+00:00"
+    "horario": "2026-11-09T01:15:31.9333165+00:00"
 }
 
 ### CORS preflight - origem autorizada
@@ -180,12 +180,12 @@ HTTP/2 204
 access-control-allow-headers: Content-Type,X-Cliente-Id,X-Correlation-Id
 access-control-allow-methods: GET,POST,PUT,DELETE
 access-control-allow-origin: http://localhost:5173
-x-correlation-id: 008481447e5d48ff9f73a5dae2f1cfb3
+x-correlation-id: 2a8ea659884f490c846813b0b36db821
 
 ### CORS preflight - origem NÃO autorizada
 $ curl -X OPTIONS -H Origin: http://evil.example -H Access-Control-Request-Method: POST https://localhost:7080/api/v1/tarefas
 HTTP/2 204 
-x-correlation-id: 912c32ea55e648a6a2a1f8526db4cca9
+x-correlation-id: 4031310a82da4ef79f41ec8daab2c1c9
 
 ### CORS GET simples - origem autorizada
 $ curl -H Origin: http://localhost:5173 https://localhost:7080/api/v1/tarefas/1
@@ -193,7 +193,7 @@ HTTP/2 200
 content-type: application/json; charset=utf-8
 access-control-allow-origin: http://localhost:5173
 access-control-expose-headers: X-Correlation-Id,Location
-x-correlation-id: 184ec209f62c42068ce4e1ed6f9cb590
+x-correlation-id: b5ad9c302502401ea3a132bb130f7c1e
 {
     "id": 1,
     "titulo": "Configurar ambiente .NET 10",
@@ -205,13 +205,13 @@ x-correlation-id: 184ec209f62c42068ce4e1ed6f9cb590
 $ curl http://localhost:5080/api/v1/tarefas/1
 HTTP/1.1 307 Temporary Redirect
 Location: https://localhost:7080/api/v1/tarefas/1
-X-Correlation-Id: fc21171368e74c4882dfb40d025443ba
+X-Correlation-Id: 9d8f054b3878404eb0251125a33bd3dd
 
 ### Arquivo estático
 $ curl https://localhost:7080/index.html
 HTTP/2 200 
 content-type: text/html
-x-correlation-id: e0079649eb024ee3a914b499da7fd89b
+x-correlation-id: 1f8f516decaa416f82709a5d70e572b2
 <!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8"><title>Portal de Tarefas</title></head>
 <body><h1>Portal de Tarefas</h1><p>Arquivo estático servido por UseStaticFiles.</p></body></html>
@@ -220,5 +220,5 @@ x-correlation-id: e0079649eb024ee3a914b499da7fd89b
 $ curl https://localhost:7080/ping
 HTTP/2 200 
 content-type: text/plain; charset=utf-8
-x-correlation-id: bd0b885be6024cce971c02544f2463b5
+x-correlation-id: f812f6b2b8a84fcd905f626d6556c62c
 pong

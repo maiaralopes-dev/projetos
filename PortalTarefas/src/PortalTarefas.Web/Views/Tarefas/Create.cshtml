@@ -1,0 +1,8 @@
+@model TarefaInputModel
+@{ ViewData["Title"] = "Nova tarefa"; }
+<form asp-action="Create" method="post" novalidate>
+    <div asp-validation-summary="ModelOnly" class="erro"></div>
+    <partial name="_TarefaCampos" model="Model" />
+    <button type="submit">Cadastrar</button>
+    <a asp-action="Index">Cancelar</a>
+</form>

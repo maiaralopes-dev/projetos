@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] · Portal de Tarefas</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <header class="topo">
+        <a class="marca" asp-controller="Tarefas" asp-action="Index">Portal de Tarefas</a>
+        <nav>
+            <a asp-controller="Tarefas" asp-action="Index">Lista</a>
+            <a asp-controller="Tarefas" asp-action="Create">Nova tarefa</a>
+        </nav>
+    </header>
+    <div class="conteudo">
+        <main>
+            @if (TempData["Mensagem"] is string mensagem)
+            {
+                <div class="aviso" role="status">@mensagem</div>
+            }
+            <h1>@ViewData["Title"]</h1>
+            @RenderBody()
+        </main>
+        <aside>
+            @await Component.InvokeAsync("TarefasVencidas", new { maximo = 5 })
+        </aside>
+    </div>
+    <footer>Desenvolvimento Web com .NET · ASP.NET Core 10</footer>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

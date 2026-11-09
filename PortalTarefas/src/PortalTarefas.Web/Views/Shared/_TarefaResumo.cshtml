@@ -1,0 +1,16 @@
+@model TarefaResumoViewModel
+<article class="cartao @(Model.Vencida ? "vencida" : "")">
+    <h3><a asp-controller="Tarefas" asp-action="Details" asp-route-id="@Model.Id">#@Model.Id · @Model.Titulo</a></h3>
+    <p>
+        <span class="selo situacao-@Model.Situacao">@Model.Situacao</span>
+        <span class="selo prioridade-@Model.Prioridade">Prioridade @Model.Prioridade</span>
+        @if (Model.Prazo is { } prazo)
+        {
+            <span class="prazo">Prazo: @prazo.ToString("dd/MM/yyyy")</span>
+        }
+        @if (Model.Vencida)
+        {
+            <strong class="alerta">Vencida</strong>
+        }
+    </p>
+</article>

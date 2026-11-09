@@ -1,0 +1,9 @@
+@model TarefaEdicaoViewModel
+@{ ViewData["Title"] = $"Editar tarefa #{Model.Id}"; }
+<form asp-action="Edit" asp-route-id="@Model.Id" method="post" novalidate>
+    <div asp-validation-summary="ModelOnly" class="erro"></div>
+    @* O prefixo "Entrada" faz os campos serem enviados como Entrada.Titulo, Entrada.Prazo... *@
+    <partial name="_TarefaCampos" for="Entrada" />
+    <button type="submit">Salvar</button>
+    <a asp-action="Details" asp-route-id="@Model.Id">Cancelar</a>
+</form>

@@ -1,0 +1,17 @@
+@model TarefaListaViewModel
+@{ ViewData["Title"] = "Tarefas"; }
+<form method="get" asp-action="Index" class="filtros">
+    <input name="busca" value="@Model.Busca" placeholder="Buscar no título" aria-label="Buscar no título" />
+    <select name="situacao" asp-items="Html.GetEnumSelectList<SituacaoTarefa>()" aria-label="Situação">
+        <option value="">Todas as situações</option>
+    </select>
+    <button type="submit">Filtrar</button>
+</form>
+@if (Model.Itens.Count == 0)
+{
+    <p class="vazio">Nenhuma tarefa encontrada.</p>
+}
+@foreach (var item in Model.Itens)
+{
+    <partial name="_TarefaResumo" model="item" />
+}

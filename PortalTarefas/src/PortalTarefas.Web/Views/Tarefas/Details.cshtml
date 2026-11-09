@@ -1,0 +1,11 @@
+@model TarefaDetalhesViewModel
+@{ ViewData["Title"] = "Detalhes da tarefa"; }
+<partial name="_TarefaResumo" model="Model.Resumo" />
+<dl>
+    <dt>Descrição</dt><dd>@(Model.Descricao ?? "(sem descrição)")</dd>
+    <dt>Criada em</dt><dd>@Model.CriadaEm.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</dd>
+</dl>
+<p>
+    <a class="botao" asp-action="Edit" asp-route-id="@Model.Resumo.Id">Editar</a>
+    <a asp-action="Index">Voltar à lista</a>
+</p>

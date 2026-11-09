@@ -1,5 +1,7 @@
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Mvc;
 using PortalTarefas.Web.Endpoints;
+using PortalTarefas.Web.Filtros;
 using PortalTarefas.Web.Infraestrutura;
 using PortalTarefas.Web.Servicos;
 
@@ -18,9 +20,12 @@ builder.Services.AddCors(o => o.AddPolicy(PoliticaCorsFrontend, p => p
 builder.Services.AddProblemDetailsComCorrelacao();
 builder.Services.AddExceptionHandler<TratadorExcecoesGlobal>();
 builder.Services.AddValidation();             // validação de Data Annotations em Minimal APIs (.NET 10)
-builder.Services.AddControllers();
+builder.Services.AddControllersWithViews(o =>
+    o.Filters.Add(new AutoValidateAntiforgeryTokenAttribute()));   // POST de formulários exige token antifalsificação
+builder.Services.AddScoped<RegistroAcaoFilter>();
 builder.Services.ConfigureHttpJsonOptions(o => o.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
-builder.Services.AddSingleton<RepositorioTarefasMemoria>();
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddSingleton<ITarefaServico, TarefaServicoMemoria>();
 
 var app = builder.Build();
 
@@ -38,6 +43,9 @@ app.UseCors(PoliticaCorsFrontend); // 8. CORS entre roteamento e endpoints
 
 app.MapTarefasEndpoints();       // 9. endpoints Minimal API
 app.MapDiagnosticoEndpoints();
-app.MapControllers();            //    endpoints MVC
+app.MapControllers();            //    controllers com rota por atributo (API)
+app.MapControllerRoute(          //    rota convencional da interface MVC
+    name: "default",
+    pattern: "{controller=Tarefas}/{action=Index}/{id:int?}");
 
 app.Run();
