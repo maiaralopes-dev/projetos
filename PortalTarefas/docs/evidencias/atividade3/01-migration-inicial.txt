@@ -1,0 +1,2 @@
+$ dotnet ef migrations add Inicial --project src/PortalTarefas.Web --output-dir Dados/Migrations
+Done. To undo this action, use 'ef migrations remove'

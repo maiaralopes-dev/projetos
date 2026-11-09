@@ -59,21 +59,49 @@ public sealed class TarefasController(ITarefaServico servico, TimeProvider relog
     {
         var tarefa = await servico.ObterAsync(id, ct);
         if (tarefa is null) return NaoEncontrada(id);
-        return View(new TarefaEdicaoViewModel { Id = id, Entrada = TarefaInputModel.De(tarefa) });
+        return View(new TarefaEdicaoViewModel { Id = id, Entrada = TarefaInputModel.De(tarefa), Versao = Convert.ToBase64String(tarefa.Versao) });
     }
 
     [HttpPost]
-    public async Task<IActionResult> Edit(int id, [Bind(Prefix = "Entrada")] TarefaInputModel entrada, CancellationToken ct)
+    public async Task<IActionResult> Edit(int id, [Bind(Prefix = "Entrada")] TarefaInputModel entrada, string versao, CancellationToken ct)
     {
         var tarefa = await servico.ObterAsync(id, ct);
         if (tarefa is null) return NaoEncontrada(id);
 
         await ValidarTituloUnicoAsync(entrada.Titulo, id, ct);
-        if (!ModelState.IsValid) return View(new TarefaEdicaoViewModel { Id = id, Entrada = entrada });
+        if (!ModelState.IsValid) return View(new TarefaEdicaoViewModel { Id = id, Entrada = entrada, Versao = versao });
 
         entrada.AplicarEm(tarefa);
-        await servico.AtualizarAsync(tarefa, ct);
+        tarefa.Versao = Convert.FromBase64String(versao ?? "");   // versão que o usuário viu, não a recém-lida
+        try
+        {
+            await servico.AtualizarAsync(tarefa, User.Identity?.Name, ct);
+        }
+        catch (ConflitoConcorrenciaException ex) when (ex.ValoresAtuais is { } atuais)
+        {
+            // Não sobrescreve: mostra o que está no banco e entrega a nova versão para o usuário decidir.
+            ModelState.AddModelError("", "Esta tarefa foi alterada por outra pessoa depois que você a abriu. " +
+                "Revise os valores atuais e salve novamente se quiser manter suas alterações.");
+            return View(new TarefaEdicaoViewModel
+            {
+                Id = id, Entrada = entrada, Versao = Convert.ToBase64String(atuais.Versao),
+                ValoresAtuais = TarefaInputModel.De(atuais)
+            });
+        }
+        catch (ConflitoConcorrenciaException)
+        {
+            TempData["Mensagem"] = "A tarefa foi excluída por outra sessão.";
+            return RedirectToAction(nameof(Index));
+        }
         TempData["Mensagem"] = "Alterações salvas.";
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Concluir(int id, CancellationToken ct)
+    {
+        if (!await servico.ConcluirAsync(id, User.Identity?.Name, ct: ct)) return NaoEncontrada(id);
+        TempData["Mensagem"] = "Tarefa concluída e auditoria registrada.";
         return RedirectToAction(nameof(Details), new { id });
     }
 

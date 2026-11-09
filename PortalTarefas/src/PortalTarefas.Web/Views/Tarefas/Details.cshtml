@@ -5,7 +5,13 @@
     <dt>Descrição</dt><dd>@(Model.Descricao ?? "(sem descrição)")</dd>
     <dt>Criada em</dt><dd>@Model.CriadaEm.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</dd>
 </dl>
-<p>
+<p class="acoes">
+    @if (Model.Resumo.Situacao != SituacaoTarefa.Concluida)
+    {
+        <form asp-action="Concluir" asp-route-id="@Model.Resumo.Id" method="post" class="inline">
+            <button type="submit">Concluir</button>
+        </form>
+    }
     <a class="botao" asp-action="Edit" asp-route-id="@Model.Resumo.Id">Editar</a>
     <a asp-action="Index">Voltar à lista</a>
 </p>

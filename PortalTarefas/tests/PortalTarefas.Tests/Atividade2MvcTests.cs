@@ -116,7 +116,7 @@ public class Atividade2ControllerTests
 }
 
 /// <summary>Testes de integração das páginas Razor (layout, antiforgery, validação).</summary>
-public class Atividade2PaginasTests(WebApplicationFactory<Program> factory) : IClassFixture<WebApplicationFactory<Program>>
+public class Atividade2PaginasTests(PortalWebFactory factory) : IClassFixture<PortalWebFactory>
 {
     private readonly HttpClient _client = factory.CreateClient(new WebApplicationFactoryClientOptions
     {

@@ -1,0 +1,15 @@
+== Concorrência otimista (rowversion) com duas sessões de navegador ==
+-- ANTES
+Id Titulo Situacao Prioridade Versao
+-- ------ -------- ---------- ------
+7 Testar concorrência Pendente Alta 0x00000000000007D7
+versão vista pelas duas sessões: AAAAAAAAB9c= AAAAAAAAB9c=
+sessão 2 após conflito - nova versão no formulário: AAAAAAAAB9s=
+-- DEPOIS (a alteração da sessão 1 foi preservada; a sessão 2 salvou só após revisar os valores atuais)
+Id Titulo Situacao Prioridade Versao
+-- ------ -------- ---------- ------
+7 Testar concorrência EmAndamento Baixa 0x00000000000007DC
+Acao Detalhe
+---- -------
+Editada situação Pendente->EmAndamento
+Editada prioridade Alta->Baixa

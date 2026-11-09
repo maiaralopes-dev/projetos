@@ -1,0 +1,23 @@
+== Medição local da consulta de painel (8 linhas; log de comandos SQL desligado para não distorcer; mesma máquina; não generalizar) ==
+### Medição EF Core x Dapper
+$ curl https://localhost:7080/api/dev/painel/medicao?n=500
+HTTP/2 200 
+content-type: application/json; charset=utf-8
+x-correlation-id: b23d7ed7410e47f9af6897f3687f1f63
+[
+    {
+        "versao": "EF Core",
+        "execucoes": 500,
+        "medianaMs": 1.284,
+        "p95Ms": 1.6,
+        "maxMs": 7.3
+    },
+    {
+        "versao": "Dapper",
+        "execucoes": 500,
+        "medianaMs": 0.942,
+        "p95Ms": 1.423,
+        "maxMs": 6.971
+    }
+]
+

@@ -1,0 +1,9 @@
+== Seed idempotente: a aplicação é iniciada duas vezes (Migrate + UseAsyncSeeding a cada início) ==
+-- após o início 1:
+TotalTarefas
+------------
+8
+-- após o início 2:
+TotalTarefas
+------------
+8

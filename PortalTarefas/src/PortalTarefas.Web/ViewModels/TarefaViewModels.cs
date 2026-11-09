@@ -29,4 +29,10 @@ public sealed class TarefaEdicaoViewModel
 {
     public int Id { get; init; }
     public required TarefaInputModel Entrada { get; init; }
+
+    /// <summary>Token de concorrência (rowversion em Base64) lido junto com a tarefa.</summary>
+    public string Versao { get; init; } = "";
+
+    /// <summary>Preenchido quando houve conflito: valores atuais gravados por outra sessão.</summary>
+    public TarefaInputModel? ValoresAtuais { get; init; }
 }

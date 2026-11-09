@@ -1,0 +1,54 @@
+### Painel com EF Core (LINQ + projeção + AsNoTracking)
+$ curl https://localhost:7080/api/painel/ef
+HTTP/2 200 
+content-type: application/json; charset=utf-8
+x-correlation-id: 895cc54ac9ab45f5a3174dea319f48aa
+[
+    {
+        "situacao": "Concluida",
+        "quantidade": 3,
+        "vencidas": 0,
+        "proximoPrazo": null
+    },
+    {
+        "situacao": "EmAndamento",
+        "quantidade": 3,
+        "vencidas": 1,
+        "proximoPrazo": "2026-11-11"
+    },
+    {
+        "situacao": "Pendente",
+        "quantidade": 2,
+        "vencidas": 0,
+        "proximoPrazo": "2026-11-16"
+    }
+]
+
+### Painel com Dapper (SQL parametrizado)
+$ curl https://localhost:7080/api/painel/dapper
+HTTP/2 200 
+content-type: application/json; charset=utf-8
+x-correlation-id: 4978611c1fcd4e34a9b5596ee3f1dbc0
+[
+    {
+        "situacao": "Concluida",
+        "quantidade": 3,
+        "vencidas": 0,
+        "proximoPrazo": null
+    },
+    {
+        "situacao": "EmAndamento",
+        "quantidade": 3,
+        "vencidas": 1,
+        "proximoPrazo": "2026-11-11"
+    },
+    {
+        "situacao": "Pendente",
+        "quantidade": 2,
+        "vencidas": 0,
+        "proximoPrazo": "2026-11-16"
+    }
+]
+
+== Comparação automática dos dois resultados ==
+Resultados idênticos (EF Core = Dapper)

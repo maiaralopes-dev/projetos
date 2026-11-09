@@ -1,0 +1,55 @@
+-- Antes: bancos existentes
+name
+----
+
+(0 rows affected)
+
+$ dotnet ef database update --project src/PortalTarefas.Web
+01:19:20 info: Microsoft.EntityFrameworkCore.Database.Command[20101] Executed DbCommand (118ms) [Parameters=[], CommandType='Text', CommandTimeout='60'] CREATE DATABASE [PortalTarefas];
+01:19:21 info: Microsoft.EntityFrameworkCore.Database.Command[20101] Executed DbCommand (53ms) [Parameters=[], CommandType='Text', CommandTimeout='60'] IF SERVERPROPERTY('EngineEdition') <> 5 BEGIN     ALTER DATABASE [PortalTarefas] SET READ_COMMITTED_SNAPSHOT ON; END;
+01:19:21 info: Microsoft.EntityFrameworkCore.Database.Command[20101] Executed DbCommand (5ms) [Parameters=[], CommandType='Text', CommandTimeout='30'] SELECT 1
+01:19:21 info: Microsoft.EntityFrameworkCore.Migrations[20411] Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.
+Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.
+01:19:21 info: Microsoft.EntityFrameworkCore.Database.Command[20101] Executed DbCommand (13ms) [Parameters=[], CommandType='Text', CommandTimeout='30'] DECLARE @result int; EXEC @result = sp_getapplock @Resource = '__EFMigrationsLock', @LockOwner = 'Session', @LockMode = 'Exclusive'; SELECT @result
+01:19:21 info: Microsoft.EntityFrameworkCore.Database.Command[20101] Executed DbCommand (4ms) [Parameters=[], CommandType='Text', CommandTimeout='30'] IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL BEGIN     CREATE TABLE [__EFMigrationsHistory] (         [MigrationId] nvarchar(150) NOT NULL,         [ProductVersion] nvarchar(32) NOT NULL,         CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY ([MigrationId])     ); END;
+01:19:21 info: Microsoft.EntityFrameworkCore.Database.Command[20101] Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30'] SELECT 1
+01:19:21 info: Microsoft.EntityFrameworkCore.Database.Command[20101] Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30'] SELECT OBJECT_ID(N'[__EFMigrationsHistory]');
+01:19:21 info: Microsoft.EntityFrameworkCore.Database.Command[20101] Executed DbCommand (5ms) [Parameters=[], CommandType='Text', CommandTimeout='30'] SELECT [MigrationId], [ProductVersion] FROM [__EFMigrationsHistory] ORDER BY [MigrationId];
+01:19:21 info: Microsoft.EntityFrameworkCore.Migrations[20402] Applying migration '20261109011900_Inicial'.
+Applying migration '20261109011900_Inicial'.
+01:19:21 info: Microsoft.EntityFrameworkCore.Database.Command[20101] Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30'] CREATE TABLE [Tarefas] (     [Id] int NOT NULL IDENTITY,     [Titulo] nvarchar(120) NOT NULL,     [Descricao] nvarchar(1000) NULL,     [Situacao] nvarchar(20) NOT NULL,     [Prioridade] nvarchar(10) NOT NULL,     [Prazo] date NULL,     [CriadaEm] datetimeoffset NOT NULL DEFAULT (SYSDATETIMEOFFSET()),     [Versao] rowversion NOT NULL,     CONSTRAINT [PK_Tarefas] PRIMARY KEY ([Id]) );
+01:19:21 info: Microsoft.EntityFrameworkCore.Database.Command[20101] Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30'] CREATE TABLE [EventosAuditoria] (     [Id] bigint NOT NULL IDENTITY,     [TarefaId] int NOT NULL,     [Acao] nvarchar(50) NOT NULL,     [Detalhe] nvarchar(500) NULL,     [Usuario] nvarchar(100) NULL,     [OcorridoEm] datetimeoffset NOT NULL,     CONSTRAINT [PK_EventosAuditoria] PRIMARY KEY ([Id]),     CONSTRAINT [FK_EventosAuditoria_Tarefas_TarefaId] FOREIGN KEY ([TarefaId]) REFERENCES [Tarefas] ([Id]) ON DELETE CASCADE );
+01:19:21 info: Microsoft.EntityFrameworkCore.Database.Command[20101] Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30'] CREATE INDEX [IX_EventosAuditoria_TarefaId_OcorridoEm] ON [EventosAuditoria] ([TarefaId], [OcorridoEm]);
+01:19:21 info: Microsoft.EntityFrameworkCore.Database.Command[20101] Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30'] CREATE UNIQUE INDEX [IX_Tarefas_Titulo] ON [Tarefas] ([Titulo]);
+01:19:21 info: Microsoft.EntityFrameworkCore.Database.Command[20101] Executed DbCommand (9ms) [Parameters=[], CommandType='Text', CommandTimeout='30'] INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion]) VALUES (N'20261109011900_Inicial', N'10.0.14');
+01:19:21 info: Microsoft.EntityFrameworkCore.Database.Command[20101] Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30'] SELECT CASE     WHEN EXISTS (         SELECT 1         FROM [Tarefas] AS [t]) THEN CAST(1 AS bit)     ELSE CAST(0 AS bit) END
+01:19:21 info: Microsoft.EntityFrameworkCore.Database.Command[20101] Executed DbCommand (15ms) [Parameters=[@p0='?' (DbType = DateTimeOffset), @p1='?' (Size = 1000), @p2='?' (DbType = Date), @p3='?' (Size = 10), @p4='?' (Size = 20), @p5='?' (Size = 120), @p6='?' (DbType = DateTimeOffset), @p7='?' (Size = 1000), @p8='?' (DbType = Date), @p9='?' (Size = 10), @p10='?' (Size = 20), @p11='?' (Size = 120), @p12='?' (DbType = DateTimeOffset), @p13='?' (Size = 1000), @p14='?' (DbType = Date), @p15='?' (Size = 10), @p16='?' (Size = 20), @p17='?' (Size = 120), @p18='?' (DbType = DateTimeOffset), @p19='?' (Size = 1000), @p20='?' (DbType = Date), @p21='?' (Size = 10), @p22='?' (Size = 20), @p23='?' (Size = 120), @p24='?' (DbType = DateTimeOffset), @p25='?' (Size = 1000), @p26='?' (DbType = Date), @p27='?' (Size = 10), @p28='?' (Size = 20), @p29='?' (Size = 120), @p30='?' (DbType = DateTimeOffset), @p31='?' (Size = 1000), @p32='?' (DbType = Date), @p33='?' (Size = 10), @p34='?' (Size = 20), @p35='?' (Size = 120), @p36='?' (DbType = DateTimeOffset), @p37='?' (Size = 1000), @p38='?' (DbType = Date), @p39='?' (Size = 10), @p40='?' (Size = 20), @p41='?' (Size = 120), @p42='?' (DbType = DateTimeOffset), @p43='?' (Size = 1000), @p44='?' (DbType = Date), @p45='?' (Size = 10), @p46='?' (Size = 20), @p47='?' (Size = 120)], CommandType='Text', CommandTimeout='30'] SET IMPLICIT_TRANSACTIONS OFF; SET NOCOUNT ON; MERGE [Tarefas] USING ( VALUES (@p0, @p1, @p2, @p3, @p4, @p5, 0), (@p6, @p7, @p8, @p9, @p10, @p11, 1), (@p12, @p13, @p14, @p15, @p16, @p17, 2), (@p18, @p19, @p20, @p21, @p22, @p23, 3), (@p24, @p25, @p26, @p27, @p28, @p29, 4), (@p30, @p31, @p32, @p33, @p34, @p35, 5), (@p36, @p37, @p38, @p39, @p40, @p41, 6), (@p42, @p43, @p44, @p45, @p46, @p47, 7)) AS i ([CriadaEm], [Descricao], [Prazo], [Prioridade], [Situacao], [Titulo], _Position) ON 1=0 WHEN NOT MATCHED THEN INSERT ([CriadaEm], [Descricao], [Prazo], [Prioridade], [Situacao], [Titulo]) VALUES (i.[CriadaEm], i.[Descricao], i.[Prazo], i.[Prioridade], i.[Situacao], i.[Titulo]) OUTPUT INSERTED.[Id], INSERTED.[Versao], i._Position;
+01:19:21 info: Microsoft.EntityFrameworkCore.Database.Command[20101] Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30'] DECLARE @result int; EXEC @result = sp_releaseapplock @Resource = '__EFMigrationsLock', @LockOwner = 'Session'; SELECT @result
+Done.
+
+-- Depois: tabelas e migrations aplicadas
+TABLE_NAME
+----------
+__EFMigrationsHistory
+EventosAuditoria
+Tarefas
+
+(3 rows affected)
+MigrationId ProductVersion
+----------- --------------
+20261109011900_Inicial 10.0.14
+
+(1 rows affected)
+-- Dados do seed (executado pelo UseSeeding durante o update)
+Id Titulo Situacao Prioridade Prazo
+-- ------ -------- ---------- -----
+1 Configurar ambiente .NET 10 Concluida Alta 2026-10-30
+2 Montar pipeline HTTP EmAndamento Media 2026-11-07
+3 Escrever relatório 1 Pendente Baixa 2026-11-16
+4 Criar views Razor Concluida Media 2026-11-04
+5 Mapear entidades no EF Core EmAndamento Alta 2026-11-12
+6 Revisar SQL da migration Pendente Media 2026-11-08
+7 Testar concorrência Pendente Alta 2026-11-11
+8 Comparar EF Core e Dapper Pendente Baixa NULL
+
+(8 rows affected)

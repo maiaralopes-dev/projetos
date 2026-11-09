@@ -2,6 +2,14 @@
 @{ ViewData["Title"] = $"Editar tarefa #{Model.Id}"; }
 <form asp-action="Edit" asp-route-id="@Model.Id" method="post" novalidate>
     <div asp-validation-summary="ModelOnly" class="erro"></div>
+    @if (Model.ValoresAtuais is { } atuais)
+    {
+        <div class="conflito" role="alert">
+            <strong>Valores atuais no banco:</strong>
+            @atuais.Titulo · @atuais.Situacao · Prioridade @atuais.Prioridade · Prazo @(atuais.Prazo?.ToString("dd/MM/yyyy") ?? "—")
+        </div>
+    }
+    <input type="hidden" name="versao" value="@Model.Versao" />
     @* O prefixo "Entrada" faz os campos serem enviados como Entrada.Titulo, Entrada.Prazo... *@
     <partial name="_TarefaCampos" for="Entrada" />
     <button type="submit">Salvar</button>

@@ -1,0 +1,45 @@
+$ dotnet ef migrations add IndiceSituacaoPrazo --project src/PortalTarefas.Web --output-dir Dados/Migrations
+Done. To undo this action, use 'ef migrations remove'
+
+-- Código gerado (Up/Down):
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.CreateIndex(
+                name: "IX_Tarefas_Situacao_Prazo",
+                table: "Tarefas",
+                columns: new[] { "Situacao", "Prazo" });
+        }
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropIndex(
+                name: "IX_Tarefas_Situacao_Prazo",
+                table: "Tarefas");
+        }
+    }
+
+$ dotnet ef migrations script Inicial IndiceSituacaoPrazo
+BEGIN TRANSACTION;
+CREATE INDEX [IX_Tarefas_Situacao_Prazo] ON [Tarefas] ([Situacao], [Prazo]);
+
+INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+VALUES (N'20261109011939_IndiceSituacaoPrazo', N'10.0.14');
+
+COMMIT;
+GO
+
+
+$ dotnet ef database update
+01:19:47 info: Microsoft.EntityFrameworkCore.Migrations[20402] Applying migration '20261109011939_IndiceSituacaoPrazo'.
+Applying migration '20261109011939_IndiceSituacaoPrazo'.
+01:19:47 info: Microsoft.EntityFrameworkCore.Database.Command[20101] Executed DbCommand (14ms) [Parameters=[], CommandType='Text', CommandTimeout='30'] CREATE INDEX [IX_Tarefas_Situacao_Prazo] ON [Tarefas] ([Situacao], [Prazo]);
+Done.
+
+-- Índices da tabela Tarefas depois da migration:
+name is_unique
+---- ---------
+IX_Tarefas_Situacao_Prazo 0
+IX_Tarefas_Titulo 1
+PK_Tarefas 1
+
+(3 rows affected)

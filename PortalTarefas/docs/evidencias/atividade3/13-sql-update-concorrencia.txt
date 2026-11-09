@@ -1,0 +1,1 @@
+Executed DbCommand (4ms) [Parameters=[@p1='?' (DbType = Int32), @p0='?' (Size = 20), @p2='?' (Size = 8) (DbType = Binary)], CommandType='Text', CommandTimeout='30'] SET IMPLICIT_TRANSACTIONS OFF; SET NOCOUNT ON; UPDATE [Tarefas] SET [Situacao] = @p0 OUTPUT INSERTED.[Versao] WHERE [Id] = @p1 AND [Versao] = @p2;

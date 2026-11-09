@@ -1,0 +1,43 @@
+== Transação explícita: concluir tarefa 6 + registrar auditoria ==
+-- ANTES
+Id Situacao
+-- --------
+6 Pendente
+EventosDaTarefa6
+----------------
+0
+### Rollback provocado (falha entre o UPDATE e o INSERT de auditoria)
+$ curl -X POST https://localhost:7080/api/dev/tarefas/6/concluir?simularFalha=true
+HTTP/2 500 
+content-type: application/problem+json
+cache-control: no-cache,no-store
+x-correlation-id: f6c5a537c09b47578924369dfcbced3b
+{
+    "type": "https://datatracker.ietf.org/doc/html/rfc9110#section-15.6.1",
+    "title": "Erro interno ao processar a requisição.",
+    "status": 500,
+    "detail": "Informe o identificador de correlação ao suporte.",
+    "instance": "POST /api/dev/tarefas/6/concluir",
+    "traceId": "00-b060d669dbc6a8838dd215a855e34d88-8e854d53353a6e9d-00",
+    "correlationId": "f6c5a537c09b47578924369dfcbced3b"
+}
+
+-- DEPOIS DO ROLLBACK (nada mudou)
+Id Situacao
+-- --------
+6 Pendente
+EventosDaTarefa6
+----------------
+0
+### Operação com sucesso (commit)
+$ curl -X POST https://localhost:7080/api/dev/tarefas/6/concluir
+HTTP/2 204 
+x-correlation-id: ad912fd15ba34a3a8d87ab44a7f8e4c4
+
+-- DEPOIS DO COMMIT (tarefa e auditoria gravadas juntas)
+Id Situacao
+-- --------
+6 Concluida
+TarefaId Acao Detalhe Usuario
+-------- ---- ------- -------
+6 Concluida Pendente -> Concluida dev

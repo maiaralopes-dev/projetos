@@ -1,0 +1,3 @@
+Applying migration '20261109011900_Inicial'.
+Applying migration '20261109011939_IndiceSituacaoPrazo'.
+Done.

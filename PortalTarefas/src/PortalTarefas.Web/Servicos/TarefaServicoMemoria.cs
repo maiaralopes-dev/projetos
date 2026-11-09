@@ -18,13 +18,15 @@ public sealed class TarefaServicoMemoria : ITarefaServico
         Semear(new() { Titulo = "Escrever relatório 1", Situacao = SituacaoTarefa.Pendente, Prioridade = PrioridadeTarefa.Baixa, Prazo = hoje.AddDays(7) });
     }
 
-    private void Semear(Tarefa t) { t.Id = Interlocked.Increment(ref _ultimoId); _tarefas[t.Id] = t; }
+    private void Semear(Tarefa t) { t.Id = Interlocked.Increment(ref _ultimoId); t.Versao = NovaVersao(); _tarefas[t.Id] = t; }
 
     private static Tarefa Copia(Tarefa t) => new()
     {
         Id = t.Id, Titulo = t.Titulo, Descricao = t.Descricao, Situacao = t.Situacao,
-        Prioridade = t.Prioridade, Prazo = t.Prazo, CriadaEm = t.CriadaEm
+        Prioridade = t.Prioridade, Prazo = t.Prazo, CriadaEm = t.CriadaEm, Versao = t.Versao
     };
+
+    private static byte[] NovaVersao() => Guid.NewGuid().ToByteArray();
 
     public Task<IReadOnlyList<Tarefa>> ListarAsync(SituacaoTarefa? situacao, string? busca, CancellationToken ct = default) =>
         Task.FromResult<IReadOnlyList<Tarefa>>(_tarefas.Values
@@ -40,16 +42,28 @@ public sealed class TarefaServicoMemoria : ITarefaServico
         var nova = Copia(tarefa);
         nova.Id = Interlocked.Increment(ref _ultimoId);
         nova.CriadaEm = DateTimeOffset.UtcNow;
+        nova.Versao = NovaVersao();
         _tarefas[nova.Id] = nova;
         return Task.FromResult(Copia(nova));
     }
 
-    public Task<bool> AtualizarAsync(Tarefa tarefa, CancellationToken ct = default)
+    public Task<bool> AtualizarAsync(Tarefa tarefa, string? usuario = null, CancellationToken ct = default)
     {
         if (!_tarefas.TryGetValue(tarefa.Id, out var atual)) return Task.FromResult(false);
+        if (!atual.Versao.AsSpan().SequenceEqual(tarefa.Versao)) throw new ConflitoConcorrenciaException(Copia(atual));
         var nova = Copia(tarefa);
         nova.CriadaEm = atual.CriadaEm;
-        return Task.FromResult(_tarefas.TryUpdate(tarefa.Id, nova, atual));
+        nova.Versao = NovaVersao();
+        if (!_tarefas.TryUpdate(tarefa.Id, nova, atual)) throw new ConflitoConcorrenciaException(Copia(_tarefas[tarefa.Id]));
+        return Task.FromResult(true);
+    }
+
+    public async Task<bool> ConcluirAsync(int id, string? usuario, bool simularFalha = false, CancellationToken ct = default)
+    {
+        if (await ObterAsync(id, ct) is not { } t) return false;
+        if (simularFalha) throw new InvalidOperationException("Falha simulada.");
+        t.Situacao = SituacaoTarefa.Concluida;
+        return await AtualizarAsync(t, usuario, ct);
     }
 
     public Task<bool> ExisteTituloAsync(string titulo, int? ignorarId = null, CancellationToken ct = default) =>

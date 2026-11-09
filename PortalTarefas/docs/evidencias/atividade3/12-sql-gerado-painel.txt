@@ -1,0 +1,1 @@
+Executed DbCommand (3ms) [Parameters=[@hoje='?' (DbType = Date)], CommandType='Text', CommandTimeout='30'] SELECT [t].[Situacao], COUNT(*) AS [Quantidade], COUNT(CASE     WHEN [t].[Prazo] < @hoje AND [t].[Situacao] <> N'Concluida' THEN 1 END) AS [Vencidas], MIN(CASE     WHEN [t].[Prazo] >= @hoje THEN [t].[Prazo] END) AS [ProximoPrazo] FROM [Tarefas] AS [t] GROUP BY [t].[Situacao]
