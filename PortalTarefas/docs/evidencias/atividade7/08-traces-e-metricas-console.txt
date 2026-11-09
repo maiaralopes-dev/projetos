@@ -1,0 +1,87 @@
+== Span customizado (ConsoleExporter) ==
+Activity.TraceFlags:         Recorded
+Activity.ParentSpanId:       181fa9752f2257a2
+Activity.DisplayName:        tarefa.concluir
+Activity.Kind:               Internal
+Activity.StartTime:          2026-11-09T01:53:04.4056934Z
+Activity.Duration:           00:00:00.0442466
+Activity.Tags:
+    tarefa.id: 6
+    tarefa.concluida: true
+Instrumentation scope (ActivitySource):
+    Name: PortalTarefas
+Resource associated with Activity:
+    service.name: portal-tarefas-api
+    service.version: dev
+    service.instance.id: vm
+    telemetry.sdk.name: opentelemetry
+
+== Métrica portal.tarefas.criadas (ConsoleExporter) ==
+Metric Name: portal.tarefas.criadas, Description: Tarefas cadastradas, Unit: {tarefa}, Metric Type: LongSum
+Instrumentation scope (Meter):
+	Name: PortalTarefas
+(2026-11-09T01:53:04.2200686Z, 2026-11-09T01:53:17.1388005Z] prioridade: Alta 
+Value: 1
+
+Metric Name: portal.tarefas.concluidas, Description: Tarefas concluídas, Unit: {tarefa}, Metric Type: LongSum
+Instrumentation scope (Meter):
+	Name: PortalTarefas
+(2026-11-09T01:53:04.2201281Z, 2026-11-09T01:53:17.1388020Z] 
+Value: 1
+
+
+== Métrica portal.tarefas.concluidas (ConsoleExporter) ==
+Metric Name: portal.tarefas.concluidas, Description: Tarefas concluídas, Unit: {tarefa}, Metric Type: LongSum
+Instrumentation scope (Meter):
+	Name: PortalTarefas
+(2026-11-09T01:53:04.2201281Z, 2026-11-09T01:53:17.1388020Z] 
+Value: 1
+
+Metric Name: portal.dependencia.calendario.duracao, Description: Duração das chamadas ao serviço de calendário (inclui tentativas), Unit: ms, Metric Type: Histogram
+Instrumentation scope (Meter):
+	Name: PortalTarefas
+(2026-11-09T01:53:04.2201992Z, 2026-11-09T01:53:17.1388048Z] resultado: falha 
+Value: Sum: 50.7751 Count: 1 Min: 50.7751 Max: 50.7751 
+(-Infinity,0]:0
+
+== Métrica portal.dependencia.calendario.duracao (ConsoleExporter) ==
+Metric Name: portal.dependencia.calendario.duracao, Description: Duração das chamadas ao serviço de calendário (inclui tentativas), Unit: ms, Metric Type: Histogram
+Instrumentation scope (Meter):
+	Name: PortalTarefas
+(2026-11-09T01:53:04.2201992Z, 2026-11-09T01:53:17.1388048Z] resultado: falha 
+Value: Sum: 50.7751 Count: 1 Min: 50.7751 Max: 50.7751 
+(-Infinity,0]:0
+(0,5]:0
+(5,10]:0
+(10,25]:0
+(25,50]:0
+(50,75]:1
+(75,100]:0
+
+== Métrica http.server.request.duration (ConsoleExporter) ==
+Metric Name: http.server.request.duration, Description: Duration of HTTP server requests., Unit: s, Metric Type: Histogram
+Instrumentation scope (Meter):
+	Name: Microsoft.AspNetCore.Hosting
+(2026-11-09T01:53:02.1744374Z, 2026-11-09T01:53:17.1387302Z] http.request.method: GET http.response.status_code: 200 http.route: /ping network.protocol.version: 2 url.scheme: https 
+Value: Sum: 0.1001373 Count: 1 Min: 0.1001373 Max: 0.1001373 
+(-Infinity,0.005]:0
+(0.005,0.01]:0
+(0.01,0.025]:0
+(0.025,0.05]:0
+(0.05,0.075]:0
+(0.075,0.1]:0
+(0.1,0.25]:1
+
+== Métrica aspnetcore.rate_limiting.requests (ConsoleExporter) ==
+Metric Name: aspnetcore.rate_limiting.requests, Description: Number of requests that tried to acquire a rate limiting lease. Requests could be rejected by global or endpoint rate limiting policies. Or the request could be canceled while waiting for the lease., Unit: {request}, Metric Type: LongSum
+Instrumentation scope (Meter):
+	Name: Microsoft.AspNetCore.RateLimiting
+(2026-11-09T01:53:02.3378399Z, 2026-11-09T01:53:17.1387749Z] aspnetcore.rate_limiting.policy: login aspnetcore.rate_limiting.result: acquired 
+Value: 3
+(2026-11-09T01:53:02.3378399Z, 2026-11-09T01:53:17.1387749Z] aspnetcore.rate_limiting.policy: api aspnetcore.rate_limiting.result: acquired 
+Value: 1
+(2026-11-09T01:53:02.3378399Z, 2026-11-09T01:53:17.1387749Z] aspnetcore.rate_limiting.policy: publica aspnetcore.rate_limiting.result: acquired 
+Value: 4
+
+Metric Name: aspnetcore.routing.match_attempts, Description: Number of requests that were attempted to be matched to an endpoint., Unit: {match_attempt}, Metric Type: LongSum
+Instrumentation scope (Meter):

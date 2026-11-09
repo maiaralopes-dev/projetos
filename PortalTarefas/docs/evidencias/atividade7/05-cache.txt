@@ -1,0 +1,31 @@
+===== 5. Output caching em endpoint público e não personalizado =====
+### GET anônimo nº 1 de /calendario/feriados/2026
+HTTP/2 200 
+### GET anônimo nº 2 de /calendario/feriados/2026
+HTTP/2 200 
+age: 1
+### GET anônimo nº 3 de /calendario/feriados/2026
+HTTP/2 200 
+age: 2
+### GET anônimo nº 4 de /calendario/feriados/2026
+HTTP/2 200 
+age: 3
+### GET anônimo nº 5 de /calendario/feriados/2026
+HTTP/2 200 
+age: 4
+Requisições que chegaram à dependência (5 chamadas anônimas): {"modo":"ok","recebidas":1}
+### GET AUTENTICADO nº 1 (com cookie: não usa cache compartilhado)
+HTTP/2 200 
+### GET AUTENTICADO nº 2 (com cookie: não usa cache compartilhado)
+HTTP/2 200 
+Requisições que chegaram à dependência (2 chamadas autenticadas): {"modo":"ok","recebidas":2}
+### Invalidação do cache pela tag 'feriados' (Administrador)
+$ curl -b /tmp/tmp.JtE1iXahqx/carla -X POST -H X-XSRF-TOKEN: <token omitido> https://localhost:7080/api/v2/calendario/cache/invalidar
+HTTP/2 204 
+cache-control: no-cache,no-store
+set-cookie: portal.sessao=<valor omitido>; path=/; secure; samesite=strict; httponly
+x-correlation-id: bc75d5310eee450dadd2d7457c7f5321
+
+### GET anônimo após invalidação
+HTTP/2 200 
+Requisições que chegaram à dependência: {"modo":"ok","recebidas":1}

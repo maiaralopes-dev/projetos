@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.RateLimiting;
+using Microsoft.Extensions.Http.Resilience;
+using Polly;
+using PortalTarefas.Web.Observabilidade;
 using Scalar.AspNetCore;
 using PortalTarefas.Web.Dados;
 using PortalTarefas.Web.Endpoints;
@@ -12,6 +16,9 @@ using PortalTarefas.Web.Infraestrutura;
 using PortalTarefas.Web.Servicos;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// ---------- Observabilidade (unidade 7) ----------
+builder.AddObservabilidade();
 
 // ---------- Serviços ----------
 const string PoliticaCorsFrontend = "frontend-dev";
@@ -86,7 +93,7 @@ builder.Services.ConfigureApplicationCookie(o =>
     o.Events.OnRedirectToAccessDenied = ctx => ResponderOuRedirecionar(ctx, StatusCodes.Status403Forbidden);
     static Task ResponderOuRedirecionar(Microsoft.AspNetCore.Authentication.RedirectContext<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions> ctx, int status)
     {
-        if (ctx.Request.Path.StartsWithSegments("/api")) ctx.Response.StatusCode = status;
+        if (ctx.Request.Path.StartsWithSegments("/api") || ctx.Request.Path.StartsWithSegments("/health")) ctx.Response.StatusCode = status;
         else ctx.Response.Redirect(ctx.RedirectUri);
         return Task.CompletedTask;
     }
@@ -106,6 +113,78 @@ builder.Services.AddAntiforgery(o =>
     o.Cookie.SameSite = SameSiteMode.Strict;
 });
 builder.Services.AddScoped<AntiforgeryApiFilter>();
+
+// ---------- Dependência externa com resiliência (unidade 7) ----------
+var urlCalendario = builder.Configuration["Dependencias:Calendario:Url"] ?? "http://localhost:5099/";
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddTransient<PropagarCorrelacaoHandler>();
+builder.Services.AddHttpClient<CalendarioCliente>(c => c.BaseAddress = new Uri(urlCalendario))
+    .AddHttpMessageHandler<PropagarCorrelacaoHandler>()
+    .AddResilienceHandler("calendario", p =>
+    {
+        // Ordem: tempo total > tentativas > disjuntor > tempo por tentativa (o mais interno).
+        p.AddTimeout(TimeSpan.FromSeconds(8));
+        var retry = new HttpRetryStrategyOptions
+        {
+            MaxRetryAttempts = 3,                       // finito
+            BackoffType = DelayBackoffType.Exponential, // 200 ms, 400 ms, 800 ms (+ jitter)
+            Delay = TimeSpan.FromMilliseconds(200),
+            UseJitter = true,
+            // Padrão: só falhas transitórias (5xx, 408, 429, erro de rede, timeout). 400/404 não são repetidos.
+        };
+        retry.DisableForUnsafeHttpMethods();            // nunca repete POST/PUT/PATCH/DELETE
+        p.AddRetry(retry);
+        p.AddCircuitBreaker(new HttpCircuitBreakerStrategyOptions
+        {
+            FailureRatio = 0.5,
+            MinimumThroughput = 4,
+            SamplingDuration = TimeSpan.FromSeconds(30),
+            BreakDuration = TimeSpan.FromSeconds(15),
+        });
+        p.AddTimeout(TimeSpan.FromSeconds(2));
+    });
+builder.Services.AddHttpClient("calendario-saude", c => { c.BaseAddress = new Uri(urlCalendario); c.Timeout = TimeSpan.FromSeconds(2); });
+
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<PortalTarefasDbContext>("banco", tags: ["ready"])
+    .AddCheck<CalendarioHealthCheck>("calendario", tags: ["ready"]);
+
+// ---------- Rate limiting e output caching (unidade 7) ----------
+var limites = builder.Configuration.GetSection("RateLimit");
+builder.Services.AddRateLimiter(o =>
+{
+    o.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    o.OnRejected = async (ctx, ct) =>
+    {
+        if (ctx.Lease.TryGetMetadata(MetadataName.RetryAfter, out var espera))
+            ctx.HttpContext.Response.Headers.RetryAfter = ((int)Math.Ceiling(espera.TotalSeconds)).ToString();
+        ctx.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger("RateLimiting")
+            .LogWarning("Limite de requisições excedido em {Caminho}", ctx.HttpContext.Request.Path);
+        await ctx.HttpContext.RequestServices.GetRequiredService<IProblemDetailsService>().WriteAsync(new()
+        {
+            HttpContext = ctx.HttpContext,
+            ProblemDetails = { Status = 429, Title = "Muitas requisições.", Detail = "Aguarde o tempo indicado em Retry-After." }
+        });
+    };
+    // Usuário autenticado: cota por usuário; anônimo: cota por IP.
+    static string Chave(HttpContext c) => c.User.Identity?.IsAuthenticated == true
+        ? "u:" + c.User.Identity.Name : "ip:" + c.Connection.RemoteIpAddress;
+    o.AddPolicy("api", c => RateLimitPartition.GetFixedWindowLimiter(Chave(c), _ => new FixedWindowRateLimiterOptions
+    {
+        PermitLimit = limites.GetValue("Api:Limite", 100), Window = TimeSpan.FromSeconds(limites.GetValue("Api:JanelaSegundos", 10)), QueueLimit = 0
+    }));
+    o.AddPolicy("publica", c => RateLimitPartition.GetFixedWindowLimiter(Chave(c), _ => new FixedWindowRateLimiterOptions
+    {
+        PermitLimit = limites.GetValue("Publica:Limite", 30), Window = TimeSpan.FromSeconds(limites.GetValue("Publica:JanelaSegundos", 10)), QueueLimit = 0
+    }));
+    o.AddPolicy("login", c => RateLimitPartition.GetFixedWindowLimiter("ip:" + c.Connection.RemoteIpAddress, _ => new FixedWindowRateLimiterOptions
+    {
+        PermitLimit = limites.GetValue("Login:Limite", 10), Window = TimeSpan.FromMinutes(1), QueueLimit = 0
+    }));
+});
+builder.Services.AddOutputCache(o =>
+    // Política base: só GET/HEAD 200 de requisições anônimas e sem cookie de resposta são armazenados.
+    o.AddPolicy("feriados", b => b.Expire(TimeSpan.FromSeconds(60)).SetVaryByRouteValue("ano").Tag("feriados")));
 
 // OpenAPI 3.1 nativo do ASP.NET Core 10: um documento por versão da API.
 builder.Services.AddOpenApi("v2", o => o.AddDocumentTransformer((doc, _, _) =>
@@ -144,11 +223,14 @@ app.UseStaticFiles();            // 6. arquivos de wwwroot (encerra a requisiç�
 app.UseRouting();                // 7. seleciona o endpoint
 app.UseCors(PoliticaCorsFrontend); // 8. CORS entre roteamento e endpoints
 app.UseAuthentication();         // 9. lê o cookie e monta HttpContext.User
-app.UseAuthorization();          // 10. aplica as políticas do endpoint (401/403)
+app.UseRateLimiter();            // 10. cotas por usuário/IP (429) — depois da autenticação para particionar por usuário
+app.UseAuthorization();          // 11. aplica as políticas do endpoint (401/403)
+app.UseOutputCache();            // 12. serve/armazena respostas públicas em cache
 
-app.MapTarefasEndpoints();       // 11. endpoints Minimal API (v1, unidade 1)
+app.MapOperacao();               // 13. health checks e calendário (unidade 7)
+app.MapTarefasEndpoints();       //    endpoints Minimal API (v1, unidade 1)
 app.MapTarefasApiV2();           //    API REST v2 (unidade 4)
-app.MapAuthEndpoints().AddEndpointFilter<AntiforgeryApiFilter>();   // login/logout/sessão (unidade 6)
+app.MapAuthEndpoints().AddEndpointFilter<AntiforgeryApiFilter>().RequireRateLimiting("login");   // login/logout/sessão (unidade 6)
 app.MapOpenApi().AllowAnonymous();   // /openapi/v2.json — contrato publicado em todos os ambientes
 if (app.Environment.IsDevelopment())
     app.MapScalarApiReference(o => o.WithTitle("Portal de Tarefas API")).AllowAnonymous();   // UI só em desenvolvimento

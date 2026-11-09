@@ -1,0 +1,109 @@
+===== 4. Resiliência: retry só em falha transitória e circuit breaker =====
+### Dependência responde 400 (não transitória) — sem retry
+$ curl https://localhost:7080/api/v2/calendario/feriados/2030
+HTTP/2 502 
+content-type: application/problem+json
+x-correlation-id: 463c8de13c284341a5932ff278b17d70
+{
+    "type": "https://tools.ietf.org/html/rfc9110#section-15.6.3",
+    "title": "Falha ao consultar o serviço de calendário.",
+    "status": 502,
+    "instance": "GET /api/v2/calendario/feriados/2030",
+    "traceId": "00-ec4dc4c5444652e8d929e140d5d19564-54cf9f2ac43f226d-01",
+    "correlationId": "463c8de13c284341a5932ff278b17d70"
+}
+
+Requisições recebidas pela dependência: {"modo":"falha400","recebidas":1}
+### Dependência responde 503 (transitória) — 1 tentativa + 3 retries
+$ curl https://localhost:7080/api/v2/calendario/feriados/2031
+HTTP/2 503 
+content-type: application/problem+json
+x-correlation-id: 6780ca67c4f14ee4b0302095e1a0de0f
+{
+    "type": "https://tools.ietf.org/html/rfc9110#section-15.6.4",
+    "title": "Serviço de calendário temporariamente indisponível.",
+    "status": 503,
+    "detail": "Proteção por circuit breaker ativa; tente novamente em instantes.",
+    "instance": "GET /api/v2/calendario/feriados/2031",
+    "traceId": "00-69eca0f68ebf4d94bddbc0a4dcd8b8e2-7b91201217253ce0-01",
+    "correlationId": "6780ca67c4f14ee4b0302095e1a0de0f"
+}
+
+Requisições recebidas pela dependência: {"modo":"falha503","recebidas":3}
+### Nova chamada logo em seguida — circuito ABERTO, falha rápida
+$ curl https://localhost:7080/api/v2/calendario/feriados/2032
+HTTP/2 503 
+content-type: application/problem+json
+x-correlation-id: dd03c697d5404b33a9dc334818cd5c18
+{
+    "type": "https://tools.ietf.org/html/rfc9110#section-15.6.4",
+    "title": "Serviço de calendário temporariamente indisponível.",
+    "status": 503,
+    "detail": "Proteção por circuit breaker ativa; tente novamente em instantes.",
+    "instance": "GET /api/v2/calendario/feriados/2032",
+    "traceId": "00-4c2a2b63943d642f6014c0845f103d70-5b7ba3ad4ea12087-01",
+    "correlationId": "dd03c697d5404b33a9dc334818cd5c18"
+}
+
+### Mais uma — circuito continua aberto
+$ curl https://localhost:7080/api/v2/calendario/feriados/2033
+HTTP/2 503 
+content-type: application/problem+json
+x-correlation-id: 5c4edc65302b4482b38cebe93cf181cd
+{
+    "type": "https://tools.ietf.org/html/rfc9110#section-15.6.4",
+    "title": "Serviço de calendário temporariamente indisponível.",
+    "status": 503,
+    "detail": "Proteção por circuit breaker ativa; tente novamente em instantes.",
+    "instance": "GET /api/v2/calendario/feriados/2033",
+    "traceId": "00-8b94126e07da92db2c71abf9dc95d087-6c2a04af167ed637-01",
+    "correlationId": "5c4edc65302b4482b38cebe93cf181cd"
+}
+
+Requisições recebidas pela dependência (não aumentou com o circuito aberto): {"modo":"falha503","recebidas":3}
+-- dependência restabelecida; aguardando 16 s (BreakDuration = 15 s)
+### Após a pausa: circuito meio-aberto -> chamada de teste com sucesso -> fechado
+$ curl https://localhost:7080/api/v2/calendario/feriados/2034
+HTTP/2 200 
+content-type: application/json; charset=utf-8
+x-correlation-id: 83bd677f54ff40a38312e244785ec78c
+[
+    {
+        "data": "2034-01-01",
+        "nome": "Confraternização Universal"
+    },
+    {
+        "data": "2034-04-21",
+        "nome": "Tiradentes"
+    },
+    {
+        "data": "2034-05-01",
+        "nome": "Dia do Trabalho"
+    },
+    {
+        "data": "2034-09-07",
+        "nome": "Independência do Brasil"
+    },
+    {
+        "data": "2034-10-12",
+        "nome": "Nossa Senhora Aparecida"
+    },
+    {
+        "data": "2034-11-02",
+        "nome": "Finados"
+    },
+    {
+        "data": "2034-11-15",
+        "nome": "Proclamação da República"
+    },
+    {
+        "data": "2034-11-20",
+        "nome": "Dia Nacional de Zumbi e da Consciência Negra"
+    },
+    {
+        "data": "2034-12-25",
+        "nome": "Natal"
+    }
+]
+
+Requisições recebidas pela dependência: {"modo":"ok","recebidas":1}

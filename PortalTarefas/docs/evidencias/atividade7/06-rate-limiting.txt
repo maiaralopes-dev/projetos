@@ -1,0 +1,17 @@
+===== 6. Rate limiting (política 'publica' reduzida para 10 req / 10 s por IP nesta execução) =====
+200 200 200 200 200 200 200 200 200 200 429 429 429 429 
+### Requisição rejeitada (detalhe)
+$ curl https://localhost:7080/api/v2/calendario/feriados/2026
+HTTP/2 429 
+content-type: application/problem+json
+retry-after: 10
+x-correlation-id: 016bbffa5b26441a9a70b132eab79855
+{
+    "title": "Muitas requisições.",
+    "status": 429,
+    "detail": "Aguarde o tempo indicado em Retry-After.",
+    "instance": "GET /api/v2/calendario/feriados/2026",
+    "traceId": "00-fd0dceef3ca21ef8179353fc2985df75-6ed952eb932bebd4-01",
+    "correlationId": "016bbffa5b26441a9a70b132eab79855"
+}
+

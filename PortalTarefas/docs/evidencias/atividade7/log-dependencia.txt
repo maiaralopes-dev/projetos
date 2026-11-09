@@ -1,0 +1,19 @@
+[calendario] ouvindo em http://localhost:5099
+[calendario] modo=ok
+[calendario] modo=fora
+[calendario] modo=ok
+[calendario] modo=falha400
+[calendario] #1 GET /feriados/2030 modo=falha400 correlation=463c8de13c284341a5932ff278b17d70 traceparent=00-ec4dc4c5444652e8d929e140d5d19564-e7ad1e33b54a396a-01
+[calendario] modo=falha503
+[calendario] #1 GET /feriados/2031 modo=falha503 correlation=6780ca67c4f14ee4b0302095e1a0de0f traceparent=00-69eca0f68ebf4d94bddbc0a4dcd8b8e2-87d3eff17fa89a95-01
+[calendario] #2 GET /feriados/2031 modo=falha503 correlation=6780ca67c4f14ee4b0302095e1a0de0f traceparent=00-69eca0f68ebf4d94bddbc0a4dcd8b8e2-715bfe756d82802a-01
+[calendario] #3 GET /feriados/2031 modo=falha503 correlation=6780ca67c4f14ee4b0302095e1a0de0f traceparent=00-69eca0f68ebf4d94bddbc0a4dcd8b8e2-1e0b53b67d68d4dc-01
+[calendario] modo=ok
+[calendario] #1 GET /feriados/2034 modo=ok correlation=83bd677f54ff40a38312e244785ec78c traceparent=00-6e1314046fac4ff6313cc4cd680af365-8701a25f1b738373-01
+[calendario] modo=ok
+[calendario] #1 GET /feriados/2026 modo=ok correlation=55973cf370fb4d14b49ab57afae79440 traceparent=00-df651329a9f9a7a2dcc848812cd0ef8a-a226c914d3b1505a-01
+[calendario] modo=ok
+[calendario] #1 GET /feriados/2026 modo=ok correlation=9f7be614d11c48df95f89f7a503e6072 traceparent=00-1d28d3a6c40078362b6dc1324c3b5042-7825789c5dcdb667-01
+[calendario] #2 GET /feriados/2026 modo=ok correlation=ef533df3629142e2849cc4a073055088 traceparent=00-376cfe0e59d34ba121a5abad34806b1e-2f7c66c276495640-01
+[calendario] modo=ok
+[calendario] #1 GET /feriados/2026 modo=ok correlation=23e760bb47614afb9fa007450e4c1b1b traceparent=00-dfda6504de0c1e6d5ba192537dc044b8-85a7ab6e0dd3ddc7-01

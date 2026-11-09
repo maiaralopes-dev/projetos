@@ -27,6 +27,8 @@ public static class TarefasApiV2Endpoints
             .WithTags("Tarefas")
             .RequireAuthorization(Politicas.LerTarefas)          // leitura: qualquer usuário autenticado
             .AddEndpointFilter<AntiforgeryApiFilter>()           // CSRF para chamadas com cookie
+            .RequireRateLimiting("api")                          // cota por usuário (429 ao exceder)
+            .ProducesProblem(StatusCodes.Status429TooManyRequests)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 

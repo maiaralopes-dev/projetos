@@ -1,0 +1,31 @@
+===== 1. Erro de aplicação localizável pela correlação =====
+### Erro provocado com X-Correlation-Id conhecido
+$ curl -b /tmp/tmp.JtE1iXahqx/carla -H X-Correlation-Id: demo-erro-7 https://localhost:7080/api/minimal/diagnostico/erro
+HTTP/2 500 
+content-type: application/problem+json
+cache-control: no-cache,no-store
+set-cookie: portal.sessao=<valor omitido>; path=/; secure; samesite=strict; httponly
+x-correlation-id: demo-erro-7
+{
+    "type": "https://datatracker.ietf.org/doc/html/rfc9110#section-15.6.1",
+    "title": "Erro interno ao processar a requisição.",
+    "status": 500,
+    "detail": "Informe o identificador de correlação ao suporte.",
+    "instance": "GET /api/minimal/diagnostico/erro",
+    "traceId": "00-eec5149123d54e227ba822f3c15645d3-69f42cc8d7903ecf-01",
+    "correlationId": "demo-erro-7"
+}
+
+-- Linhas de log (JSON estruturado) com CorrelationId=demo-erro-7:
+{"Timestamp": "01:53:03 ", "LogLevel": "Debug", "Category": "CorrelationIdMiddleware", "Message": "[1-Correlação] entrada /api/minimal/diagnostico/erro", "SpanId": "69f42cc8d7903ecf", "TraceId": "eec5149123d54e227ba822f3c15645d3", "RequestPath": "/api/minimal/diagnostico/erro", "CorrelationId": "demo-erro-7"}
+{"Timestamp": "01:53:03 ", "LogLevel": "Information", "Category": "RequestLoggingMiddleware", "Message": "[2-Log] entrada GET /api/minimal/diagnostico/erro", "SpanId": "69f42cc8d7903ecf", "TraceId": "eec5149123d54e227ba822f3c15645d3", "RequestPath": "/api/minimal/diagnostico/erro", "CorrelationId": "demo-erro-7"}
+{"Timestamp": "01:53:03 ", "LogLevel": "Information", "Category": "Command", "Message": "Executed DbCommand (1ms) [Parameters=[@p='?' (Size = 450)], CommandType='Text', CommandTimeout='30']\nSELECT TOP(1) [a].[Id], [a].[AccessFail", "SpanId": "69f42cc8d7903ecf", "TraceId": "eec5149123d54e227ba822f3c15645d3", "RequestPath": "/api/minimal/diagnostico/erro", "CorrelationId": "demo-erro-7"}
+{"Timestamp": "01:53:03 ", "LogLevel": "Information", "Category": "Command", "Message": "Executed DbCommand (1ms) [Parameters=[@user_Id='?' (Size = 450)], CommandType='Text', CommandTimeout='30']\nSELECT [a].[Id], [a].[ClaimType],", "SpanId": "69f42cc8d7903ecf", "TraceId": "eec5149123d54e227ba822f3c15645d3", "RequestPath": "/api/minimal/diagnostico/erro", "CorrelationId": "demo-erro-7"}
+{"Timestamp": "01:53:03 ", "LogLevel": "Information", "Category": "Command", "Message": "Executed DbCommand (1ms) [Parameters=[@userId='?' (Size = 450)], CommandType='Text', CommandTimeout='30']\nSELECT [a0].[Name]\nFROM [AspNetUse", "SpanId": "69f42cc8d7903ecf", "TraceId": "eec5149123d54e227ba822f3c15645d3", "RequestPath": "/api/minimal/diagnostico/erro", "CorrelationId": "demo-erro-7"}
+{"Timestamp": "01:53:03 ", "LogLevel": "Information", "Category": "Command", "Message": "Executed DbCommand (1ms) [Parameters=[@normalizedName='?' (Size = 256)], CommandType='Text', CommandTimeout='30']\nSELECT TOP(1) [a].[Id], [a", "SpanId": "69f42cc8d7903ecf", "TraceId": "eec5149123d54e227ba822f3c15645d3", "RequestPath": "/api/minimal/diagnostico/erro", "CorrelationId": "demo-erro-7"}
+{"Timestamp": "01:53:03 ", "LogLevel": "Information", "Category": "Command", "Message": "Executed DbCommand (1ms) [Parameters=[@role_Id='?' (Size = 450)], CommandType='Text', CommandTimeout='30']\nSELECT [a].[ClaimType], [a].[Clai", "SpanId": "69f42cc8d7903ecf", "TraceId": "eec5149123d54e227ba822f3c15645d3", "RequestPath": "/api/minimal/diagnostico/erro", "CorrelationId": "demo-erro-7"}
+{"Timestamp": "01:53:03 ", "LogLevel": "Error", "Category": "TratadorExcecoesGlobal", "Message": "Erro não tratado em GET /api/minimal/diagnostico/erro", "SpanId": "69f42cc8d7903ecf", "TraceId": "eec5149123d54e227ba822f3c15645d3", "RequestPath": "/api/minimal/diagnostico/erro", "CorrelationId": "demo-erro-7"}
+{"Timestamp": "01:53:03 ", "LogLevel": "Information", "Category": "RequestLoggingMiddleware", "Message": "[2-Log] saída GET /api/minimal/diagnostico/erro -> 500 em 33.2 ms", "SpanId": "69f42cc8d7903ecf", "TraceId": "eec5149123d54e227ba822f3c15645d3", "RequestPath": "/api/minimal/diagnostico/erro", "CorrelationId": "demo-erro-7"}
+{"Timestamp": "01:53:03 ", "LogLevel": "Debug", "Category": "CorrelationIdMiddleware", "Message": "[1-Correlação] saída /api/minimal/diagnostico/erro", "SpanId": "69f42cc8d7903ecf", "TraceId": "eec5149123d54e227ba822f3c15645d3", "RequestPath": "/api/minimal/diagnostico/erro", "CorrelationId": "demo-erro-7"}
+-- Alguma linha de log contém senha, cookie ou token?
+0

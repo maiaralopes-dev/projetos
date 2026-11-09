@@ -44,11 +44,21 @@ public class PortalWebFactory : WebApplicationFactory<Program>, IAsyncLifetime
     /// <summary>Senha aleatória gerada a cada execução para os usuários de teste (nunca versionada).</summary>
     public string SenhaUsuarios { get; } = $"T{Guid.NewGuid():N}!a1";
 
+    /// <summary>Limites altos por padrão para não interferir nos demais testes; subclasses podem reduzir.</summary>
+    protected virtual IEnumerable<(string, string)> Configuracoes =>
+    [
+        ("RateLimit:Api:Limite", "10000"), ("RateLimit:Publica:Limite", "10000"), ("RateLimit:Login:Limite", "10000")
+    ];
+
+    protected virtual string UrlCalendario => "http://localhost:5099/";
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Development");   // aplica migrations + seed na inicialização
         builder.UseSetting("ConnectionStrings:PortalTarefas", Conexao);
         builder.UseSetting("SeedUsuarios:SenhaInicial", SenhaUsuarios);
+        builder.UseSetting("Dependencias:Calendario:Url", UrlCalendario);
+        foreach (var (chave, valor) in Configuracoes) builder.UseSetting(chave, valor);
         builder.ConfigureTestServices(services =>
         {
             // Esquema de teste: com o cabeçalho X-Teste-Usuario a requisição é autenticada com um perfil fixo;

@@ -1,0 +1,95 @@
+===== 3. Health checks =====
+### Liveness com dependência saudável
+$ curl https://localhost:7080/health/live
+HTTP/2 200 
+content-type: text/plain
+cache-control: no-store, no-cache
+x-correlation-id: 7d99a9526a9b477d90c7455bfa4f99f6
+Healthy
+### Readiness com dependência saudável
+$ curl https://localhost:7080/health/ready
+HTTP/2 200 
+content-type: text/plain
+cache-control: no-store, no-cache
+x-correlation-id: 1c0182e40b1e47098c824c8a73473a3b
+Healthy
+### Detalhes (Administrador)
+$ curl -b /tmp/tmp.JtE1iXahqx/carla https://localhost:7080/health/detalhes
+HTTP/2 200 
+content-type: application/json; charset=utf-8
+cache-control: no-cache,no-store
+set-cookie: portal.sessao=<valor omitido>; path=/; secure; samesite=strict; httponly
+x-correlation-id: 669fac8839f64edba8181dd6307db2d0
+{
+    "status": "Healthy",
+    "duracaoMs": 23.9064,
+    "verificacoes": [
+        {
+            "nome": "banco",
+            "status": "Healthy",
+            "description": null,
+            "duracaoMs": 19.8062
+        },
+        {
+            "nome": "calendario",
+            "status": "Healthy",
+            "description": "Serviço de calendário respondeu.",
+            "duracaoMs": 2.3496
+        }
+    ]
+}
+
+### Detalhes (anônimo)
+$ curl https://localhost:7080/health/detalhes
+HTTP/2 401 
+content-type: application/problem+json
+x-correlation-id: 601043c28d284cf081ce444c0aef1c82
+{
+    "type": "https://tools.ietf.org/html/rfc9110#section-15.5.2",
+    "title": "Unauthorized",
+    "status": 401,
+    "instance": "GET /health/detalhes",
+    "traceId": "00-7a9c6b0ef62e335121f4ca207006e771-f5def3a2bca71a08-00",
+    "correlationId": "601043c28d284cf081ce444c0aef1c82"
+}
+
+### Liveness com dependência INDISPONÍVEL (processo continua vivo)
+$ curl https://localhost:7080/health/live
+HTTP/2 200 
+content-type: text/plain
+cache-control: no-store, no-cache
+x-correlation-id: 72db0f5e2da44c1a8ed1bc34dddd5570
+Healthy
+### Readiness com dependência INDISPONÍVEL
+$ curl https://localhost:7080/health/ready
+HTTP/2 503 
+content-type: text/plain
+cache-control: no-store, no-cache
+x-correlation-id: b945ed879df6410da5595cff23f96dd6
+Unhealthy
+### Detalhes (Administrador) com dependência indisponível
+$ curl -b /tmp/tmp.JtE1iXahqx/carla https://localhost:7080/health/detalhes
+HTTP/2 503 
+content-type: application/json; charset=utf-8
+cache-control: no-cache,no-store
+set-cookie: portal.sessao=<valor omitido>; path=/; secure; samesite=strict; httponly
+x-correlation-id: 6cfe1080071941e1b3b1f903185ba23b
+{
+    "status": "Unhealthy",
+    "duracaoMs": 1.7147,
+    "verificacoes": [
+        {
+            "nome": "banco",
+            "status": "Healthy",
+            "description": null,
+            "duracaoMs": 1.2025
+        },
+        {
+            "nome": "calendario",
+            "status": "Unhealthy",
+            "description": "Serviço de calendário respondeu 503.",
+            "duracaoMs": 1.4628
+        }
+    ]
+}
+

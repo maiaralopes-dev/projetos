@@ -2,11 +2,12 @@ using Microsoft.EntityFrameworkCore;
 using PortalTarefas.Web.Contratos;
 using PortalTarefas.Web.Dados;
 using PortalTarefas.Web.Modelos;
+using PortalTarefas.Web.Observabilidade;
 
 namespace PortalTarefas.Web.Servicos;
 
 /// <summary>Serviço de tarefas persistido com EF Core (assíncrono, leituras sem rastreamento).</summary>
-public sealed class TarefaServicoEf(PortalTarefasDbContext db, ILogger<TarefaServicoEf> logger) : ITarefaServico
+public sealed class TarefaServicoEf(PortalTarefasDbContext db, ILogger<TarefaServicoEf> logger, Telemetria? telemetria = null) : ITarefaServico
 {
     public async Task<IReadOnlyList<Tarefa>> ListarAsync(SituacaoTarefa? situacao, string? busca, CancellationToken ct = default)
     {
@@ -26,6 +27,8 @@ public sealed class TarefaServicoEf(PortalTarefasDbContext db, ILogger<TarefaSer
         tarefa.Auditoria.Add(new EventoAuditoria { Acao = "Criada", Detalhe = tarefa.Titulo });
         db.Tarefas.Add(tarefa);
         await db.SaveChangesAsync(ct);   // tarefa + auditoria no mesmo SaveChanges = mesma transação implícita
+        telemetria?.TarefaCriada(tarefa.Prioridade.ToString());
+        logger.LogInformation("Tarefa {TarefaId} criada (prioridade {Prioridade}, equipe {Equipe})", tarefa.Id, tarefa.Prioridade, tarefa.Equipe);
         return tarefa;
     }
 
@@ -70,8 +73,11 @@ public sealed class TarefaServicoEf(PortalTarefasDbContext db, ILogger<TarefaSer
     {
         // Com EnableRetryOnFailure, transações explícitas precisam rodar dentro da estratégia de execução,
         // para que a unidade inteira (e não só um comando) seja repetida em falhas transitórias.
+        // Span próprio: agrupa no trace os comandos SQL da transação de conclusão.
+        using var span = Telemetria.Fonte.StartActivity("tarefa.concluir");
+        span?.SetTag("tarefa.id", id);
         var estrategia = db.Database.CreateExecutionStrategy();
-        return await estrategia.ExecuteAsync(async () =>
+        var concluiu = await estrategia.ExecuteAsync(async () =>
         {
             db.ChangeTracker.Clear();
             await using var transacao = await db.Database.BeginTransactionAsync(ct);
@@ -92,6 +98,9 @@ public sealed class TarefaServicoEf(PortalTarefasDbContext db, ILogger<TarefaSer
             await transacao.CommitAsync(ct);                    // sem Commit, o Dispose faz rollback
             return true;
         });
+        span?.SetTag("tarefa.concluida", concluiu);
+        if (concluiu) telemetria?.TarefaConcluida();
+        return concluiu;
     }
 
     public async Task<bool> ExcluirAsync(int id, CancellationToken ct = default) =>

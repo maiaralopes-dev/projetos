@@ -1,0 +1,28 @@
+===== 2. Operações de negócio (métrica de negócio + span customizado) =====
+### Criar tarefa (métrica portal.tarefas.criadas{prioridade=Alta})
+$ curl -b /tmp/tmp.JtE1iXahqx/carla -X POST -H Content-Type: application/json -H X-XSRF-TOKEN: <token omitido> -d {"titulo":"Instrumentar a API","prioridade":"Alta","prazo":"2026-12-10"} https://localhost:7080/api/v2/tarefas
+HTTP/2 201 
+content-type: application/json; charset=utf-8
+cache-control: no-cache,no-store
+location: /api/v2/tarefas/10
+set-cookie: portal.sessao=<valor omitido>; path=/; secure; samesite=strict; httponly
+x-correlation-id: 02649b225243485699d50b8e53f92938
+{
+    "id": 10,
+    "titulo": "Instrumentar a API",
+    "descricao": null,
+    "situacao": "Pendente",
+    "prioridade": "Alta",
+    "prazo": "2026-12-10",
+    "criadaEm": "2026-11-09T01:53:04.2378752+00:00",
+    "versao": "AAAAAAAAB9o=",
+    "equipe": "Backend"
+}
+
+### Concluir tarefa 6 (span tarefa.concluir)
+$ curl -b /tmp/tmp.JtE1iXahqx/carla -X POST -H X-XSRF-TOKEN: <token omitido> https://localhost:7080/api/dev/tarefas/6/concluir
+HTTP/2 204 
+cache-control: no-cache,no-store
+set-cookie: portal.sessao=<valor omitido>; path=/; secure; samesite=strict; httponly
+x-correlation-id: b506913e60c8450ba4e3dfb440f6a9bb
+
