@@ -18,6 +18,7 @@ public interface ITarefaServico
 
     /// <summary>Conclui a tarefa e grava auditoria numa única transação explícita.</summary>
     Task<bool> ConcluirAsync(int id, string? usuario, bool simularFalha = false, CancellationToken ct = default);
+    Task<bool> ExcluirAsync(int id, CancellationToken ct = default);
     Task<bool> ExisteTituloAsync(string titulo, int? ignorarId = null, CancellationToken ct = default);
     Task<IReadOnlyList<Tarefa>> ListarVencidasAsync(DateOnly hoje, CancellationToken ct = default);
 }

@@ -114,3 +114,23 @@ public class Atividade3PersistenciaTests : IAsyncLifetime
         await Assert.ThrowsAsync<DbUpdateException>(() => ctx.SaveChangesAsync());
     }
 }
+
+/// <summary>Regressão: salvar sem alterar nenhum campo, com versão antiga, também deve gerar conflito.</summary>
+public class Atividade3ConcorrenciaSemMudancaTests : IAsyncLifetime
+{
+    private readonly string _conexao = BancoTeste.NovaConexao();
+    public async Task InitializeAsync() { await using var c = BancoTeste.CriarContexto(_conexao); await c.Database.MigrateAsync(); }
+    public async Task DisposeAsync() { await using var c = BancoTeste.CriarContexto(_conexao); await c.Database.EnsureDeletedAsync(); }
+
+    [Fact]
+    public async Task Versao_antiga_sem_mudancas_gera_conflito()
+    {
+        await using var ctx = BancoTeste.CriarContexto(_conexao);
+        var servico = new TarefaServicoEf(ctx, NullLogger<TarefaServicoEf>.Instance);
+        var lida = (await servico.ObterAsync(1))!;
+        var versaoAntiga = lida.Versao;
+        await servico.AtualizarAsync(lida);                         // 1ª gravação (sem mudanças) altera a versão
+        lida.Versao = versaoAntiga;
+        await Assert.ThrowsAsync<ConflitoConcorrenciaException>(() => servico.AtualizarAsync(lida));
+    }
+}

@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Scalar.AspNetCore;
 using PortalTarefas.Web.Dados;
 using PortalTarefas.Web.Endpoints;
 using PortalTarefas.Web.Filtros;
@@ -25,11 +26,18 @@ builder.Services.AddValidation();             // validação de Data Annotations
 builder.Services.AddControllersWithViews(o =>
     o.Filters.Add(new AutoValidateAntiforgeryTokenAttribute()));   // POST de formulários exige token antifalsificação
 builder.Services.AddScoped<RegistroAcaoFilter>();
-builder.Services.ConfigureHttpJsonOptions(o => o.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+builder.Services.ConfigureHttpJsonOptions(o =>
+{
+    o.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    o.SerializerOptions.NumberHandling = JsonNumberHandling.Strict;   // números são números no contrato JSON
+});
 builder.Services.AddSingleton(TimeProvider.System);
 
 // Persistência: a connection string vem de User Secrets (dev) ou variável de ambiente (produção).
+// Durante o build, a ferramenta GetDocument executa o Program só para gerar o documento OpenAPI (sem banco).
+var gerandoOpenApi = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Name == "GetDocument.Insider";
 var conexao = builder.Configuration.GetConnectionString("PortalTarefas")
+    ?? (gerandoOpenApi ? "Server=nao-usado" : null)
     ?? throw new InvalidOperationException(
         "Connection string 'PortalTarefas' não configurada. Use 'dotnet user-secrets set ConnectionStrings:PortalTarefas ...' " +
         "ou a variável de ambiente ConnectionStrings__PortalTarefas.");
@@ -40,6 +48,22 @@ builder.Services.AddDbContextPool<PortalTarefasDbContext>(o => o
     poolSize: 128);
 builder.Services.AddScoped<ITarefaServico, TarefaServicoEf>();
 builder.Services.AddScoped<PainelServico>();
+builder.Services.AddScoped<ConsultaTarefasServico>();
+
+// OpenAPI 3.1 nativo do ASP.NET Core 10: um documento por versão da API.
+builder.Services.AddOpenApi("v2", o => o.AddDocumentTransformer((doc, _, _) =>
+{
+    doc.Servers = [];   // o cliente define a URL base; evita fixar o endereço da máquina de build
+    doc.Info.Title = "Portal de Tarefas API";
+    doc.Info.Version = "v2";
+    doc.Info.Description = "API REST do Portal de Tarefas. Erros seguem Problem Details (RFC 9457).";
+    return Task.CompletedTask;
+}).ShouldInclude = d => d.RelativePath?.StartsWith("api/v2") == true);
+builder.Services.Configure<Microsoft.AspNetCore.OpenApi.OpenApiOptions>("v2", o =>
+    // Nomes de esquema legíveis para tipos genéricos (PaginaDto<TarefaResumoDto> -> PaginaTarefaResumo).
+    o.CreateSchemaReferenceId = tipo => tipo.Type.IsGenericType && tipo.Type.GetGenericTypeDefinition() == typeof(PortalTarefas.Web.Contratos.PaginaDto<>)
+        ? "Pagina" + tipo.Type.GetGenericArguments()[0].Name.Replace("Dto", "")
+        : Microsoft.AspNetCore.OpenApi.OpenApiOptions.CreateDefaultSchemaReferenceId(tipo));
 
 var app = builder.Build();
 
@@ -62,7 +86,11 @@ app.UseStaticFiles();            // 6. arquivos de wwwroot (encerra a requisiç�
 app.UseRouting();                // 7. seleciona o endpoint
 app.UseCors(PoliticaCorsFrontend); // 8. CORS entre roteamento e endpoints
 
-app.MapTarefasEndpoints();       // 9. endpoints Minimal API
+app.MapTarefasEndpoints();       // 9. endpoints Minimal API (v1, unidade 1)
+app.MapTarefasApiV2();           //    API REST v2 (unidade 4)
+app.MapOpenApi();                //    /openapi/v2.json — contrato publicado em todos os ambientes
+if (app.Environment.IsDevelopment())
+    app.MapScalarApiReference(o => o.WithTitle("Portal de Tarefas API"));   // UI interativa só em desenvolvimento
 app.MapDiagnosticoEndpoints();
 app.MapPainelEndpoints();
 if (app.Environment.IsDevelopment())

@@ -1,0 +1,28 @@
+{
+  "runtime": "Net100",
+  "documentGenerator": {
+    "fromDocument": {
+      "url": "../../docs/openapi/portal-tarefas_v2.json"
+    }
+  },
+  "codeGenerators": {
+    "openApiToTypeScriptClient": {
+      "className": "PortalTarefasClient",
+      "operationGenerationMode": "SingleClientFromOperationId",
+      "template": "Fetch",
+      "typeScriptVersion": 5.0,
+      "typeStyle": "Interface",
+      "dateTimeType": "String",
+      "nullValue": "Undefined",
+      "generateClientClasses": true,
+      "generateDtoTypes": true,
+      "generateOptionalParameters": true,
+      "useAbortSignal": true,
+      "wrapDtoExceptions": false,
+      "exceptionClass": "ApiException",
+      "markOptionalProperties": true,
+      "enumStyle": "StringLiteral",
+      "output": "src/api/gerado/portal-tarefas-client.ts"
+    }
+  }
+}

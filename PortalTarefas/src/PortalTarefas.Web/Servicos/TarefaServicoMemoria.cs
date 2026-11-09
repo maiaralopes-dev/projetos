@@ -66,6 +66,8 @@ public sealed class TarefaServicoMemoria : ITarefaServico
         return await AtualizarAsync(t, usuario, ct);
     }
 
+    public Task<bool> ExcluirAsync(int id, CancellationToken ct = default) => Task.FromResult(_tarefas.TryRemove(id, out _));
+
     public Task<bool> ExisteTituloAsync(string titulo, int? ignorarId = null, CancellationToken ct = default) =>
         Task.FromResult(_tarefas.Values.Any(t => t.Id != ignorarId &&
             string.Equals(t.Titulo.Trim(), titulo.Trim(), StringComparison.OrdinalIgnoreCase)));

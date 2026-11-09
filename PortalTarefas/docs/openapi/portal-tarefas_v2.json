@@ -1,0 +1,669 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "Portal de Tarefas API",
+    "description": "API REST do Portal de Tarefas. Erros seguem Problem Details (RFC 9457).",
+    "version": "v2"
+  },
+  "paths": {
+    "/api/v2/tarefas": {
+      "get": {
+        "tags": [
+          "Tarefas"
+        ],
+        "summary": "Lista tarefas com filtros, ordenação e paginação.",
+        "description": "Ordenação aceita somente os campos da lista permitida. Os metadados de paginação também são enviados nos cabeçalhos X-Total-Count e Link (RFC 8288).",
+        "operationId": "ListarTarefas",
+        "parameters": [
+          {
+            "name": "pagina",
+            "in": "query",
+            "description": "Número da página (começa em 1).",
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "tamanho",
+            "in": "query",
+            "description": "Itens por página (1 a 50).",
+            "schema": {
+              "maximum": 50,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          },
+          {
+            "name": "ordenarPor",
+            "in": "query",
+            "description": "Campo de ordenação: id, titulo, prazo, prioridade, situacao ou criadaEm.",
+            "schema": {
+              "type": "string",
+              "default": "id"
+            }
+          },
+          {
+            "name": "direcao",
+            "in": "query",
+            "description": "asc ou desc.",
+            "schema": {
+              "type": "string",
+              "default": "asc"
+            }
+          },
+          {
+            "name": "situacao",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/SituacaoTarefa"
+            }
+          },
+          {
+            "name": "prioridade",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/PrioridadeTarefa"
+            }
+          },
+          {
+            "name": "busca",
+            "in": "query",
+            "description": "Trecho do título.",
+            "schema": {
+              "maxLength": 100,
+              "minLength": 0,
+              "type": "string"
+            }
+          },
+          {
+            "name": "prazoAte",
+            "in": "query",
+            "description": "Somente tarefas com prazo até esta data (inclusive).",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginaTarefaResumo"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Tarefas"
+        ],
+        "summary": "Cadastra uma tarefa.",
+        "operationId": "CriarTarefa",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CriarTarefaDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TarefaDetalhesDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/tarefas/{id}": {
+      "get": {
+        "tags": [
+          "Tarefas"
+        ],
+        "summary": "Obtém os detalhes de uma tarefa.",
+        "operationId": "ObterTarefa",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TarefaDetalhesDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Tarefas"
+        ],
+        "summary": "Substitui os dados de uma tarefa.",
+        "description": "Envie em 'versao' o valor recebido no GET. Se outra alteração ocorreu depois, a resposta é 409 com a versão atual na extensão 'versaoAtual'.",
+        "operationId": "AtualizarTarefa",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AtualizarTarefaDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TarefaDetalhesDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Tarefas"
+        ],
+        "summary": "Exclui uma tarefa.",
+        "operationId": "ExcluirTarefa",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AtualizarTarefaDto": {
+        "required": [
+          "titulo",
+          "descricao",
+          "situacao",
+          "prioridade",
+          "prazo",
+          "versao"
+        ],
+        "type": "object",
+        "properties": {
+          "titulo": {
+            "maxLength": 120,
+            "minLength": 3,
+            "type": "string"
+          },
+          "descricao": {
+            "maxLength": 1000,
+            "minLength": 0,
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "situacao": {
+            "$ref": "#/components/schemas/SituacaoTarefa"
+          },
+          "prioridade": {
+            "$ref": "#/components/schemas/PrioridadeTarefa"
+          },
+          "prazo": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date"
+          },
+          "versao": {
+            "type": "string",
+            "description": "Token de concorrência devolvido no GET (Base64)."
+          }
+        },
+        "description": "Dados para substituir uma tarefa existente (PUT). Exige a versão lida anteriormente."
+      },
+      "CriarTarefaDto": {
+        "required": [
+          "titulo"
+        ],
+        "type": "object",
+        "properties": {
+          "titulo": {
+            "maxLength": 120,
+            "minLength": 3,
+            "type": "string",
+            "description": "Título único da tarefa."
+          },
+          "descricao": {
+            "maxLength": 1000,
+            "minLength": 0,
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "prioridade": {
+            "$ref": "#/components/schemas/PrioridadeTarefa"
+          },
+          "prazo": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Data limite (AAAA-MM-DD). Obrigatória para prioridade Alta.",
+            "format": "date"
+          }
+        },
+        "description": "Dados para cadastrar uma tarefa."
+      },
+      "HttpValidationProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "detail": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "instance": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "PaginaTarefaResumo": {
+        "required": [
+          "itens",
+          "pagina",
+          "tamanho",
+          "totalItens",
+          "totalPaginas"
+        ],
+        "type": "object",
+        "properties": {
+          "itens": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TarefaResumoDto"
+            }
+          },
+          "pagina": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "tamanho": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalItens": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalPaginas": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "description": "Página de resultados com metadados de navegação."
+      },
+      "PrioridadeTarefa": {
+        "enum": [
+          "Baixa",
+          "Media",
+          "Alta"
+        ]
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "detail": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "instance": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "SituacaoTarefa": {
+        "enum": [
+          "Pendente",
+          "EmAndamento",
+          "Concluida"
+        ]
+      },
+      "TarefaDetalhesDto": {
+        "required": [
+          "id",
+          "titulo",
+          "descricao",
+          "situacao",
+          "prioridade",
+          "prazo",
+          "criadaEm",
+          "versao"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "titulo": {
+            "type": "string"
+          },
+          "descricao": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "situacao": {
+            "$ref": "#/components/schemas/SituacaoTarefa"
+          },
+          "prioridade": {
+            "$ref": "#/components/schemas/PrioridadeTarefa"
+          },
+          "prazo": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date"
+          },
+          "criadaEm": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "versao": {
+            "type": "string",
+            "description": "Enviar no PUT para detecção de edição concorrente."
+          }
+        },
+        "description": "Representação completa de uma tarefa."
+      },
+      "TarefaResumoDto": {
+        "required": [
+          "id",
+          "titulo",
+          "situacao",
+          "prioridade",
+          "prazo",
+          "vencida"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "titulo": {
+            "type": "string"
+          },
+          "situacao": {
+            "$ref": "#/components/schemas/SituacaoTarefa"
+          },
+          "prioridade": {
+            "$ref": "#/components/schemas/PrioridadeTarefa"
+          },
+          "prazo": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date"
+          },
+          "vencida": {
+            "type": "boolean",
+            "description": "Verdadeiro quando o prazo já passou e a tarefa não foi concluída (campo adicionado na revisão 2 do contrato)."
+          }
+        },
+        "description": "Representação resumida usada em listagens."
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Tarefas"
+    }
+  ]
+}

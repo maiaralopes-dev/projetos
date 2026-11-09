@@ -1,0 +1,61 @@
+== Mudança compatível no contrato: novo campo de saída 'vencida' em TarefaResumoDto ==
+(adicionar campo em resposta não quebra clientes existentes; nenhum campo removido/renomeado)
+
+$ dotnet build src/PortalTarefas.Web   # regenera docs/openapi/portal-tarefas_v2.json
+Build succeeded.
+
+$ git diff docs/openapi/portal-tarefas_v2.json
+diff --git a/PortalTarefas/docs/openapi/portal-tarefas_v2.json b/PortalTarefas/docs/openapi/portal-tarefas_v2.json
+index c316f87..871627c 100644
+--- a/PortalTarefas/docs/openapi/portal-tarefas_v2.json
++++ b/PortalTarefas/docs/openapi/portal-tarefas_v2.json
+@@ -627,7 +627,8 @@
+           "titulo",
+           "situacao",
+           "prioridade",
+-          "prazo"
++          "prazo",
++          "vencida"
+         ],
+         "type": "object",
+         "properties": {
+@@ -650,6 +651,10 @@
+               "string"
+             ],
+             "format": "date"
++          },
++          "vencida": {
++            "type": "boolean",
++            "description": "Verdadeiro quando o prazo já passou e a tarefa não foi concluída (campo adicionado na revisão 2 do contrato)."
+           }
+         },
+         "description": "Representação resumida usada em listagens."
+
+$ npm run gerar-cliente
+NSwag NPM CLI
+Found runtime from config: Net100
+Using runtime: Net100
+NSwag command line tool for .NET Core Net100, toolchain v14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))
+Visit http://NSwag.org for more information.
+NSwag bin directory: /home/user/projetos/PortalTarefas/src/PortalTarefas.Frontend/node_modules/nswag/bin/binaries/Net100
+Executing file 'nswag.json' with variables ''...
+Done.
+Duration: 00:00:00.6153064
+
+$ git diff src/PortalTarefas.Frontend/src/api/gerado/portal-tarefas-client.ts
+diff --git a/PortalTarefas/src/PortalTarefas.Frontend/src/api/gerado/portal-tarefas-client.ts b/PortalTarefas/src/PortalTarefas.Frontend/src/api/gerado/portal-tarefas-client.ts
+index 3f88bea..a4a344d 100644
+--- a/PortalTarefas/src/PortalTarefas.Frontend/src/api/gerado/portal-tarefas-client.ts
++++ b/PortalTarefas/src/PortalTarefas.Frontend/src/api/gerado/portal-tarefas-client.ts
+@@ -423,6 +423,8 @@ export interface TarefaResumoDto {
+     situacao: SituacaoTarefa;
+     prioridade: PrioridadeTarefa;
+     prazo: string | undefined;
++    /** Verdadeiro quando o prazo já passou e a tarefa não foi concluída (campo adicionado na revisão 2 do contrato). */
++    vencida: boolean;
+ 
+     [key: string]: any;
+ }
+
+$ npx tsc --noEmit -p tsconfig.app.json   # código existente continua compilando
+OK, sem erros de tipo

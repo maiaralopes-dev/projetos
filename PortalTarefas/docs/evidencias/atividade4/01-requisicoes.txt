@@ -1,0 +1,509 @@
+### Listagem padrão (sucesso, com X-Total-Count e Link)
+$ curl https://localhost:7080/api/v2/tarefas?tamanho=3
+HTTP/2 200 
+content-type: application/json; charset=utf-8
+x-total-count: 8
+link: </api/v2/tarefas?tamanho=3&pagina=1>; rel="first", </api/v2/tarefas?tamanho=3&pagina=2>; rel="next", </api/v2/tarefas?tamanho=3&pagina=3>; rel="last"
+x-correlation-id: 7baeb98a44774bbdb33693bc4f032721
+{
+    "itens": [
+        {
+            "id": 1,
+            "titulo": "Configurar ambiente .NET 10",
+            "situacao": "Concluida",
+            "prioridade": "Alta",
+            "prazo": "2026-10-30",
+            "vencida": false
+        },
+        {
+            "id": 2,
+            "titulo": "Montar pipeline HTTP",
+            "situacao": "EmAndamento",
+            "prioridade": "Media",
+            "prazo": "2026-11-07",
+            "vencida": true
+        },
+        {
+            "id": 3,
+            "titulo": "Escrever relatório 1",
+            "situacao": "Pendente",
+            "prioridade": "Baixa",
+            "prazo": "2026-11-16",
+            "vencida": false
+        }
+    ],
+    "pagina": 1,
+    "tamanho": 3,
+    "totalItens": 8,
+    "totalPaginas": 3
+}
+
+### Página vazia (além do fim)
+$ curl https://localhost:7080/api/v2/tarefas?pagina=99
+HTTP/2 200 
+content-type: application/json; charset=utf-8
+x-total-count: 8
+link: </api/v2/tarefas?pagina=1>; rel="first", </api/v2/tarefas?pagina=98>; rel="prev", </api/v2/tarefas?pagina=1>; rel="last"
+x-correlation-id: a017672c5d314c638b8419409a7b3d55
+{
+    "itens": [],
+    "pagina": 99,
+    "tamanho": 10,
+    "totalItens": 8,
+    "totalPaginas": 1
+}
+
+### Limite mínimo violado: tamanho=0
+$ curl https://localhost:7080/api/v2/tarefas?tamanho=0
+HTTP/2 400 
+content-type: application/problem+json
+x-correlation-id: 1e90f2b8de744514a07684b9e030901e
+{
+    "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+    "title": "One or more validation errors occurred.",
+    "status": 400,
+    "instance": "GET /api/v2/tarefas",
+    "errors": {
+        "Tamanho": [
+            "O tamanho deve estar entre 1 e 50."
+        ]
+    },
+    "traceId": "00-5f322e43682dda3ac85be0a1c9c19706-2a8e6c8607124556-00",
+    "correlationId": "1e90f2b8de744514a07684b9e030901e"
+}
+
+### Limite máximo violado: tamanho=51
+$ curl https://localhost:7080/api/v2/tarefas?tamanho=51
+HTTP/2 400 
+content-type: application/problem+json
+x-correlation-id: 85baf1fce5a24f31963a8a4742d80780
+{
+    "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+    "title": "One or more validation errors occurred.",
+    "status": 400,
+    "instance": "GET /api/v2/tarefas",
+    "errors": {
+        "Tamanho": [
+            "O tamanho deve estar entre 1 e 50."
+        ]
+    },
+    "traceId": "00-74455a39dcbab4fb7be90a5fe02e3ae2-1086fe0d3f661613-00",
+    "correlationId": "85baf1fce5a24f31963a8a4742d80780"
+}
+
+### Limite mínimo violado: pagina=0
+$ curl https://localhost:7080/api/v2/tarefas?pagina=0
+HTTP/2 400 
+content-type: application/problem+json
+x-correlation-id: 5883a0dd30b54284b042c4ce0233b0e6
+{
+    "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+    "title": "One or more validation errors occurred.",
+    "status": 400,
+    "instance": "GET /api/v2/tarefas",
+    "errors": {
+        "Pagina": [
+            "A página deve ser maior ou igual a 1."
+        ]
+    },
+    "traceId": "00-796b31287706d3b6d05b96ef4b777fef-88e2ad66e4da2f2d-00",
+    "correlationId": "5883a0dd30b54284b042c4ce0233b0e6"
+}
+
+### Limite máximo aceito: tamanho=50
+$ curl https://localhost:7080/api/v2/tarefas?tamanho=50&ordenarPor=id&direcao=desc
+HTTP/2 200 
+content-type: application/json; charset=utf-8
+x-total-count: 8
+link: </api/v2/tarefas?tamanho=50&ordenarPor=id&direcao=desc&pagina=1>; rel="first", </api/v2/tarefas?tamanho=50&ordenarPor=id&direcao=desc&pagina=1>; rel="last"
+x-correlation-id: 21165e07d85f4ab9ad8ead1cdaca4e84
+{
+    "itens": [
+        {
+            "id": 8,
+            "titulo": "Comparar EF Core e Dapper",
+            "situacao": "Pendente",
+            "prioridade": "Baixa",
+            "prazo": null,
+            "vencida": false
+        },
+        {
+            "id": 7,
+            "titulo": "Testar concorrência",
+            "situacao": "Pendente",
+            "prioridade": "Alta",
+            "prazo": "2026-11-11",
+            "vencida": false
+        },
+        {
+            "id": 6,
+            "titulo": "Revisar SQL da migration",
+            "situacao": "Pendente",
+            "prioridade": "Media",
+            "prazo": "2026-11-08",
+            "vencida": true
+        },
+        {
+            "id": 5,
+            "titulo": "Mapear entidades no EF Core",
+            "situacao": "EmAndamento",
+            "prioridade": "Alta",
+            "prazo": "2026-11-12",
+            "vencida": false
+        },
+        {
+            "id": 4,
+            "titulo": "Criar views Razor",
+            "situacao": "Concluida",
+            "prioridade": "Media",
+            "prazo": "2026-11-04",
+            "vencida": false
+        },
+        {
+            "id": 3,
+            "titulo": "Escrever relatório 1",
+            "situacao": "Pendente",
+            "prioridade": "Baixa",
+            "prazo": "2026-11-16",
+            "vencida": false
+        },
+        {
+            "id": 2,
+            "titulo": "Montar pipeline HTTP",
+            "situacao": "EmAndamento",
+            "prioridade": "Media",
+            "prazo": "2026-11-07",
+            "vencida": true
+        },
+        {
+            "id": 1,
+
+### Ordenação por campo permitido (prazo asc)
+$ curl https://localhost:7080/api/v2/tarefas?ordenarPor=prazo&tamanho=4
+HTTP/2 200 
+content-type: application/json; charset=utf-8
+x-total-count: 8
+link: </api/v2/tarefas?ordenarPor=prazo&tamanho=4&pagina=1>; rel="first", </api/v2/tarefas?ordenarPor=prazo&tamanho=4&pagina=2>; rel="next", </api/v2/tarefas?ordenarPor=prazo&tamanho=4&pagina=2>; rel="last"
+x-correlation-id: c5d3b89c85e24b8983a08b40b9913af4
+{
+    "itens": [
+        {
+            "id": 8,
+            "titulo": "Comparar EF Core e Dapper",
+            "situacao": "Pendente",
+            "prioridade": "Baixa",
+            "prazo": null,
+            "vencida": false
+        },
+        {
+            "id": 1,
+            "titulo": "Configurar ambiente .NET 10",
+            "situacao": "Concluida",
+            "prioridade": "Alta",
+            "prazo": "2026-10-30",
+            "vencida": false
+        },
+        {
+            "id": 4,
+            "titulo": "Criar views Razor",
+            "situacao": "Concluida",
+            "prioridade": "Media",
+            "prazo": "2026-11-04",
+            "vencida": false
+        },
+        {
+            "id": 2,
+            "titulo": "Montar pipeline HTTP",
+            "situacao": "EmAndamento",
+            "prioridade": "Media",
+            "prazo": "2026-11-07",
+            "vencida": true
+        }
+    ],
+    "pagina": 1,
+    "tamanho": 4,
+    "totalItens": 8,
+    "totalPaginas": 2
+}
+
+### Ordenação por campo NÃO permitido
+$ curl https://localhost:7080/api/v2/tarefas?ordenarPor=versao
+HTTP/2 400 
+content-type: application/problem+json
+x-correlation-id: 4683a19609da400f8b905e3986e06038
+{
+    "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+    "title": "Parâmetros de consulta inválidos.",
+    "status": 400,
+    "instance": "GET /api/v2/tarefas",
+    "errors": {
+        "ordenarPor": [
+            "Campo de ordenação não permitido. Use: id, titulo, prazo, prioridade, situacao, criadaEm."
+        ]
+    },
+    "traceId": "00-f52a709f56076f13c08474e7ee27ed7c-508fa21532d7c453-00",
+    "correlationId": "4683a19609da400f8b905e3986e06038"
+}
+
+### Combinação de dois filtros (situacao + prioridade)
+$ curl https://localhost:7080/api/v2/tarefas?situacao=Pendente&prioridade=Alta
+HTTP/2 200 
+content-type: application/json; charset=utf-8
+x-total-count: 1
+link: </api/v2/tarefas?situacao=Pendente&prioridade=Alta&pagina=1>; rel="first", </api/v2/tarefas?situacao=Pendente&prioridade=Alta&pagina=1>; rel="last"
+x-correlation-id: 13b807c3ca8841c0aeecc7454838fd4d
+{
+    "itens": [
+        {
+            "id": 7,
+            "titulo": "Testar concorrência",
+            "situacao": "Pendente",
+            "prioridade": "Alta",
+            "prazo": "2026-11-11",
+            "vencida": false
+        }
+    ],
+    "pagina": 1,
+    "tamanho": 10,
+    "totalItens": 1,
+    "totalPaginas": 1
+}
+
+### Combinação de filtros (situacao + prazoAte)
+$ curl https://localhost:7080/api/v2/tarefas?situacao=Pendente&prazoAte=2026-11-20
+HTTP/2 200 
+content-type: application/json; charset=utf-8
+x-total-count: 3
+link: </api/v2/tarefas?situacao=Pendente&prazoAte=2026-11-20&pagina=1>; rel="first", </api/v2/tarefas?situacao=Pendente&prazoAte=2026-11-20&pagina=1>; rel="last"
+x-correlation-id: 544c8bffc0214b0186ac97e99b3f67ea
+{
+    "itens": [
+        {
+            "id": 3,
+            "titulo": "Escrever relatório 1",
+            "situacao": "Pendente",
+            "prioridade": "Baixa",
+            "prazo": "2026-11-16",
+            "vencida": false
+        },
+        {
+            "id": 6,
+            "titulo": "Revisar SQL da migration",
+            "situacao": "Pendente",
+            "prioridade": "Media",
+            "prazo": "2026-11-08",
+            "vencida": true
+        },
+        {
+            "id": 7,
+            "titulo": "Testar concorrência",
+            "situacao": "Pendente",
+            "prioridade": "Alta",
+            "prazo": "2026-11-11",
+            "vencida": false
+        }
+    ],
+    "pagina": 1,
+    "tamanho": 10,
+    "totalItens": 3,
+    "totalPaginas": 1
+}
+
+### Valor de enum inválido no filtro
+$ curl https://localhost:7080/api/v2/tarefas?situacao=Arquivada
+HTTP/2 400 
+content-type: application/problem+json
+cache-control: no-cache,no-store
+x-correlation-id: d39ec9d0ef734f759dac880cc6c18dd2
+{
+    "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+    "title": "Requisição inválida.",
+    "status": 400,
+    "detail": "Verifique o formato dos parâmetros e do corpo JSON.",
+    "instance": "GET /api/v2/tarefas",
+    "traceId": "00-f1d142b4d95808cacf4a73a2d9426843-db69240114ed3f93-00",
+    "correlationId": "d39ec9d0ef734f759dac880cc6c18dd2"
+}
+
+### GET por id existente
+$ curl https://localhost:7080/api/v2/tarefas/5
+HTTP/2 200 
+content-type: application/json; charset=utf-8
+x-correlation-id: 7886adfd6e054d8092bca986d552a7d2
+{
+    "id": 5,
+    "titulo": "Mapear entidades no EF Core",
+    "descricao": null,
+    "situacao": "EmAndamento",
+    "prioridade": "Alta",
+    "prazo": "2026-11-12",
+    "criadaEm": "2026-11-09T01:31:36.8249255+00:00",
+    "versao": "AAAAAAAAB9U="
+}
+
+### GET por id inexistente (404)
+$ curl https://localhost:7080/api/v2/tarefas/999
+HTTP/2 404 
+content-type: application/problem+json
+x-correlation-id: b54440b4d3044d18921d5613b334d72d
+{
+    "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
+    "title": "Tarefa não encontrada.",
+    "status": 404,
+    "detail": "Não existe tarefa com id 999.",
+    "instance": "GET /api/v2/tarefas/999",
+    "traceId": "00-8698b0c53d167baf8428c739525c695e-3c51cbcf9e276a01-00",
+    "correlationId": "b54440b4d3044d18921d5613b334d72d"
+}
+
+### POST válido (201 + Location)
+$ curl -X POST -H Content-Type: application/json -d {"titulo":"Documentar API REST","prioridade":"Media","prazo":"2026-12-01"} https://localhost:7080/api/v2/tarefas
+HTTP/2 201 
+content-type: application/json; charset=utf-8
+location: /api/v2/tarefas/9
+x-correlation-id: 62f986d4a1eb4a34803b7eeddc0ef1d3
+{
+    "id": 9,
+    "titulo": "Documentar API REST",
+    "descricao": null,
+    "situacao": "Pendente",
+    "prioridade": "Media",
+    "prazo": "2026-12-01",
+    "criadaEm": "2026-11-09T01:31:41.8664923+00:00",
+    "versao": "AAAAAAAAB9k="
+}
+
+### POST inválido (título curto + Alta sem prazo)
+$ curl -X POST -H Content-Type: application/json -d {"titulo":"ab","prioridade":"Alta"} https://localhost:7080/api/v2/tarefas
+HTTP/2 400 
+content-type: application/problem+json
+x-correlation-id: 1b165e5f2f734686b72915db94c8ee81
+{
+    "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+    "title": "One or more validation errors occurred.",
+    "status": 400,
+    "instance": "POST /api/v2/tarefas",
+    "errors": {
+        "Titulo": [
+            "The field Titulo must be a string with a minimum length of 3 and a maximum length of 120."
+        ]
+    },
+    "traceId": "00-3b5b872696785dd13d857301900d2fa0-4e04e3f70f4cb5fb-00",
+    "correlationId": "1b165e5f2f734686b72915db94c8ee81"
+}
+
+### POST regra de negócio (Alta sem prazo)
+$ curl -X POST -H Content-Type: application/json -d {"titulo":"Urgente sem prazo","prioridade":"Alta"} https://localhost:7080/api/v2/tarefas
+HTTP/2 400 
+content-type: application/problem+json
+x-correlation-id: 1a5ef5159b604df7b3a34f6b2122c4d3
+{
+    "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+    "title": "One or more validation errors occurred.",
+    "status": 400,
+    "instance": "POST /api/v2/tarefas",
+    "errors": {
+        "prazo": [
+            "Tarefas de prioridade Alta precisam de prazo."
+        ]
+    },
+    "traceId": "00-0f626e33019dfc214367db1272c37807-7fb54f7aba06919f-00",
+    "correlationId": "1a5ef5159b604df7b3a34f6b2122c4d3"
+}
+
+### POST conflito (título duplicado → 409)
+$ curl -X POST -H Content-Type: application/json -d {"titulo":"Montar pipeline HTTP"} https://localhost:7080/api/v2/tarefas
+HTTP/2 409 
+content-type: application/problem+json
+x-correlation-id: 593e6c8b007044ce87dfd487be0452ca
+{
+    "type": "https://portaltarefas.example/problemas/conflito",
+    "title": "Título já utilizado.",
+    "status": 409,
+    "detail": "Já existe uma tarefa com o título 'Montar pipeline HTTP'.",
+    "instance": "POST /api/v2/tarefas",
+    "traceId": "00-c07925eb2cb6814c423458440ae1ad07-2f2a57552203e1e1-00",
+    "correlationId": "593e6c8b007044ce87dfd487be0452ca"
+}
+
+### PUT com versão atual (200)
+$ curl -X PUT -H Content-Type: application/json -d {"titulo":"Testar concorrência","situacao":"EmAndamento","prioridade":"Alta","prazo":"2026-11-30","versao":"AAAAAAAAB9c="} https://localhost:7080/api/v2/tarefas/7
+HTTP/2 200 
+content-type: application/json; charset=utf-8
+x-correlation-id: d9de9a596f84418994b5035c791e6577
+{
+    "id": 7,
+    "titulo": "Testar concorrência",
+    "descricao": null,
+    "situacao": "EmAndamento",
+    "prioridade": "Alta",
+    "prazo": "2026-11-30",
+    "criadaEm": "2026-11-09T01:31:36.8249259+00:00",
+    "versao": "AAAAAAAAB9o="
+}
+
+### PUT repetido com a versão antiga (409 conflito de concorrência)
+$ curl -X PUT -H Content-Type: application/json -d {"titulo":"Testar concorrência","situacao":"Concluida","prioridade":"Alta","prazo":"2026-11-30","versao":"AAAAAAAAB9c="} https://localhost:7080/api/v2/tarefas/7
+HTTP/2 409 
+content-type: application/problem+json
+x-correlation-id: 1f922be73ab64fa4aa9d33d254c04c2a
+{
+    "type": "https://portaltarefas.example/problemas/conflito",
+    "title": "A tarefa foi alterada por outra requisição.",
+    "status": 409,
+    "detail": "Obtenha a tarefa novamente, reaplique suas alterações e envie a nova versão.",
+    "instance": "PUT /api/v2/tarefas/7",
+    "versaoAtual": "AAAAAAAAB9o=",
+    "traceId": "00-3dd80b1ed81d42f3373e6bd66b371a4c-0856a57275a5e1b6-00",
+    "correlationId": "1f922be73ab64fa4aa9d33d254c04c2a"
+}
+
+### PUT em id inexistente (404)
+$ curl -X PUT -H Content-Type: application/json -d {"titulo":"Qualquer","situacao":"Pendente","prioridade":"Baixa","versao":"AAAAAAAAB9c="} https://localhost:7080/api/v2/tarefas/999
+HTTP/2 404 
+content-type: application/problem+json
+x-correlation-id: 5cc17a5f73134b9c9ef95e9992aad47e
+{
+    "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
+    "title": "Tarefa não encontrada.",
+    "status": 404,
+    "detail": "Não existe tarefa com id 999.",
+    "instance": "PUT /api/v2/tarefas/999",
+    "traceId": "00-2c0dacc05a074cad8d966d646aa7d12a-428d98b9656d9d61-00",
+    "correlationId": "5cc17a5f73134b9c9ef95e9992aad47e"
+}
+
+### DELETE existente (204)
+$ curl -X DELETE https://localhost:7080/api/v2/tarefas/8
+HTTP/2 204 
+x-correlation-id: 41587ee8a33d47df868ce0d3475015f3
+
+### DELETE repetido (404)
+$ curl -X DELETE https://localhost:7080/api/v2/tarefas/8
+HTTP/2 404 
+content-type: application/problem+json
+x-correlation-id: eeb7aeab63334cbcb7f0e506ac8a4627
+{
+    "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
+    "title": "Tarefa não encontrada.",
+    "status": 404,
+    "detail": "Não existe tarefa com id 8.",
+    "instance": "DELETE /api/v2/tarefas/8",
+    "traceId": "00-9ce82d755b136b68dbf16d9d3af2e300-323421852adb0df1-00",
+    "correlationId": "eeb7aeab63334cbcb7f0e506ac8a4627"
+}
+
+### v1 continua ativa, mas sinaliza descontinuação
+$ curl https://localhost:7080/api/v1/tarefas/1
+HTTP/2 200 
+content-type: application/json; charset=utf-8
+deprecation: @1798761600
+link: </api/v2/tarefas>; rel="successor-version"
+x-correlation-id: 7e2610ee2b2740c092cda1e6ba9f1359
+{
+    "id": 1,
+    "titulo": "Configurar ambiente .NET 10",
+    "descricao": "Instalar SDK e Visual Studio",
+    "situacao": "Concluida"
+}
+

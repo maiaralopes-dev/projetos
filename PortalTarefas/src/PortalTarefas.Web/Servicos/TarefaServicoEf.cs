@@ -42,6 +42,10 @@ public sealed class TarefaServicoEf(PortalTarefasDbContext db, ILogger<TarefaSer
         atual.Situacao = tarefa.Situacao;
         atual.Prioridade = tarefa.Prioridade;
         atual.Prazo = tarefa.Prazo;
+        // Se nenhum valor de coluna mudou, o EF não emitiria UPDATE (a rowversion é gerada pelo banco e não
+        // entra no SET) e a versão nunca seria conferida. Marcar o título como modificado garante o
+        // UPDATE ... WHERE Versao = @original em todos os casos.
+        db.Entry(atual).Property(t => t.Titulo).IsModified = true;
         db.Auditoria.Add(new EventoAuditoria { TarefaId = atual.Id, Acao = "Editada", Detalhe = mudancas, Usuario = usuario });
 
         try
@@ -88,6 +92,9 @@ public sealed class TarefaServicoEf(PortalTarefasDbContext db, ILogger<TarefaSer
             return true;
         });
     }
+
+    public async Task<bool> ExcluirAsync(int id, CancellationToken ct = default) =>
+        await db.Tarefas.Where(t => t.Id == id).ExecuteDeleteAsync(ct) > 0;   // DELETE direto, sem carregar a entidade
 
     public Task<bool> ExisteTituloAsync(string titulo, int? ignorarId = null, CancellationToken ct = default)
     {

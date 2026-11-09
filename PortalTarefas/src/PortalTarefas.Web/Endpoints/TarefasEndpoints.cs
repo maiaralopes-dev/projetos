@@ -15,6 +15,15 @@ public static class TarefasEndpoints
     {
         var grupo = app.MapGroup("/api/v1/tarefas").WithTags("Tarefas (v1 - unidade 1)");
 
+        // Versionamento: a v2 mudou o formato da listagem (array -> página), uma mudança incompatível.
+        // A v1 continua respondendo, mas sinaliza a descontinuação e aponta a sucessora (RFC 9745 / RFC 8288).
+        grupo.AddEndpointFilter(async (ctx, next) =>
+        {
+            ctx.HttpContext.Response.Headers["Deprecation"] = "@1798761600";   // 2027-01-01T00:00:00Z
+            ctx.HttpContext.Response.Headers.Link = "</api/v2/tarefas>; rel=\"successor-version\"";
+            return await next(ctx);
+        });
+
         // Filtros pela query string (?situacao=&busca=) e cliente pelo cabeçalho X-Cliente-Id (opcional).
         grupo.MapGet("/", async (
                 [FromQuery] SituacaoTarefa? situacao,
