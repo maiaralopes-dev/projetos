@@ -10,8 +10,16 @@
     <header class="topo">
         <a class="marca" asp-controller="Tarefas" asp-action="Index">Portal de Tarefas</a>
         <nav>
-            <a asp-controller="Tarefas" asp-action="Index">Lista</a>
-            <a asp-controller="Tarefas" asp-action="Create">Nova tarefa</a>
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <a asp-controller="Tarefas" asp-action="Index">Lista</a>
+                @if (User.IsInRole("Usuario") || User.IsInRole("Administrador"))
+                {
+                    <a asp-controller="Tarefas" asp-action="Create">Nova tarefa</a>
+                }
+                <span class="usuario">@User.Identity.Name</span>
+                <form asp-controller="Conta" asp-action="Logout" method="post" class="inline"><button type="submit" class="link">Sair</button></form>
+            }
         </nav>
     </header>
     <div class="conteudo">
@@ -24,7 +32,10 @@
             @RenderBody()
         </main>
         <aside>
-            @await Component.InvokeAsync("TarefasVencidas", new { maximo = 5 })
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                @await Component.InvokeAsync("TarefasVencidas", new { maximo = 5 })
+            }
         </aside>
     </div>
     <footer>Desenvolvimento Web com .NET · ASP.NET Core 10</footer>

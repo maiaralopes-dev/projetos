@@ -1,0 +1,57 @@
+===== 3. Logout e reutilização do cookie antigo =====
+### Bruno, com sessão, lista tarefas
+$ curl -b /tmp/tmp.qzHMclHn3e/bruno https://localhost:7080/api/v2/tarefas?tamanho=1
+HTTP/2 200 
+content-type: application/json; charset=utf-8
+cache-control: no-cache,no-store
+set-cookie: portal.sessao=<valor omitido>; path=/; secure; samesite=strict; httponly
+x-total-count: 9
+link: </api/v2/tarefas?tamanho=1&pagina=1>; rel="first", </api/v2/tarefas?tamanho=1&pagina=2>; rel="next", </api/v2/tarefas?tamanho=1&pagina=9>; rel="last"
+x-correlation-id: e440898e20a046f58243fb74fdbf2e4f
+{
+    "itens": [
+        {
+            "id": 1,
+            "titulo": "Configurar ambiente .NET 10",
+            "situacao": "Concluida",
+            "prioridade": "Alta",
+            "prazo": "2026-10-30",
+            "vencida": false,
+            "equipe": "Backend"
+        }
+    ],
+    "pagina": 1,
+    "tamanho": 1,
+    "totalItens": 9,
+    "totalPaginas": 9
+}
+
+### Logout do Bruno
+$ curl -b /tmp/tmp.qzHMclHn3e/bruno -c /tmp/tmp.qzHMclHn3e/bruno -X POST -H X-XSRF-TOKEN: <token omitido> https://localhost:7080/api/v2/auth/logout
+HTTP/2 204 
+cache-control: no-cache,no-store
+set-cookie: portal.sessao=<valor omitido>; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; secure; samesite=strict; httponly
+set-cookie: Identity.External=<valor omitido>; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; secure; samesite=lax; httponly
+set-cookie: Identity.TwoFactorUserId=<valor omitido>; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; secure; samesite=lax; httponly
+set-cookie: XSRF-TOKEN=<valor omitido>; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/
+x-correlation-id: d0916cd4a26b40d6acb745fec6509fea
+
+### Reenvio do cookie ANTIGO (copiado antes do logout)
+$ curl -b /tmp/tmp.qzHMclHn3e/bruno-copia https://localhost:7080/api/v2/tarefas?tamanho=1
+HTTP/2 401 
+content-type: application/problem+json
+cache-control: no-cache,no-store
+set-cookie: portal.sessao=<valor omitido>; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; secure; samesite=strict; httponly
+set-cookie: Identity.External=<valor omitido>; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; secure; samesite=lax; httponly
+set-cookie: Identity.TwoFactorUserId=<valor omitido>; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; secure; samesite=lax; httponly
+set-cookie: Identity.TwoFactorRememberMe=<valor omitido>; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; secure; samesite=lax; httponly
+x-correlation-id: 953b3fc310b8423f8eee86ac4e3f7373
+{
+    "type": "https://tools.ietf.org/html/rfc9110#section-15.5.2",
+    "title": "Unauthorized",
+    "status": 401,
+    "instance": "GET /api/v2/tarefas",
+    "traceId": "00-4c6062cdba06719fd4d5f11961fd3f02-f3a45a4f8b08b6a7-00",
+    "correlationId": "953b3fc310b8423f8eee86ac4e3f7373"
+}
+

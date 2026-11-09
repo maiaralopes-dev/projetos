@@ -23,7 +23,8 @@ public sealed class TarefaServicoMemoria : ITarefaServico
     private static Tarefa Copia(Tarefa t) => new()
     {
         Id = t.Id, Titulo = t.Titulo, Descricao = t.Descricao, Situacao = t.Situacao,
-        Prioridade = t.Prioridade, Prazo = t.Prazo, CriadaEm = t.CriadaEm, Versao = t.Versao
+        Prioridade = t.Prioridade, Prazo = t.Prazo, CriadaEm = t.CriadaEm, Versao = t.Versao,
+        Equipe = t.Equipe, CriadaPor = t.CriadaPor
     };
 
     private static byte[] NovaVersao() => Guid.NewGuid().ToByteArray();

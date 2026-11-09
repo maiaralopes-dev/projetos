@@ -42,6 +42,7 @@ public sealed class TarefaServicoEf(PortalTarefasDbContext db, ILogger<TarefaSer
         atual.Situacao = tarefa.Situacao;
         atual.Prioridade = tarefa.Prioridade;
         atual.Prazo = tarefa.Prazo;
+        // Equipe e autor não são alterados pela edição.
         // Se nenhum valor de coluna mudou, o EF não emitiria UPDATE (a rowversion é gerada pelo banco e não
         // entra no SET) e a versão nunca seria conferida. Marcar o título como modificado garante o
         // UPDATE ... WHERE Versao = @original em todos os casos.

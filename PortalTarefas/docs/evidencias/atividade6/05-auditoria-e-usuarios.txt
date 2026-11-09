@@ -1,0 +1,21 @@
+===== Auditoria de segurança (EventosSeguranca) — sem senha ou token =====
+Id Evento Usuario Sucesso Detalhe OcorridoEm
+-- ------ ------- ------- ------- ----------
+1 Login ana@portal.local 0 senha incorreta 2026-11-09 01:45:04
+2 Login naoexiste@portal.local 0 conta inexistente 2026-11-09 01:45:04
+3 Login ana@portal.local 1 NULL 2026-11-09 01:45:05
+4 Login bruno@portal.local 1 NULL 2026-11-09 01:45:05
+5 Login carla@portal.local 1 NULL 2026-11-09 01:45:05
+6 Login visitante@portal.local 1 NULL 2026-11-09 01:45:05
+7 Logout bruno@portal.local 1 NULL 2026-11-09 01:45:07
+
+===== Usuários, papéis e claims criados pelo seed controlado =====
+Email Papel Claims
+----- ----- ------
+ana@portal.local Usuario equipe=Backend
+bruno@portal.local Usuario equipe=Frontend
+carla@portal.local Administrador equipe=Backend, permissao=tarefas.editar-outras-equipes
+visitante@portal.local (nenhum) equipe=Geral
+
+-- Verificação: a senha de teste aparece em alguma evidência ou log?
+Não encontrada em docs/, src/, tests/, scripts/.

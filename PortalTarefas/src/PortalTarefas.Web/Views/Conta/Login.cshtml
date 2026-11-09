@@ -1,0 +1,8 @@
+@model PortalTarefas.Web.Controllers.LoginViewModel
+@{ ViewData["Title"] = "Entrar"; }
+<form asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post" novalidate class="login">
+    <div asp-validation-summary="ModelOnly" class="erro"></div>
+    <div class="campo"><label asp-for="Email"></label><input asp-for="Email" autocomplete="username" /><span asp-validation-for="Email" class="erro"></span></div>
+    <div class="campo"><label asp-for="Senha"></label><input asp-for="Senha" autocomplete="current-password" /><span asp-validation-for="Senha" class="erro"></span></div>
+    <button type="submit">Entrar</button>
+</form>

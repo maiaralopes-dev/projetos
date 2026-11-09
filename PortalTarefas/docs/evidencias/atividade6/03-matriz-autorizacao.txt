@@ -1,0 +1,169 @@
+===== 2. Matriz de autorização (servidor; chamadas feitas por curl, fora da SPA) =====
+### Anônimo lista tarefas
+$ curl https://localhost:7080/api/v2/tarefas?tamanho=1
+HTTP/2 401 
+content-type: application/problem+json
+x-correlation-id: 03782d855d094d06887e15aaaa59733d
+{
+    "type": "https://tools.ietf.org/html/rfc9110#section-15.5.2",
+    "title": "Unauthorized",
+    "status": 401,
+    "instance": "GET /api/v2/tarefas",
+    "traceId": "00-44523da5d32d6e818b16fd0a2e7494e0-f11328e4fd2c66a4-00",
+    "correlationId": "03782d855d094d06887e15aaaa59733d"
+}
+
+### Visitante (sem papel) lista tarefas
+$ curl -b /tmp/tmp.qzHMclHn3e/visit https://localhost:7080/api/v2/tarefas?tamanho=1
+HTTP/2 200 
+content-type: application/json; charset=utf-8
+cache-control: no-cache,no-store
+set-cookie: portal.sessao=<valor omitido>; path=/; secure; samesite=strict; httponly
+x-total-count: 9
+link: </api/v2/tarefas?tamanho=1&pagina=1>; rel="first", </api/v2/tarefas?tamanho=1&pagina=2>; rel="next", </api/v2/tarefas?tamanho=1&pagina=9>; rel="last"
+x-correlation-id: 5fb1128a10064d1c93eeb3b61ef6b883
+{
+    "itens": [
+        {
+            "id": 1,
+            "titulo": "Configurar ambiente .NET 10",
+            "situacao": "Concluida",
+            "prioridade": "Alta",
+            "prazo": "2026-10-30",
+            "vencida": false,
+            "equipe": "Backend"
+        }
+    ],
+    "pagina": 1,
+    "tamanho": 1,
+    "totalItens": 9,
+    "totalPaginas": 9
+}
+
+### Visitante tenta criar
+$ curl -b /tmp/tmp.qzHMclHn3e/visit -c /tmp/tmp.qzHMclHn3e/visit -X POST -H Content-Type: application/json -H X-XSRF-TOKEN: <token omitido> -d {"titulo":"Criada pelo visitante"} https://localhost:7080/api/v2/tarefas
+HTTP/2 403 
+content-type: application/problem+json
+cache-control: no-cache,no-store
+set-cookie: portal.sessao=<valor omitido>; path=/; secure; samesite=strict; httponly
+x-correlation-id: 35108b5dd4524e31b0819c9b80df693e
+{
+    "type": "https://tools.ietf.org/html/rfc9110#section-15.5.4",
+    "title": "Forbidden",
+    "status": 403,
+    "instance": "POST /api/v2/tarefas",
+    "traceId": "00-cbdc3cffe300da77f10f343be5345651-fbf528b61d7f01f6-00",
+    "correlationId": "35108b5dd4524e31b0819c9b80df693e"
+}
+
+### Ana (Usuario/Backend) cria
+$ curl -b /tmp/tmp.qzHMclHn3e/ana -c /tmp/tmp.qzHMclHn3e/ana -X POST -H Content-Type: application/json -H X-XSRF-TOKEN: <token omitido> -d {"titulo":"Criada pela Ana"} https://localhost:7080/api/v2/tarefas
+HTTP/2 201 
+content-type: application/json; charset=utf-8
+cache-control: no-cache,no-store
+location: /api/v2/tarefas/10
+set-cookie: portal.sessao=<valor omitido>; path=/; secure; samesite=strict; httponly
+x-correlation-id: 7a97bf0e2e9b4417b70a5dd636ea47d3
+{
+    "id": 10,
+    "titulo": "Criada pela Ana",
+    "descricao": null,
+    "situacao": "Pendente",
+    "prioridade": "Media",
+    "prazo": null,
+    "criadaEm": "2026-11-09T01:45:06.2385916+00:00",
+    "versao": "AAAAAAAAB9o=",
+    "equipe": "Backend"
+}
+
+### Ana edita tarefa 8 (equipe Frontend)
+$ curl -b /tmp/tmp.qzHMclHn3e/ana -X PUT -H Content-Type: application/json -H X-XSRF-TOKEN: <token omitido> -d {"titulo":"Montar telas React","situacao":"EmAndamento","prioridade":"Alta","prazo":"2030-01-01","versao":"AAAAAAAAB9g="} https://localhost:7080/api/v2/tarefas/8
+HTTP/2 403 
+content-type: application/problem+json
+cache-control: no-cache,no-store
+set-cookie: portal.sessao=<valor omitido>; path=/; secure; samesite=strict; httponly
+x-correlation-id: 8eb9abd08304472d9c418d9bd19900ee
+{
+    "type": "https://tools.ietf.org/html/rfc9110#section-15.5.4",
+    "title": "Forbidden",
+    "status": 403,
+    "instance": "PUT /api/v2/tarefas/8",
+    "traceId": "00-1a3fc3893ada6db0b946f2e22d46c3a9-8887b4cda4578213-00",
+    "correlationId": "8eb9abd08304472d9c418d9bd19900ee"
+}
+
+### Ana edita tarefa 2 (equipe Backend, a mesma dela)
+$ curl -b /tmp/tmp.qzHMclHn3e/ana -X PUT -H Content-Type: application/json -H X-XSRF-TOKEN: <token omitido> -d {"titulo":"Montar pipeline HTTP","situacao":"Concluida","prioridade":"Media","prazo":"2026-11-07","versao":"AAAAAAAAB9I="} https://localhost:7080/api/v2/tarefas/2
+HTTP/2 200 
+content-type: application/json; charset=utf-8
+cache-control: no-cache,no-store
+set-cookie: portal.sessao=<valor omitido>; path=/; secure; samesite=strict; httponly
+x-correlation-id: a4e9331aeb3146cca27ccd69f2dd49a5
+{
+    "id": 2,
+    "titulo": "Montar pipeline HTTP",
+    "descricao": null,
+    "situacao": "Concluida",
+    "prioridade": "Media",
+    "prazo": "2026-11-07",
+    "criadaEm": "2026-11-09T01:44:59.5561111+00:00",
+    "versao": "AAAAAAAAB9s=",
+    "equipe": "Backend"
+}
+
+### Carla (Administrador + claim editar-outras-equipes) edita tarefa 8 (Frontend)
+$ curl -b /tmp/tmp.qzHMclHn3e/carla -X PUT -H Content-Type: application/json -H X-XSRF-TOKEN: <token omitido> -d {"titulo":"Montar telas React","situacao":"EmAndamento","prioridade":"Alta","prazo":"2030-01-01","versao":"AAAAAAAAB9g="} https://localhost:7080/api/v2/tarefas/8
+HTTP/2 200 
+content-type: application/json; charset=utf-8
+cache-control: no-cache,no-store
+set-cookie: portal.sessao=<valor omitido>; path=/; secure; samesite=strict; httponly
+x-correlation-id: 706274083d424b219d74cd093e015e58
+{
+    "id": 8,
+    "titulo": "Montar telas React",
+    "descricao": null,
+    "situacao": "EmAndamento",
+    "prioridade": "Alta",
+    "prazo": "2030-01-01",
+    "criadaEm": "2026-11-09T01:44:59.5561124+00:00",
+    "versao": "AAAAAAAAB9w=",
+    "equipe": "Frontend"
+}
+
+### Bruno (Usuario) tenta excluir
+$ curl -b /tmp/tmp.qzHMclHn3e/bruno -X DELETE -H X-XSRF-TOKEN: <token omitido> https://localhost:7080/api/v2/tarefas/3
+HTTP/2 403 
+content-type: application/problem+json
+cache-control: no-cache,no-store
+set-cookie: portal.sessao=<valor omitido>; path=/; secure; samesite=strict; httponly
+x-correlation-id: bb5aad647401484b8c70b9a291b8e9e4
+{
+    "type": "https://tools.ietf.org/html/rfc9110#section-15.5.4",
+    "title": "Forbidden",
+    "status": 403,
+    "instance": "DELETE /api/v2/tarefas/3",
+    "traceId": "00-dcfab6224ad4770a52c57302b4cf9f47-5c97d3781e8c0a15-00",
+    "correlationId": "bb5aad647401484b8c70b9a291b8e9e4"
+}
+
+### Carla (Administrador) exclui
+$ curl -b /tmp/tmp.qzHMclHn3e/carla -X DELETE -H X-XSRF-TOKEN: <token omitido> https://localhost:7080/api/v2/tarefas/3
+HTTP/2 204 
+cache-control: no-cache,no-store
+set-cookie: portal.sessao=<valor omitido>; path=/; secure; samesite=strict; httponly
+x-correlation-id: 5d255052efa446b18957f7163ceb942f
+
+### Anônimo tenta excluir
+$ curl -X DELETE https://localhost:7080/api/v2/tarefas/4
+HTTP/2 401 
+content-type: application/problem+json
+x-correlation-id: cc1c0e83fb3c48f79d652b0cc1ab21d8
+{
+    "type": "https://tools.ietf.org/html/rfc9110#section-15.5.2",
+    "title": "Unauthorized",
+    "status": 401,
+    "instance": "DELETE /api/v2/tarefas/4",
+    "traceId": "00-dc0c9dee93c94dfe1b5294ed6260e4a1-e50cc97383766c09-00",
+    "correlationId": "cc1c0e83fb3c48f79d652b0cc1ab21d8"
+}
+

@@ -8,6 +8,7 @@ import {
 } from './gerado/portal-tarefas-client'
 
 export type {
+  SessaoDto,
   AtualizarTarefaDto,
   CriarTarefaDto,
   PaginaTarefaResumo,
@@ -61,8 +62,27 @@ async function fetchComSimulacao(input: RequestInfo | URL, init?: RequestInit): 
     }
     if (simular === 'falha') throw new TypeError('Failed to fetch (simulado)')
   }
-  return fetch(input, { ...init, credentials: 'same-origin' })
+  // CSRF: repete no cabeçalho o token que a API gravou no cookie legível XSRF-TOKEN.
+  const metodo = (init?.method ?? 'GET').toUpperCase()
+  const headers = new Headers(init?.headers)
+  if (!['GET', 'HEAD', 'OPTIONS'].includes(metodo)) {
+    const xsrf = lerCookie('XSRF-TOKEN')
+    if (xsrf) headers.set('X-XSRF-TOKEN', xsrf)
+  }
+  const resposta = await fetch(input, { ...init, headers, credentials: 'same-origin' })
+  if (resposta.status === 401) aoNaoAutenticado?.()   // sessão expirou: o contexto de autenticação reage
+  return resposta
 }
+
+function lerCookie(nome: string): string | undefined {
+  if (typeof document === 'undefined') return undefined
+  const par = document.cookie.split('; ').find((c) => c.startsWith(nome + '='))
+  return par ? decodeURIComponent(par.slice(nome.length + 1)) : undefined
+}
+
+let aoNaoAutenticado: (() => void) | undefined
+/** Registra quem deve ser avisado quando a API responder 401 (ex.: cookie expirado). */
+export function registrarAoNaoAutenticado(fn: (() => void) | undefined) { aoNaoAutenticado = fn }
 
 export const cliente = new PortalTarefasClient(import.meta.env.VITE_API_URL ?? '', { fetch: fetchComSimulacao })
 

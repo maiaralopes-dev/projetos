@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { Link, useLocation, useParams } from 'react-router'
+import { Link, useLocation, useNavigate, useParams } from 'react-router'
 import { chamar, type ErroApi, type TarefaDetalhesDto } from '../api/http'
 import { Carregando, MensagemErro, Selo, TituloPagina, formatarData, rotuloSituacao } from '../components/Comuns'
 import { useRequisicao } from '../hooks/useRequisicao'
+import { useAuth } from '../auth/AuthContext'
 
 export function DetalhesTarefa() {
   const { id } = useParams()
@@ -10,6 +11,8 @@ export function DetalhesTarefa() {
   const mensagem = (useLocation().state as { mensagem?: string } | null)?.mensagem
   const { estado, setEstado, recarregar } = useRequisicao<TarefaDetalhesDto>((c, s) => c.obterTarefa(idNumerico, s), [idNumerico])
   const [erroAcao, setErroAcao] = useState<ErroApi | null>(null)
+  const { podeEditar, sessao } = useAuth()
+  const navegar = useNavigate()
 
   if (!Number.isInteger(idNumerico) || idNumerico <= 0)
     return <><TituloPagina>Endereço inválido</TituloPagina><p>O identificador “{id}” não é válido.</p></>
@@ -24,6 +27,13 @@ export function DetalhesTarefa() {
     }, s))
     if (r.ok) setEstado({ fase: 'sucesso', dados: r.dados })
     else { setEstado({ fase: 'sucesso', dados: tarefa }); setErroAcao(r.erro) }   // reversão
+  }
+
+  async function excluir(tarefa: TarefaDetalhesDto) {
+    if (!window.confirm(`Excluir a tarefa “${tarefa.titulo}”?`)) return
+    const r = await chamar((c, s) => c.excluirTarefa(tarefa.id, s))
+    if (r.ok) navegar('/tarefas', { replace: true })
+    else setErroAcao(r.erro)
   }
 
   return (
@@ -46,12 +56,17 @@ export function DetalhesTarefa() {
           </p>
           <dl>
             <dt>Descrição</dt><dd>{estado.dados.descricao ?? '(sem descrição)'}</dd>
+            <dt>Equipe</dt><dd>{estado.dados.equipe}</dd>
             <dt>Prazo</dt><dd>{formatarData(estado.dados.prazo)}</dd>
             <dt>Criada em</dt><dd>{new Date(estado.dados.criadaEm).toLocaleString('pt-BR')}</dd>
           </dl>
-          {estado.dados.situacao !== 'Concluida' && (
-            <button type="button" onClick={() => concluir(estado.dados)}>Marcar como concluída</button>
-          )}
+          <div className="acoes">
+            {/* Botões ocultos só por experiência: a API recusa (403) mesmo se a chamada for feita por fora. */}
+            {estado.dados.situacao !== 'Concluida' && podeEditar(estado.dados.equipe) && (
+              <button type="button" onClick={() => concluir(estado.dados)}>Marcar como concluída</button>
+            )}
+            {sessao.podeExcluir && <button type="button" className="perigo" onClick={() => excluir(estado.dados)}>Excluir</button>}
+          </div>
           {erroAcao && <MensagemErro erro={erroAcao} />}
         </article>
       )}

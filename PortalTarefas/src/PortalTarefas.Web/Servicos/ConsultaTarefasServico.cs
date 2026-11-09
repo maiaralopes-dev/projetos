@@ -38,7 +38,7 @@ public sealed class ConsultaTarefasServico(PortalTarefasDbContext db, TimeProvid
         var itens = await ordenada.ThenBy(t => t.Id)
             .Skip((q.PaginaEfetiva - 1) * q.TamanhoEfetivo).Take(q.TamanhoEfetivo)
             .Select(t => new TarefaResumoDto(t.Id, t.Titulo, t.Situacao, t.Prioridade, t.Prazo,
-                t.Prazo < hoje && t.Situacao != SituacaoTarefa.Concluida))   // projeção
+                t.Prazo < hoje && t.Situacao != SituacaoTarefa.Concluida, t.Equipe))   // projeção
             .ToListAsync(ct);
 
         return new PaginaDto<TarefaResumoDto>(itens, q.PaginaEfetiva, q.TamanhoEfetivo, total,
@@ -46,5 +46,5 @@ public sealed class ConsultaTarefasServico(PortalTarefasDbContext db, TimeProvid
     }
 
     public static TarefaDetalhesDto ParaDetalhes(Tarefa t) =>
-        new(t.Id, t.Titulo, t.Descricao, t.Situacao, t.Prioridade, t.Prazo, t.CriadaEm, Convert.ToBase64String(t.Versao));
+        new(t.Id, t.Titulo, t.Descricao, t.Situacao, t.Prioridade, t.Prazo, t.CriadaEm, Convert.ToBase64String(t.Versao), t.Equipe);
 }

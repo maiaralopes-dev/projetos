@@ -1,7 +1,10 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using PortalTarefas.Web.Contratos;
 using PortalTarefas.Web.Modelos;
+using PortalTarefas.Web.Seguranca;
 using PortalTarefas.Web.Servicos;
 
 namespace PortalTarefas.Web.Endpoints;
@@ -22,6 +25,9 @@ public static class TarefasApiV2Endpoints
     {
         var grupo = app.MapGroup("/api/v2/tarefas")
             .WithTags("Tarefas")
+            .RequireAuthorization(Politicas.LerTarefas)          // leitura: qualquer usuário autenticado
+            .AddEndpointFilter<AntiforgeryApiFilter>()           // CSRF para chamadas com cookie
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         grupo.MapGet("/", Listar).WithName("ListarTarefas")
@@ -30,15 +36,20 @@ public static class TarefasApiV2Endpoints
                              "também são enviados nos cabeçalhos X-Total-Count e Link (RFC 8288).");
         grupo.MapGet("/{id:int}", Obter).WithName("ObterTarefa").WithSummary("Obtém os detalhes de uma tarefa.")
             .ProducesProblem(StatusCodes.Status404NotFound);
-        grupo.MapPost("/", Criar).WithName("CriarTarefa").WithSummary("Cadastra uma tarefa.")
+        grupo.MapPost("/", Criar).WithName("CriarTarefa").WithSummary("Cadastra uma tarefa (papel Usuario ou Administrador).")
+            .RequireAuthorization(Politicas.CriarTarefas)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status409Conflict);
         grupo.MapPut("/{id:int}", Atualizar).WithName("AtualizarTarefa")
             .WithSummary("Substitui os dados de uma tarefa.")
             .WithDescription("Envie em 'versao' o valor recebido no GET. Se outra alteração ocorreu depois, a resposta é 409 " +
                              "com a versão atual na extensão 'versaoAtual'.")
+            .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict);
-        grupo.MapDelete("/{id:int}", Excluir).WithName("ExcluirTarefa").WithSummary("Exclui uma tarefa.")
+        grupo.MapDelete("/{id:int}", Excluir).WithName("ExcluirTarefa").WithSummary("Exclui uma tarefa (somente Administrador).")
+            .RequireAuthorization(Politicas.ExcluirTarefas)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status404NotFound);
         return grupo;
     }
@@ -64,33 +75,39 @@ public static class TarefasApiV2Endpoints
             : NaoEncontrada(id);
 
     internal static async Task<Results<Created<TarefaDetalhesDto>, ValidationProblem, ProblemHttpResult>> Criar(
-        CriarTarefaDto dto, ITarefaServico servico, TimeProvider relogio, CancellationToken ct)
+        CriarTarefaDto dto, ITarefaServico servico, TimeProvider relogio, ClaimsPrincipal usuario, CancellationToken ct)
     {
         if (ValidarRegras(dto.Prioridade, dto.Prazo, SituacaoTarefa.Pendente, relogio) is { } erro) return erro;
         if (await servico.ExisteTituloAsync(dto.Titulo, null, ct)) return TituloDuplicado(dto.Titulo);
 
         var criada = await servico.CriarAsync(new Tarefa
         {
-            Titulo = dto.Titulo.Trim(), Descricao = dto.Descricao, Prioridade = dto.Prioridade, Prazo = dto.Prazo
+            Titulo = dto.Titulo.Trim(), Descricao = dto.Descricao, Prioridade = dto.Prioridade, Prazo = dto.Prazo,
+            Equipe = usuario.Equipe() ?? "Geral",                       // a tarefa pertence à equipe de quem cria
+            CriadaPor = usuario.FindFirstValue(ClaimTypes.NameIdentifier)
         }, ct);
         return TypedResults.Created($"/api/v2/tarefas/{criada.Id}", ConsultaTarefasServico.ParaDetalhes(criada));
     }
 
-    internal static async Task<Results<Ok<TarefaDetalhesDto>, ValidationProblem, ProblemHttpResult>> Atualizar(
-        int id, AtualizarTarefaDto dto, ITarefaServico servico, TimeProvider relogio, HttpContext http, CancellationToken ct)
+    internal static async Task<Results<Ok<TarefaDetalhesDto>, ValidationProblem, ProblemHttpResult, ForbidHttpResult>> Atualizar(
+        int id, AtualizarTarefaDto dto, ITarefaServico servico, TimeProvider relogio, IAuthorizationService autorizacao,
+        HttpContext http, CancellationToken ct)
     {
         if (ValidarRegras(dto.Prioridade, dto.Prazo, dto.Situacao, relogio) is { } erro) return erro;
         byte[] versao;
         try { versao = Convert.FromBase64String(dto.Versao); }
         catch (FormatException) { return TypedResults.ValidationProblem(new Dictionary<string, string[]> { ["versao"] = ["Versão em formato inválido."] }); }
 
-        if (await servico.ObterAsync(id, ct) is null) return NaoEncontrada(id);
+        if (await servico.ObterAsync(id, ct) is not { } existente) return NaoEncontrada(id);
+        // Autorização por recurso: depende da equipe da tarefa, por isso é avaliada após carregá-la.
+        if (!(await autorizacao.AuthorizeAsync(http.User, existente, Politicas.EditarTarefa)).Succeeded)
+            return TypedResults.Forbid();
         if (await servico.ExisteTituloAsync(dto.Titulo, id, ct)) return TituloDuplicado(dto.Titulo);
 
         var tarefa = new Tarefa
         {
             Id = id, Titulo = dto.Titulo.Trim(), Descricao = dto.Descricao, Situacao = dto.Situacao,
-            Prioridade = dto.Prioridade, Prazo = dto.Prazo, Versao = versao
+            Prioridade = dto.Prioridade, Prazo = dto.Prazo, Versao = versao, Equipe = existente.Equipe
         };
         try
         {

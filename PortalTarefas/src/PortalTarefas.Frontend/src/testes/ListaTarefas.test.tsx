@@ -4,22 +4,31 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ListaTarefas } from '../pages/ListaTarefas'
 import { DetalhesTarefa } from '../pages/DetalhesTarefa'
+import { AuthContext, type Auth } from '../auth/AuthContext'
+
+export const authFalsa = (parcial: Partial<Auth['sessao']> = {}): Auth => {
+  const sessao = { autenticado: true, usuario: 'ana@portal.local', equipe: 'Backend', papeis: ['Usuario'], podeCriar: true, podeExcluir: false, podeEditarOutrasEquipes: false, ...parcial }
+  return { carregando: false, sessao, entrar: async () => null, sair: async () => {},
+    podeEditar: (eq) => sessao.podeCriar && (sessao.equipe === eq || sessao.podeEditarOutrasEquipes) }
+}
 
 const pagina = (itens: object[], total = itens.length) =>
   new Response(JSON.stringify({ itens, pagina: 1, tamanho: 5, totalItens: total, totalPaginas: Math.ceil(total / 5) }),
     { status: 200, headers: { 'Content-Type': 'application/json' } })
-const tarefa = { id: 1, titulo: 'Escrever relatório', situacao: 'Pendente', prioridade: 'Alta', prazo: '2026-11-20', vencida: false }
+const tarefa = { id: 1, titulo: 'Escrever relatório', situacao: 'Pendente', prioridade: 'Alta', prazo: '2026-11-20', vencida: false, equipe: 'Backend' }
 
 function UrlAtual() { const l = useLocation(); return <output data-testid="url">{l.pathname + l.search}</output> }
-function montar(url: string) {
+function montar(url: string, auth: Auth = authFalsa()) {
   return render(
+    <AuthContext.Provider value={auth}>
     <MemoryRouter initialEntries={[url]}>
       <Routes>
         <Route path="/tarefas" element={<ListaTarefas />} />
         <Route path="/tarefas/:id" element={<DetalhesTarefa />} />
       </Routes>
       <UrlAtual />
-    </MemoryRouter>)
+    </MemoryRouter>
+    </AuthContext.Provider>)
 }
 afterEach(() => vi.restoreAllMocks())
 
@@ -102,6 +111,23 @@ describe('DetalhesTarefa', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Marcar como concluída' }))
     expect(await screen.findByRole('alert')).toHaveTextContent('alterada por outra requisição')
     expect(screen.getByText('Pendente')).toBeInTheDocument()   // voltou ao estado anterior
+  })
+
+  it('oculta ações não permitidas (outra equipe, sem papel de administrador)', async () => {
+    const det = { ...tarefa, equipe: 'Frontend', descricao: null, criadaEm: '2026-11-09T10:00:00Z', versao: 'AA==' }
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify(det), { status: 200 }))
+    montar('/tarefas/1')
+    await screen.findByText('#1 · Escrever relatório')
+    expect(screen.queryByRole('button', { name: 'Marcar como concluída' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Excluir' })).not.toBeInTheDocument()
+  })
+
+  it('mostra as ações para administrador com claim de outras equipes', async () => {
+    const det = { ...tarefa, equipe: 'Frontend', descricao: null, criadaEm: '2026-11-09T10:00:00Z', versao: 'AA==' }
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify(det), { status: 200 }))
+    montar('/tarefas/1', authFalsa({ papeis: ['Administrador'], podeExcluir: true, podeEditarOutrasEquipes: true }))
+    expect(await screen.findByRole('button', { name: 'Marcar como concluída' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Excluir' })).toBeInTheDocument()
   })
 })
 

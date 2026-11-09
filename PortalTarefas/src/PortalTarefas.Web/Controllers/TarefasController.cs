@@ -1,7 +1,10 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PortalTarefas.Web.Contratos;
 using PortalTarefas.Web.Filtros;
 using PortalTarefas.Web.Modelos;
+using PortalTarefas.Web.Seguranca;
 using PortalTarefas.Web.Servicos;
 using PortalTarefas.Web.ViewModels;
 
@@ -9,7 +12,8 @@ namespace PortalTarefas.Web.Controllers;
 
 /// <summary>Interface MVC de tarefas. O controller apenas orquestra: valida, chama o serviço e escolhe a view.</summary>
 [ServiceFilter<RegistroAcaoFilter>]
-public sealed class TarefasController(ITarefaServico servico, TimeProvider relogio) : Controller
+[Authorize(Policy = Politicas.LerTarefas)]
+public sealed class TarefasController(ITarefaServico servico, TimeProvider relogio, IAuthorizationService autorizacao) : Controller
 {
     private DateOnly Hoje => DateOnly.FromDateTime(relogio.GetLocalNow().Date);
 
@@ -39,15 +43,17 @@ public sealed class TarefasController(ITarefaServico servico, TimeProvider relog
     }
 
     [HttpGet]
+    [Authorize(Policy = Politicas.CriarTarefas)]
     public IActionResult Create() => View(new TarefaInputModel());
 
     [HttpPost]
+    [Authorize(Policy = Politicas.CriarTarefas)]
     public async Task<IActionResult> Create(TarefaInputModel entrada, CancellationToken ct)
     {
         await ValidarTituloUnicoAsync(entrada.Titulo, null, ct);
         if (!ModelState.IsValid) return View(entrada);   // preserva o que foi digitado
 
-        var tarefa = new Tarefa();
+        var tarefa = new Tarefa { Equipe = User.Equipe() ?? "Geral", CriadaPor = User.FindFirstValue(ClaimTypes.NameIdentifier) };
         entrada.AplicarEm(tarefa);
         var criada = await servico.CriarAsync(tarefa, ct);
         TempData["Mensagem"] = $"Tarefa \"{criada.Titulo}\" cadastrada.";
@@ -59,6 +65,7 @@ public sealed class TarefasController(ITarefaServico servico, TimeProvider relog
     {
         var tarefa = await servico.ObterAsync(id, ct);
         if (tarefa is null) return NaoEncontrada(id);
+        if (!await PodeEditarAsync(tarefa)) return Forbid();
         return View(new TarefaEdicaoViewModel { Id = id, Entrada = TarefaInputModel.De(tarefa), Versao = Convert.ToBase64String(tarefa.Versao) });
     }
 
@@ -67,6 +74,7 @@ public sealed class TarefasController(ITarefaServico servico, TimeProvider relog
     {
         var tarefa = await servico.ObterAsync(id, ct);
         if (tarefa is null) return NaoEncontrada(id);
+        if (!await PodeEditarAsync(tarefa)) return Forbid();   // a mesma regra da API vale para a interface MVC
 
         await ValidarTituloUnicoAsync(entrada.Titulo, id, ct);
         if (!ModelState.IsValid) return View(new TarefaEdicaoViewModel { Id = id, Entrada = entrada, Versao = versao });
@@ -100,6 +108,9 @@ public sealed class TarefasController(ITarefaServico servico, TimeProvider relog
     [HttpPost]
     public async Task<IActionResult> Concluir(int id, CancellationToken ct)
     {
+        var tarefa = await servico.ObterAsync(id, ct);
+        if (tarefa is null) return NaoEncontrada(id);
+        if (!await PodeEditarAsync(tarefa)) return Forbid();
         if (!await servico.ConcluirAsync(id, User.Identity?.Name, ct: ct)) return NaoEncontrada(id);
         TempData["Mensagem"] = "Tarefa concluída e auditoria registrada.";
         return RedirectToAction(nameof(Details), new { id });
@@ -115,6 +126,9 @@ public sealed class TarefasController(ITarefaServico servico, TimeProvider relog
             ModelState.AddModelError(chave, "Já existe uma tarefa com este título.");
         }
     }
+
+    private async Task<bool> PodeEditarAsync(Tarefa tarefa) =>
+        (await autorizacao.AuthorizeAsync(User, tarefa, Politicas.EditarTarefa)).Succeeded;
 
     private ViewResult NaoEncontrada(int id)
     {

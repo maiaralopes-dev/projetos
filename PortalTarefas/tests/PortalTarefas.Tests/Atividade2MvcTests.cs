@@ -19,6 +19,15 @@ internal sealed class RelogioFixo(DateTimeOffset agora) : TimeProvider
     public override TimeZoneInfo LocalTimeZone => TimeZoneInfo.Utc;
 }
 
+internal sealed class AutorizacaoSempreConcede : Microsoft.AspNetCore.Authorization.IAuthorizationService
+{
+    public Task<Microsoft.AspNetCore.Authorization.AuthorizationResult> AuthorizeAsync(System.Security.Claims.ClaimsPrincipal user, object? resource,
+        IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizationRequirement> requirements) =>
+        Task.FromResult(Microsoft.AspNetCore.Authorization.AuthorizationResult.Success());
+    public Task<Microsoft.AspNetCore.Authorization.AuthorizationResult> AuthorizeAsync(System.Security.Claims.ClaimsPrincipal user, object? resource, string policyName) =>
+        Task.FromResult(Microsoft.AspNetCore.Authorization.AuthorizationResult.Success());
+}
+
 internal sealed class TempDataFalso : ITempDataProvider
 {
     public IDictionary<string, object> LoadTempData(HttpContext context) => new Dictionary<string, object>();
@@ -72,9 +81,11 @@ public class Atividade2ControllerTests
     {
         var relogio = new RelogioFixo(new DateTimeOffset(2026, 11, 9, 12, 0, 0, TimeSpan.Zero));
         _servico = new TarefaServicoMemoria(relogio);
-        _controller = new TarefasController(_servico, relogio)
+        var usuario = new System.Security.Claims.ClaimsPrincipal(new System.Security.Claims.ClaimsIdentity(
+            [new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Role, "Administrador")], "teste"));
+        _controller = new TarefasController(_servico, relogio, new AutorizacaoSempreConcede())
         {
-            ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() },
+            ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext { User = usuario } },
         };
         _controller.TempData = new TempDataDictionary(_controller.HttpContext, new TempDataFalso());
     }
@@ -118,10 +129,7 @@ public class Atividade2ControllerTests
 /// <summary>Testes de integração das páginas Razor (layout, antiforgery, validação).</summary>
 public class Atividade2PaginasTests(PortalWebFactory factory) : IClassFixture<PortalWebFactory>
 {
-    private readonly HttpClient _client = factory.CreateClient(new WebApplicationFactoryClientOptions
-    {
-        BaseAddress = new Uri("https://localhost"), AllowAutoRedirect = false
-    });
+    private readonly HttpClient _client = factory.CriarCliente("carla", seguirRedirecionamentos: false);
 
     [Theory]
     [InlineData("/")]

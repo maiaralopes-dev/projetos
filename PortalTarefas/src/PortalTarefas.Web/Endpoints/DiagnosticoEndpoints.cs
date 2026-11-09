@@ -23,7 +23,7 @@ public static class DiagnosticoEndpoints
             .WithTags("Diagnóstico");
 
         // Encerramento antecipado: ShortCircuit executa o endpoint sem passar pelos middlewares restantes.
-        app.MapGet("/ping", () => "pong").ShortCircuit();
+        app.MapGet("/ping", () => "pong").ShortCircuit().AllowAnonymous();
 
         return app;
     }

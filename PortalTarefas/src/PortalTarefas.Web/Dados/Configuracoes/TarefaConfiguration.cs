@@ -18,7 +18,9 @@ public sealed class TarefaConfiguration : IEntityTypeConfiguration<Tarefa>
         b.Property(t => t.Prioridade).HasConversion<string>().HasMaxLength(10).IsRequired();
         b.Property(t => t.Prazo).HasColumnType("date");
         b.Property(t => t.CriadaEm).HasDefaultValueSql("SYSDATETIMEOFFSET()");
-        b.Property(t => t.Versao).IsRowVersion();   // rowversion: o SQL Server muda o valor a cada UPDATE
+        b.Property(t => t.Versao).IsRowVersion();
+        b.Property(t => t.Equipe).IsRequired().HasMaxLength(50).HasDefaultValue("Geral");
+        b.Property(t => t.CriadaPor).HasMaxLength(450);   // rowversion: o SQL Server muda o valor a cada UPDATE
 
         b.HasIndex(t => t.Titulo).IsUnique();
         // Índice adicionado na 2ª migration: apoia filtros por situação e a busca de vencidas/painel.
@@ -37,5 +39,17 @@ public sealed class EventoAuditoriaConfiguration : IEntityTypeConfiguration<Even
         b.Property(e => e.Detalhe).HasMaxLength(500);
         b.Property(e => e.Usuario).HasMaxLength(100);
         b.HasIndex(e => new { e.TarefaId, e.OcorridoEm });
+    }
+}
+
+public sealed class EventoSegurancaConfiguration : IEntityTypeConfiguration<EventoSeguranca>
+{
+    public void Configure(EntityTypeBuilder<EventoSeguranca> b)
+    {
+        b.ToTable("EventosSeguranca");
+        b.Property(e => e.Evento).IsRequired().HasMaxLength(40);
+        b.Property(e => e.Usuario).HasMaxLength(256);
+        b.Property(e => e.Detalhe).HasMaxLength(300);
+        b.HasIndex(e => e.OcorridoEm);
     }
 }

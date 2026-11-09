@@ -1,0 +1,5 @@
+Acesso anônimo a /tarefas/8 redirecionou para: http://localhost:5173/login
+Após login, voltou para: http://localhost:5173/tarefas/8
+Após recarregar (F5), sessão restaurada: ana@portal.local · Backend · Usuario
+Cookies visíveis ao JavaScript: XSRF-TOKEN
+Após logout, /tarefas redireciona para: http://localhost:5173/login

@@ -1,0 +1,144 @@
+===== 1. Login =====
+### Login sem token antiforgery (CSRF)
+$ curl -b /tmp/tmp.qzHMclHn3e/anon -X POST -H Content-Type: application/json -d {"email":"ana@portal.local","senha":"********"} https://localhost:7080/api/v2/auth/login
+HTTP/2 400 
+content-type: application/problem+json
+x-correlation-id: b6be9ddfc75544bead6ab3204a051ec6
+{
+    "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+    "title": "Token antiforgery ausente ou inválido.",
+    "status": 400,
+    "detail": "Obtenha a sessão (GET /api/v2/auth/sessao) e envie o cabeçalho X-XSRF-TOKEN.",
+    "instance": "POST /api/v2/auth/login",
+    "traceId": "00-28f5dcc51c7b91faa2c6e186038b60dd-0153b516fa741816-00",
+    "correlationId": "b6be9ddfc75544bead6ab3204a051ec6"
+}
+
+### Login como ana@portal.local
+$ curl -c /tmp/tmp.qzHMclHn3e/x1 -b /tmp/tmp.qzHMclHn3e/x1 -X POST -H Content-Type: application/json -H X-XSRF-TOKEN: <token omitido> -d {"email":"ana@portal.local","senha":"senha-errada-123!"} https://localhost:7080/api/v2/auth/login
+HTTP/2 401 
+content-type: application/problem+json
+x-correlation-id: c0e603c3760946b9887b1180a35aeccf
+{
+    "type": "https://tools.ietf.org/html/rfc9110#section-15.5.2",
+    "title": "Não foi possível entrar.",
+    "status": 401,
+    "detail": "E-mail ou senha inválidos, ou acesso temporariamente bloqueado.",
+    "instance": "POST /api/v2/auth/login",
+    "traceId": "00-26e7fa2e444ae96a7eaf7f59b51697ba-62fe0ee59bb01d41-00",
+    "correlationId": "c0e603c3760946b9887b1180a35aeccf"
+}
+
+### Login como naoexiste@portal.local
+$ curl -c /tmp/tmp.qzHMclHn3e/x2 -b /tmp/tmp.qzHMclHn3e/x2 -X POST -H Content-Type: application/json -H X-XSRF-TOKEN: <token omitido> -d {"email":"naoexiste@portal.local","senha":"qualquer-senha-123!"} https://localhost:7080/api/v2/auth/login
+HTTP/2 401 
+content-type: application/problem+json
+x-correlation-id: 5fc7f5be794b4f13a98162b5ebfe8c8d
+{
+    "type": "https://tools.ietf.org/html/rfc9110#section-15.5.2",
+    "title": "Não foi possível entrar.",
+    "status": 401,
+    "detail": "E-mail ou senha inválidos, ou acesso temporariamente bloqueado.",
+    "instance": "POST /api/v2/auth/login",
+    "traceId": "00-304dafcd464ac364353800fc02f4b77b-a96d601925c05cdd-00",
+    "correlationId": "5fc7f5be794b4f13a98162b5ebfe8c8d"
+}
+
+### Login como ana@portal.local
+$ curl -c /tmp/tmp.qzHMclHn3e/ana -b /tmp/tmp.qzHMclHn3e/ana -X POST -H Content-Type: application/json -H X-XSRF-TOKEN: <token omitido> -d {"email":"ana@portal.local","senha":"********"} https://localhost:7080/api/v2/auth/login
+HTTP/2 200 
+content-type: application/json; charset=utf-8
+cache-control: no-cache,no-store
+set-cookie: portal.sessao=<valor omitido>; path=/; secure; samesite=strict; httponly
+set-cookie: XSRF-TOKEN=<valor omitido>; path=/; secure; samesite=strict
+x-correlation-id: b028f1acb291470595849d7c7d842382
+{
+    "autenticado": true,
+    "usuario": "ana@portal.local",
+    "equipe": "Backend",
+    "papeis": [
+        "Usuario"
+    ],
+    "podeCriar": true,
+    "podeExcluir": false,
+    "podeEditarOutrasEquipes": false
+}
+
+### Login como bruno@portal.local
+$ curl -c /tmp/tmp.qzHMclHn3e/bruno -b /tmp/tmp.qzHMclHn3e/bruno -X POST -H Content-Type: application/json -H X-XSRF-TOKEN: <token omitido> -d {"email":"bruno@portal.local","senha":"********"} https://localhost:7080/api/v2/auth/login
+HTTP/2 200 
+content-type: application/json; charset=utf-8
+cache-control: no-cache,no-store
+set-cookie: portal.sessao=<valor omitido>; path=/; secure; samesite=strict; httponly
+set-cookie: XSRF-TOKEN=<valor omitido>; path=/; secure; samesite=strict
+x-correlation-id: 2e5a5ec63141444196dafc83969e6af5
+{
+    "autenticado": true,
+    "usuario": "bruno@portal.local",
+    "equipe": "Frontend",
+    "papeis": [
+        "Usuario"
+    ],
+    "podeCriar": true,
+    "podeExcluir": false,
+    "podeEditarOutrasEquipes": false
+}
+
+### Login como carla@portal.local
+$ curl -c /tmp/tmp.qzHMclHn3e/carla -b /tmp/tmp.qzHMclHn3e/carla -X POST -H Content-Type: application/json -H X-XSRF-TOKEN: <token omitido> -d {"email":"carla@portal.local","senha":"********"} https://localhost:7080/api/v2/auth/login
+HTTP/2 200 
+content-type: application/json; charset=utf-8
+cache-control: no-cache,no-store
+set-cookie: portal.sessao=<valor omitido>; path=/; secure; samesite=strict; httponly
+set-cookie: XSRF-TOKEN=<valor omitido>; path=/; secure; samesite=strict
+x-correlation-id: d60861d4dc32414db7925b8cff4b01e6
+{
+    "autenticado": true,
+    "usuario": "carla@portal.local",
+    "equipe": "Backend",
+    "papeis": [
+        "Administrador"
+    ],
+    "podeCriar": true,
+    "podeExcluir": true,
+    "podeEditarOutrasEquipes": true
+}
+
+### Login como visitante@portal.local
+$ curl -c /tmp/tmp.qzHMclHn3e/visit -b /tmp/tmp.qzHMclHn3e/visit -X POST -H Content-Type: application/json -H X-XSRF-TOKEN: <token omitido> -d {"email":"visitante@portal.local","senha":"********"} https://localhost:7080/api/v2/auth/login
+HTTP/2 200 
+content-type: application/json; charset=utf-8
+cache-control: no-cache,no-store
+set-cookie: portal.sessao=<valor omitido>; path=/; secure; samesite=strict; httponly
+set-cookie: XSRF-TOKEN=<valor omitido>; path=/; secure; samesite=strict
+x-correlation-id: 24a9a0729aab4eea808237fffc3d5e09
+{
+    "autenticado": true,
+    "usuario": "visitante@portal.local",
+    "equipe": "Geral",
+    "papeis": [],
+    "podeCriar": false,
+    "podeExcluir": false,
+    "podeEditarOutrasEquipes": false
+}
+
+### Sessão restaurada (ana)
+$ curl -b /tmp/tmp.qzHMclHn3e/ana https://localhost:7080/api/v2/auth/sessao
+HTTP/2 200 
+content-type: application/json; charset=utf-8
+cache-control: no-cache,no-store
+set-cookie: XSRF-TOKEN=<valor omitido>; path=/; secure; samesite=strict
+set-cookie: portal.sessao=<valor omitido>; path=/; secure; samesite=strict; httponly
+x-correlation-id: 382fcffad63748db9e826fad71de523a
+{
+    "autenticado": true,
+    "usuario": "ana@portal.local",
+    "equipe": "Backend",
+    "papeis": [
+        "Usuario"
+    ],
+    "podeCriar": true,
+    "podeExcluir": false,
+    "podeEditarOutrasEquipes": false
+}
+

@@ -92,6 +92,16 @@
           }
         ],
         "responses": {
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal Server Error",
             "content": {
@@ -128,7 +138,7 @@
         "tags": [
           "Tarefas"
         ],
-        "summary": "Cadastra uma tarefa.",
+        "summary": "Cadastra uma tarefa (papel Usuario ou Administrador).",
         "operationId": "CriarTarefa",
         "requestBody": {
           "content": {
@@ -141,6 +151,16 @@
           "required": true
         },
         "responses": {
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal Server Error",
             "content": {
@@ -167,6 +187,16 @@
               "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -203,6 +233,16 @@
           }
         ],
         "responses": {
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal Server Error",
             "content": {
@@ -264,6 +304,16 @@
           "required": true
         },
         "responses": {
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal Server Error",
             "content": {
@@ -294,6 +344,16 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not Found",
             "content": {
@@ -320,7 +380,7 @@
         "tags": [
           "Tarefas"
         ],
-        "summary": "Exclui uma tarefa.",
+        "summary": "Exclui uma tarefa (somente Administrador).",
         "operationId": "ExcluirTarefa",
         "parameters": [
           {
@@ -334,6 +394,16 @@
           }
         ],
         "responses": {
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal Server Error",
             "content": {
@@ -347,8 +417,104 @@
           "204": {
             "description": "No Content"
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/auth/sessao": {
+      "get": {
+        "tags": [
+          "Autenticação"
+        ],
+        "summary": "Retorna a sessão atual e emite o token antiforgery (cookie XSRF-TOKEN).",
+        "operationId": "ObterSessao",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessaoDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/auth/login": {
+      "post": {
+        "tags": [
+          "Autenticação"
+        ],
+        "summary": "Autentica com e-mail e senha e emite o cookie de sessão (HttpOnly, Secure, SameSite=Strict).",
+        "operationId": "Entrar",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessaoDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/auth/logout": {
+      "post": {
+        "tags": [
+          "Autenticação"
+        ],
+        "summary": "Encerra a sessão e invalida cookies emitidos anteriormente (troca do security stamp).",
+        "operationId": "Sair",
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "description": "Unauthorized",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -486,6 +652,21 @@
           }
         }
       },
+      "LoginDto": {
+        "required": [
+          "email",
+          "senha"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "senha": {
+            "type": "string"
+          }
+        }
+      },
       "PaginaTarefaResumo": {
         "required": [
           "itens",
@@ -564,6 +745,51 @@
           }
         }
       },
+      "SessaoDto": {
+        "required": [
+          "autenticado",
+          "usuario",
+          "equipe",
+          "papeis",
+          "podeCriar",
+          "podeExcluir",
+          "podeEditarOutrasEquipes"
+        ],
+        "type": "object",
+        "properties": {
+          "autenticado": {
+            "type": "boolean"
+          },
+          "usuario": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "equipe": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "papeis": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "podeCriar": {
+            "type": "boolean"
+          },
+          "podeExcluir": {
+            "type": "boolean"
+          },
+          "podeEditarOutrasEquipes": {
+            "type": "boolean"
+          }
+        },
+        "description": "Sessão atual e permissões calculadas no servidor (a SPA apenas as reflete na interface)."
+      },
       "SituacaoTarefa": {
         "enum": [
           "Pendente",
@@ -580,7 +806,8 @@
           "prioridade",
           "prazo",
           "criadaEm",
-          "versao"
+          "versao",
+          "equipe"
         ],
         "type": "object",
         "properties": {
@@ -617,6 +844,10 @@
           "versao": {
             "type": "string",
             "description": "Enviar no PUT para detecção de edição concorrente."
+          },
+          "equipe": {
+            "type": "string",
+            "description": "Equipe dona da tarefa (define quem pode editar)."
           }
         },
         "description": "Representação completa de uma tarefa."
@@ -628,7 +859,8 @@
           "situacao",
           "prioridade",
           "prazo",
-          "vencida"
+          "vencida",
+          "equipe"
         ],
         "type": "object",
         "properties": {
@@ -655,6 +887,10 @@
           "vencida": {
             "type": "boolean",
             "description": "Verdadeiro quando o prazo já passou e a tarefa não foi concluída (campo adicionado na revisão 2 do contrato)."
+          },
+          "equipe": {
+            "type": "string",
+            "description": "Equipe dona da tarefa."
           }
         },
         "description": "Representação resumida usada em listagens."
@@ -664,6 +900,9 @@
   "tags": [
     {
       "name": "Tarefas"
+    },
+    {
+      "name": "Autenticação"
     }
   ]
 }

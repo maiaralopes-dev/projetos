@@ -21,3 +21,4 @@ button, .botao { background:var(--azul); color:#fff; border:0; border-radius:6px
 @media (max-width: 720px) { .conteudo { grid-template-columns: 1fr; } .linha { flex-direction:column; gap:0; } }
 .conflito { background:#fef0c7; border:1px solid #dc6803; padding:8px 12px; border-radius:6px; margin-bottom:12px; }
 form.inline { display:inline; } .acoes { display:flex; gap:10px; align-items:center; }
+.usuario { margin-left:16px; opacity:.85; } button.link { background:none; padding:0; margin-left:16px; text-decoration:underline; } .login { max-width:360px; }

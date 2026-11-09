@@ -1,0 +1,20 @@
+$ dotnet ef migrations add IdentidadeEquipes --project src/PortalTarefas.Web --output-dir Dados/Migrations
+Done. To undo this action, use 'ef migrations remove'
+
+-- Tabelas criadas pela migration:
+name: "AspNetRoleClaims"
+name: "AspNetRoles"
+name: "AspNetUserClaims"
+name: "AspNetUserLogins"
+name: "AspNetUserRoles"
+name: "AspNetUserTokens"
+name: "AspNetUsers"
+name: "EventosSeguranca"
+                name: "Equipe",
+                table: "Tarefas",
+                type: "nvarchar(50)",
+                maxLength: 50,
+                nullable: false,
+                defaultValue: "Geral");
+
+--

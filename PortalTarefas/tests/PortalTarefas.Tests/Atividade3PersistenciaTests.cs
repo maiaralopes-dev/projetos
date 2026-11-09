@@ -31,7 +31,7 @@ public class Atividade3PersistenciaTests : IAsyncLifetime
     {
         await using var ctx = NovoContexto();
         Assert.Empty(await ctx.Database.GetPendingMigrationsAsync());
-        Assert.Equal(2, (await ctx.Database.GetAppliedMigrationsAsync()).Count());
+        Assert.Equal(3, (await ctx.Database.GetAppliedMigrationsAsync()).Count());
     }
 
     [Fact]
@@ -40,7 +40,7 @@ public class Atividade3PersistenciaTests : IAsyncLifetime
         await using (var ctx = NovoContexto()) await ctx.Database.MigrateAsync();   // "reinício" da aplicação
         await using (var ctx = NovoContexto()) await ctx.Database.MigrateAsync();
         await using var leitura = NovoContexto();
-        Assert.Equal(8, await leitura.Tarefas.CountAsync());
+        Assert.Equal(9, await leitura.Tarefas.CountAsync());
     }
 
     [Fact]

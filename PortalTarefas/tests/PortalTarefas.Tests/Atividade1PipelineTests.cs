@@ -9,8 +9,7 @@ namespace PortalTarefas.Tests;
 /// <summary>Testes de integração do pipeline e dos endpoints da atividade 1.</summary>
 public class Atividade1PipelineTests(PortalWebFactory factory) : IClassFixture<PortalWebFactory>
 {
-    private readonly HttpClient _client = factory.WithWebHostBuilder(b => b.UseEnvironment("Development"))
-        .CreateClient(new WebApplicationFactoryClientOptions { BaseAddress = new Uri("https://localhost") });
+    private readonly HttpClient _client = factory.CriarCliente("carla");
 
     [Fact]
     public async Task Rota_valida_retorna_200_e_correlation_id()

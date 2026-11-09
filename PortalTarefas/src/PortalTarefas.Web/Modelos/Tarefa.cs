@@ -15,6 +15,12 @@ public class Tarefa
     public DateOnly? Prazo { get; set; }
     public DateTimeOffset CriadaEm { get; set; } = DateTimeOffset.UtcNow;
 
+    /// <summary>Equipe dona da tarefa (usada na autorização por recurso).</summary>
+    public string Equipe { get; set; } = "Geral";
+
+    /// <summary>Id do usuário (Identity) que criou a tarefa.</summary>
+    public string? CriadaPor { get; set; }
+
     /// <summary>Token de concorrência otimista (rowversion no SQL Server).</summary>
     public byte[] Versao { get; set; } = [];
 
@@ -40,4 +46,15 @@ public sealed class ConflitoConcorrenciaException(Tarefa? valoresAtuais)
 {
     /// <summary>Valores atuais no banco (null se a tarefa foi excluída).</summary>
     public Tarefa? ValoresAtuais { get; } = valoresAtuais;
+}
+
+/// <summary>Evento de segurança (login, logout, falha, alteração de permissão). Nunca guarda senha ou token.</summary>
+public class EventoSeguranca
+{
+    public long Id { get; set; }
+    public string Evento { get; set; } = "";
+    public string? Usuario { get; set; }
+    public bool Sucesso { get; set; }
+    public string? Detalhe { get; set; }
+    public DateTimeOffset OcorridoEm { get; set; } = DateTimeOffset.UtcNow;
 }

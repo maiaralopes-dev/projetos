@@ -22,3 +22,5 @@ button:disabled { background:#98a2b3; cursor:default; }
 .paginacao { display:flex; gap:12px; align-items:center; } .resumo { color:#475467; font-size:.9rem; }
 .formulario label { display:flex; flex-direction:column; margin-bottom:10px; } .linha { display:flex; gap:16px; }
 .erro-campo { display:block; color:var(--vermelho); font-size:.85rem; margin:-6px 0 10px; } .aviso { background:#dcfae6; padding:8px 12px; border-radius:6px; }
+.usuario { margin-left:16px; opacity:.85; font-size:.9rem; } button.link { background:none; padding:0; margin-left:16px; text-decoration:underline; }
+.acoes { display:flex; gap:10px; margin-top:8px; } button.perigo { background:var(--vermelho); } .login { max-width:360px; }

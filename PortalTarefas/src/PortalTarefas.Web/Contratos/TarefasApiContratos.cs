@@ -25,12 +25,14 @@ public sealed record AtualizarTarefaDto(
 
 /// <summary>Representação resumida usada em listagens.</summary>
 public sealed record TarefaResumoDto(int Id, string Titulo, SituacaoTarefa Situacao, PrioridadeTarefa Prioridade, DateOnly? Prazo,
-    [property: Description("Verdadeiro quando o prazo já passou e a tarefa não foi concluída (campo adicionado na revisão 2 do contrato).")] bool Vencida);
+    [property: Description("Verdadeiro quando o prazo já passou e a tarefa não foi concluída (campo adicionado na revisão 2 do contrato).")] bool Vencida,
+    [property: Description("Equipe dona da tarefa.")] string Equipe);
 
 /// <summary>Representação completa de uma tarefa.</summary>
 public sealed record TarefaDetalhesDto(int Id, string Titulo, string? Descricao, SituacaoTarefa Situacao,
     PrioridadeTarefa Prioridade, DateOnly? Prazo, DateTimeOffset CriadaEm,
-    [property: Description("Enviar no PUT para detecção de edição concorrente.")] string Versao);
+    [property: Description("Enviar no PUT para detecção de edição concorrente.")] string Versao,
+    [property: Description("Equipe dona da tarefa (define quem pode editar).")] string Equipe);
 
 /// <summary>Página de resultados com metadados de navegação.</summary>
 public sealed record PaginaDto<T>(IReadOnlyList<T> Itens, int Pagina, int Tamanho, int TotalItens, int TotalPaginas);

@@ -8,7 +8,7 @@ namespace PortalTarefas.Tests;
 /// <summary>Testes da API REST v2: paginação, ordenação, filtros, Problem Details e contrato OpenAPI.</summary>
 public class Atividade4ApiTests(PortalWebFactory factory) : IClassFixture<PortalWebFactory>
 {
-    private readonly HttpClient _client = factory.CreateClient(new() { BaseAddress = new Uri("https://localhost") });
+    private readonly HttpClient _client = factory.CriarCliente("carla");
 
     private async Task<JsonElement> Json(HttpResponseMessage r) => await r.Content.ReadFromJsonAsync<JsonElement>();
 
@@ -104,7 +104,7 @@ public class Atividade4ApiTests(PortalWebFactory factory) : IClassFixture<Portal
     public async Task Cabecalhos_de_paginacao_sao_enviados()
     {
         var resp = await _client.GetAsync("/api/v2/tarefas?tamanho=3&pagina=2");
-        Assert.Equal("8", resp.Headers.GetValues("X-Total-Count").Single());
+        Assert.Equal("9", resp.Headers.GetValues("X-Total-Count").Single());
         var link = resp.Headers.GetValues("Link").Single();
         Assert.Contains("rel=\"prev\"", link);
         Assert.Contains("rel=\"next\"", link);
