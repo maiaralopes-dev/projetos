@@ -15,13 +15,12 @@ public sealed class LoginViewModel
 }
 
 /// <summary>Login/logout da interface MVC (mesmo cookie de sessão usado pela SPA).</summary>
-[AllowAnonymous]
 public sealed class ContaController(SignInManager<IdentityUser> signIn) : Controller
 {
-    [HttpGet]
+    [HttpGet, AllowAnonymous]
     public IActionResult Login(string? returnUrl) { ViewData["ReturnUrl"] = returnUrl; return View(new LoginViewModel()); }
 
-    [HttpPost]
+    [HttpPost, AllowAnonymous]
     public async Task<IActionResult> Login(LoginViewModel m, string? returnUrl)
     {
         ViewData["ReturnUrl"] = returnUrl;
@@ -45,6 +44,6 @@ public sealed class ContaController(SignInManager<IdentityUser> signIn) : Contro
         return RedirectToAction(nameof(Login));
     }
 
-    [HttpGet]
+    [HttpGet, AllowAnonymous]
     public IActionResult AcessoNegado() { Response.StatusCode = 403; return View(); }
 }

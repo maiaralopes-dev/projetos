@@ -1,0 +1,15 @@
+$ CI_FALHA_DELIBERADA=1 scripts/ci-local.sh   # teste falha de propósito
+
+::: [02:01:32] 1/8 dotnet restore
+
+::: [02:01:33] 2/8 dotnet build (Release)
+Build succeeded.
+    0 Warning(s)
+
+::: [02:01:34] 3/8 dotnet test
+  Failed PortalTarefas.Tests.Atividade8PipelineTests.Gate_de_publicacao [1 ms]
+Failed!  - Failed:     1, Passed:    69, Skipped:     0, Total:    70, Duration: 7 s - PortalTarefas.Tests.dll (net10.0)
+código de saída: 1
+
+$ ls artifacts/publicado
+ls: cannot access 'artifacts/publicado': No such file or directory

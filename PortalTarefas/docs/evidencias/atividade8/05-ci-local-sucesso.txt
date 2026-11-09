@@ -1,0 +1,34 @@
+$ scripts/ci-local.sh   # alteração válida
+
+::: [02:00:52] 1/8 dotnet restore
+
+::: [02:00:53] 2/8 dotnet build (Release)
+Build succeeded.
+    1 Warning(s)
+
+::: [02:00:57] 3/8 dotnet test
+Passed!  - Failed:     0, Passed:    70, Skipped:     0, Total:    70, Duration: 6 s - PortalTarefas.Tests.dll (net10.0)
+
+::: [02:01:05] 4/8 npm ci
+
+::: [02:01:08] 5/8 npm test
+      Tests  22 passed (22)
+
+::: [02:01:09] 6/8 npm run build
+✓ built in 161ms
+
+::: [02:01:10] 7/8 imagem + smoke test
+imagem portal-tarefas:3f0201f construída
+smoke /health/live: 200
+smoke /api/versao:  {"versao":"1.0.0+3f0201f","commit":"3f0201f","ambiente":"Production"}
+
+::: [02:01:13] 8/8 publicação de artefatos (só chega aqui se tudo acima passou)
+ 
+4096 .
+4096 ..
+4096 frontend-dist
+127672935 imagem.tar.gz
+261 manifesto.json
+3232281 sbom.spdx.json
+PUBLICADO: artifacts/publicado/3f0201f
+código de saída: 0
