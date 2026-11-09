@@ -1,0 +1,37 @@
+@base = https://localhost:7080
+
+### 1. Rota válida
+GET {{base}}/api/v1/tarefas/1
+
+### 2. Rota inexistente (id válido, sem registro) -> 404 Problem Details
+GET {{base}}/api/v1/tarefas/999
+
+### 3. Rota inválida (restrição :int) -> 404
+GET {{base}}/api/v1/tarefas/abc
+
+### 4. Filtro por query string + cabeçalho opcional
+GET {{base}}/api/v1/tarefas?situacao=Pendente&busca=relat
+X-Cliente-Id: app-relatorio
+
+### 5. POST válido
+POST {{base}}/api/v1/tarefas
+Content-Type: application/json
+
+{ "titulo": "Estudar middleware", "descricao": "Ordem do pipeline", "situacao": "EmAndamento" }
+
+### 6. POST inválido -> 400
+POST {{base}}/api/v1/tarefas
+Content-Type: application/json
+
+{ "titulo": "", "descricao": null }
+
+### 7. Exceção controlada -> 500 sem detalhes internos
+GET {{base}}/api/minimal/diagnostico/erro
+
+### 8. Diagnóstico Minimal API x MVC
+GET {{base}}/api/minimal/diagnostico
+X-Cliente-Id: cli-42
+
+###
+GET {{base}}/api/mvc/diagnostico
+X-Cliente-Id: cli-42
