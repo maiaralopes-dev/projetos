@@ -135,6 +135,20 @@ public class Atividade6SegurancaTests(PortalWebFactory factory) : IClassFixture<
     [InlineData("carla", "PUT", "frontend", HttpStatusCode.OK)]       // claim editar-outras-equipes
     [InlineData("bruno", "DELETE", "backend", HttpStatusCode.Forbidden)]
     [InlineData(null, "DELETE", "backend", HttpStatusCode.Unauthorized)]
+    [InlineData("ana", "GET", "lista", HttpStatusCode.OK)]
+    [InlineData("bruno", "GET", "lista", HttpStatusCode.OK)]
+    [InlineData("carla", "GET", "lista", HttpStatusCode.OK)]
+    [InlineData(null, "POST", "nova", HttpStatusCode.Unauthorized)]
+    [InlineData("bruno", "POST", "nova", HttpStatusCode.Created)]
+    [InlineData("carla", "POST", "nova", HttpStatusCode.Created)]
+    [InlineData(null, "PUT", "backend", HttpStatusCode.Unauthorized)]
+    [InlineData("visitante", "PUT", "backend", HttpStatusCode.Forbidden)]
+    [InlineData("visitante", "PUT", "frontend", HttpStatusCode.Forbidden)]
+    [InlineData("bruno", "PUT", "backend", HttpStatusCode.Forbidden)]
+    [InlineData("carla", "PUT", "backend", HttpStatusCode.OK)]
+    [InlineData(null, "PUT", "frontend", HttpStatusCode.Unauthorized)]
+    [InlineData("visitante", "DELETE", "backend", HttpStatusCode.Forbidden)]
+    [InlineData("ana", "DELETE", "backend", HttpStatusCode.Forbidden)]
     public async Task Matriz_de_autorizacao(string? perfil, string metodo, string alvo, HttpStatusCode esperado)
     {
         var http = factory.CriarCliente(perfil);
