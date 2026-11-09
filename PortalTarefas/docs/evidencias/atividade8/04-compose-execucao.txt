@@ -1,93 +1,83 @@
-$ APP_VERSION=87ccb46 docker compose up -d --no-build   # usa a imagem já construída; segredos vêm do .env (fora do Git)
- Network portal-tarefas_default Creating 
- Volume portal-tarefas_chaves-dp Creating 
- Volume portal-tarefas_chaves-dp Creating 
- Network portal-tarefas_default Creating 
- Volume portal-tarefas_chaves-dp Created 
- Volume portal-tarefas_chaves-dp Created 
- Network portal-tarefas_default Created 
- Network portal-tarefas_default Created 
- Container portal-tarefas-sql-1 Creating 
- Container portal-tarefas-calendario-1 Creating 
+$ APP_VERSION=ac17bf4 docker compose up -d --no-build   # segredos vêm do .env (fora do Git)
  Container portal-tarefas-sql-1 Created 
  Container portal-tarefas-calendario-1 Created 
- Container portal-tarefas-api-1 Creating 
  Container portal-tarefas-api-1 Created 
- Container portal-tarefas-calendario-1 Starting 
- Container portal-tarefas-sql-1 Starting 
+ Container portal-tarefas-proxy-1 Created 
  Container portal-tarefas-calendario-1 Started 
  Container portal-tarefas-sql-1 Started 
- Container portal-tarefas-sql-1 Waiting 
  Container portal-tarefas-sql-1 Healthy 
- Container portal-tarefas-api-1 Starting 
  Container portal-tarefas-api-1 Started 
+ Container portal-tarefas-api-1 Healthy 
+ Container portal-tarefas-proxy-1 Started 
 
--- aguardando HEALTHCHECK do contêiner da API
-estado do HEALTHCHECK: healthy
-0 2026-11-09 02:03:22.458943352 +0000 UTC
+Estado do HEALTHCHECK do contêiner da API: healthy
+SERVICE      IMAGE                                                                                         STATUS                    PORTS
+api          portal-tarefas:ac17bf4                                                                        Up 5 seconds (healthy)    8080/tcp
+calendario   node:22.23.4-alpine@sha256:0e1754758c2df4cfa3e68d59e2e1b7374bb7fd9ea6328eaaacf15cc934af8202   Up 11 seconds             
+proxy        caddy:2.10.2-alpine@sha256:4c6e91c6ed0e2fa03efd5b44747b625fec79bc9cd06ac5235a779726618e530d   Up Less than a second     80/tcp, 443/tcp, 2019/tcp, 443/udp, 0
+sql          mcr.microsoft.com/mssql/server:2022-latest                                                    Up 11 seconds (healthy)   1433/tcp
 
-
-SERVICE      IMAGE                                                                                         STATUS
-api          portal-tarefas:87ccb46                                                                        Up 6 seconds (healthy)
-calendario   node:22.23.4-alpine@sha256:0e1754758c2df4cfa3e68d59e2e1b7374bb7fd9ea6328eaaacf15cc934af8202   Up 12 seconds
-sql          mcr.microsoft.com/mssql/server:2022-latest                                                    Up 11 seconds (healthy)
-
-### Liveness
-$ curl http://localhost:8080/health/live
-HTTP/1.1 200 OK
-Content-Type: text/plain
-Cache-Control: no-store, no-cache
-X-Correlation-Id: 9b4c03ad94d84c0ca6dac797762a1f7b
+### Liveness via proxy TLS
+$ curl https://localhost:8443/health/live
+HTTP/2 200 
+cache-control: no-store, no-cache
+content-type: text/plain
+x-correlation-id: 59ebe2136a3746bcbcd06c48e92000f3
 Healthy
 ### Readiness (banco + calendário)
-$ curl http://localhost:8080/health/ready
-HTTP/1.1 200 OK
-Content-Type: text/plain
-Cache-Control: no-store, no-cache
-X-Correlation-Id: 51c4c3db21904dccba90384ea2505108
+$ curl https://localhost:8443/health/ready
+HTTP/2 200 
+cache-control: no-store, no-cache
+content-type: text/plain
+x-correlation-id: aa21e7e2c10f45528fb1bb010540c3e1
 Healthy
-### Versão implantada (rastreabilidade commit -> imagem -> execução)
-$ curl http://localhost:8080/api/versao
-HTTP/1.1 200 OK
-Content-Type: application/json; charset=utf-8
-X-Correlation-Id: de295153b7e048629e4c9b00d7dbad3f
+### Versão implantada (commit -> imagem -> execução)
+$ curl https://localhost:8443/api/versao
+HTTP/2 200 
+content-type: application/json; charset=utf-8
+x-correlation-id: 4fe0cbc6153e4d9197811a8c91aa2e0b
 {
-    "versao": "1.0.0+87ccb46",
-    "commit": "87ccb46",
+    "versao": "ac17bf4",
+    "commit": "ac17bf4",
     "ambiente": "Staging"
 }
 
 ### SPA servida pela API (implantação integrada)
-$ curl http://localhost:8080/app/tarefas
-HTTP/1.1 200 OK
-Content-Type: text/html
-X-Correlation-Id: 68c5d8255c6041e3bdc14a58dd8ac135
+$ curl https://localhost:8443/app/tarefas
+HTTP/2 200 
+content-type: text/html
+x-correlation-id: 64c793712d0b4100a8d18b6de4d7808c
 <!doctype html>
 <html lang="pt-BR">
   <head>
-### OpenAPI publicado
-$ curl http://localhost:8080/openapi/v2.json
-HTTP/1.1 200 OK
-Content-Type: application/json;charset=utf-8
-X-Correlation-Id: fd434a8a699b479395d66462233d5859
+    <meta charset="UTF-8" />
+### Sessão anônima: cookies Secure emitidos atrás do proxy
+$ curl https://localhost:8443/api/v2/auth/sessao
+HTTP/2 200 
+cache-control: no-cache, no-store
+content-type: application/json; charset=utf-8
+set-cookie: portal.af=<valor omitido>; path=/; secure; samesite=strict; httponly
+set-cookie: XSRF-TOKEN=<valor omitido>; path=/; secure; samesite=strict
+x-correlation-id: 553c28f3c1f943c997bcfbcb81d8f130
 {
-### Scalar UI NÃO é exposta fora de Development
-$ curl http://localhost:8080/scalar/v2
-HTTP/1.1 302 Found
-Location: http://localhost:8080/Conta/Login?ReturnUrl=%2Fscalar%2Fv2
-X-Correlation-Id: fdf47b52263a4cd3b151e51f5ff8640a
--- Configuração vista pelo contêiner (nomes das variáveis, valores ocultos):
-Banco__AplicarMigrations=<definida>
+    "autenticado": false,
+    "usuario": null,
+    "equipe": null,
+### Rota sem endpoint (ex.: UI Scalar, só existe em Development)
+$ curl https://localhost:8443/scalar/v2
+HTTP/2 302 
+location: https://localhost:8443/Conta/Login?ReturnUrl=%2Fscalar%2Fv2
+x-correlation-id: 869c5be8354d41f99bad4c1e9ff1a45b
+-- Configuração vista pelo contêiner (nomes; valores ocultos):
 ASPNETCORE_ENVIRONMENT=<definida>
-SeedUsuarios__SenhaInicial=<definida>
+Banco__AplicarMigrations=<definida>
 ConnectionStrings__PortalTarefas=<definida>
-Dependencias__Calendario__Url=<definida>
 DataProtection__Caminho=<definida>
+Dependencias__Calendario__Url=<definida>
+SeedUsuarios__SenhaInicial=<definida>
 
--- Primeiras linhas do log do contêiner (JSON estruturado):
-{"Timestamp":"2026-11-09T02:03:18.694Z","EventId":20411,"LogLevel":"Information","Category":"Microsoft.EntityFrameworkCore.Migrations","Message":"Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more inf
-{"Timestamp":"2026-11-09T02:03:18.804Z","EventId":20402,"LogLevel":"Information","Category":"Microsoft.EntityFrameworkCore.Migrations","Message":"Applying migration \u002720261109011900_Inicial\u0027.","State":{"migration":"20261109011900_Inicial","{OriginalFo
-{"Timestamp":"2026-11-09T02:03:18.833Z","EventId":20402,"LogLevel":"Information","Category":"Microsoft.EntityFrameworkCore.Migrations","Message":"Applying migration \u002720261109011939_IndiceSituacaoPrazo\u0027.","State":{"migration":"20261109011939_IndiceSit
-{"Timestamp":"2026-11-09T02:03:18.839Z","EventId":20402,"LogLevel":"Information","Category":"Microsoft.EntityFrameworkCore.Migrations","Message":"Applying migration \u002720261109014029_IdentidadeEquipes\u0027.","State":{"migration":"20261109014029_IdentidadeE
-{"Timestamp":"2026-11-09T02:03:19.687Z","EventId":0,"LogLevel":"Information","Category":"PortalTarefas.Web","Message":"Usu\u00E1rio de teste ana@portal.local criado (papel Usuario, equipe Backend).","State":{"Usuario":"ana@portal.local","Papel":"Usuario","Equi
-{"Timestamp":"2026-11-09T02:03:19.770Z","EventId":0,"LogLevel":"Information","Category":"PortalTarefas.Web","Message":"Usu\u00E1rio de teste bruno@portal.local criado (papel Usuario, equipe Frontend).","State":{"Usuario":"bruno@portal.local","Papel":"Usuario",
+-- Log do contêiner (JSON estruturado, primeiras linhas):
+{"Timestamp":"2026-11-09T02:06:47.722Z","EventId":20411,"LogLevel":"Information","Category":"Microsoft.EntityFrameworkCore.Migrations","Message":"Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-doc
+{"Timestamp":"2026-11-09T02:06:47.821Z","EventId":20402,"LogLevel":"Information","Category":"Microsoft.EntityFrameworkCore.Migrations","Message":"Applying migration \u002720261109011900_Inicial\u0027.","State":{"migration":"202611
+{"Timestamp":"2026-11-09T02:06:47.844Z","EventId":20402,"LogLevel":"Information","Category":"Microsoft.EntityFrameworkCore.Migrations","Message":"Applying migration \u002720261109011939_IndiceSituacaoPrazo\u0027.","State":{"migrat
+{"Timestamp":"2026-11-09T02:06:47.849Z","EventId":20402,"LogLevel":"Information","Category":"Microsoft.EntityFrameworkCore.Migrations","Message":"Applying migration \u002720261109014029_IdentidadeEquipes\u0027.","State":{"migratio

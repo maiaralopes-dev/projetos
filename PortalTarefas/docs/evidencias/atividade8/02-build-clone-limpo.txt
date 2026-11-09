@@ -1,23 +1,22 @@
 $ git clone <repositório> && cd PortalTarefas   # clone novo, sem bin/obj/node_modules
-3f0201f Atividade 8: configuração validada, Dockerfile multi-stage, compose e pipeline CI/CD
+ac17bf4 Atividade 8: proxy TLS no compose e pasta gravável de chaves para o usuário não-root
 
-$ dotnet --version
+$ dotnet --version && node --version && npm --version
 10.0.114
-$ node --version && npm --version
 v22.23.4
 10.9.9
 
 $ dotnet build -c Release
 Build succeeded.
-    1 Warning(s)
+    0 Warning(s)
 
 $ dotnet test -c Release --no-build
 Passed!  - Failed:     0, Passed:    70, Skipped:     0, Total:    70, Duration: 7 s - PortalTarefas.Tests.dll (net10.0)
 
-$ npm ci && npm test && npm run build
+$ npm ci && npx vitest run && npm run build
 npm ci ok
       Tests  22 passed (22)
-✓ built in 175ms
+✓ built in 161ms
 
--- git status após o build (nada gerado fica pendente para commit):
-(vazio = árvore limpa)
+-- git status após o build:
+(vazio = nenhum arquivo gerado/alterado pendente)

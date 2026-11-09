@@ -1,0 +1,16 @@
+===== SBOM (SPDX) da imagem com Syft =====
+pacotes inventariados: 160
+por ecossistema: {'deb': 97, 'nuget': 56, 'outros': 6, 'oci': 1}
+  Microsoft.EntityFrameworkCore: ['10.0.14']
+  Dapper: ['2.1.89']
+  OpenTelemetry: ['1.20.1']
+  Microsoft.AspNetCore.Identity.EntityFrameworkCore: ['10.0.14']
+
+$ dotnet list src/PortalTarefas.Web package --vulnerable --include-transitive
+  All projects are up-to-date for restore.
+The following sources were used:
+   https://api.nuget.org/v3/index.json
+The given project `PortalTarefas.Web` has no vulnerable packages given the current sources.
+
+$ npm audit --omit=dev --audit-level=high   (front-end)
+found 0 vulnerabilities
