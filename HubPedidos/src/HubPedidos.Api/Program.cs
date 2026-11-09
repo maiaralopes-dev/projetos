@@ -2,8 +2,11 @@ using HubPedidos.Application.Classificacao;
 using HubPedidos.Application.Contratos;
 using HubPedidos.Application.Importacao;
 using HubPedidos.Application.Mapeamento;
+using HubPedidos.Application.Persistencia;
 using HubPedidos.Application.Processadores;
 using HubPedidos.Application.Processadores.Implementacoes;
+using HubPedidos.Api;
+using HubPedidos.Infrastructure;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -33,7 +36,11 @@ builder.Services.AddProblemDetails();
 var opcoesImportacao = builder.Configuration.GetSection("Importacao").Get<OpcoesImportacao>() ?? new OpcoesImportacao();
 builder.Services.AddSingleton(opcoesImportacao);
 
+builder.Services.AddInfraestrutura(builder.Configuration);
+
 var app = builder.Build();
+
+await app.Services.PrepararBancoAsync(app.Configuration);
 
 app.MapPost("/pedidos", CriarPedidoAsync).WithName("CriarPedido");
 
@@ -43,14 +50,17 @@ app.MapPost("/pedidos/lote", ImportarLoteAsync)
     .ProducesProblem(StatusCodes.Status413PayloadTooLarge)
     .WithName("ImportarLote");
 
+app.MapConsultasPedidos();
+
 app.MapGet("/processadores", (CatalogoProcessadores c) =>
     c.Registros.Select(r => new ProcessadorInfoResponse(r.Categoria.ToString(), r.Versao, r.Tipo.Name)));
 
 app.Run();
 
-static async Task<Results<Ok<PedidoResponse>, ValidationProblem, ProblemHttpResult>> CriarPedidoAsync(
+static async Task<Results<Created<PedidoResponse>, ValidationProblem, ProblemHttpResult>> CriarPedidoAsync(
     CriarPedidoRequest? request,
     CatalogoProcessadores catalogo,
+    IRepositorioPedidos repositorio,
     IServiceProvider services,
     CancellationToken cancellationToken)
 {
@@ -80,8 +90,9 @@ static async Task<Results<Ok<PedidoResponse>, ValidationProblem, ProblemHttpResu
     var processador = services.GetRequiredKeyedService<IProcessadorPedido>(categoria);
     var processamento = await processador.ProcessarAsync(pedido, cancellationToken);
 
-    // 4) Resposta tipada, sem expor tipos do domínio
-    return TypedResults.Ok(MapeadorPedidos.ParaResposta(pedido, categoria, processamento));
+    // 4) Persistência (atividade 3) e resposta tipada, sem expor tipos do domínio
+    await repositorio.AdicionarAsync(pedido, categoria, cancellationToken);
+    return TypedResults.Created($"/pedidos/{pedido.Id}", MapeadorPedidos.ParaResposta(pedido, categoria, processamento));
 }
 
 // Lê o corpo de forma incremental (nunca carrega o lote inteiro) e responde em NDJSON,

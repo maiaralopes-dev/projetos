@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace HubPedidos.Tests;
 
-public class EndpointTests(WebApplicationFactory<Program> factory) : IClassFixture<WebApplicationFactory<Program>>
+public class EndpointTests(HubApiFactory factory) : IClassFixture<HubApiFactory>
 {
     private readonly HttpClient _client = factory.CreateClient();
 
@@ -22,9 +22,10 @@ public class EndpointTests(WebApplicationFactory<Program> factory) : IClassFixtu
 
         var resposta = await _client.PostAsJsonAsync("/pedidos", request);
 
-        Assert.Equal(HttpStatusCode.OK, resposta.StatusCode);
+        Assert.Equal(HttpStatusCode.Created, resposta.StatusCode);
         var corpo = await resposta.Content.ReadFromJsonAsync<PedidoResponse>();
-        Assert.Equal(categoria, corpo!.Categoria);
+        Assert.Equal($"/pedidos/{corpo!.Id}", resposta.Headers.Location!.OriginalString);
+        Assert.Equal(categoria, corpo.Categoria);
         Assert.Equal(processador, corpo.Processador);
         Assert.Equal(qtd * preco, corpo.Total);
         Assert.True(Guid.TryParse(corpo.Id, out _));

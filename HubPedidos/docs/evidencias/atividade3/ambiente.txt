@@ -1,0 +1,11 @@
+Data: 2026-11-09T01:20Z
+SO: Ubuntu 24.04.5 LTS x86_64
+CPU: Intel(R) Xeon(R) Processor @ 2.30GHz (4 núcleos lógicos)
+SDK: 10.0.114
+Microsoft.AspNetCore.App 10.0.14 [/usr/lib/dotnet/shared/Microsoft.AspNetCore.App]
+Microsoft.NETCore.App 10.0.14 [/usr/lib/dotnet/shared/Microsoft.NETCore.App]
+EF Core: Microsoft.EntityFrameworkCore.Sqlite 10.0.14 / Design 10.0.14 / dotnet-ef 10.0.14 (ferramenta local, dotnet-tools.json)
+SQLite usado pela aplicação: 3.53.3 (SQLitePCLRaw.bundle_e_sqlite3 2.1.13, via Microsoft.Data.Sqlite)
+SQLite usado só para EXPLAIN QUERY PLAN: 3.53.1 (módulo sqlite3 do Python)
+BenchmarkDotNet: 0.15.8 (Job Hub: Warmup=3, Iterations=15, Launch=1, Release)
+Massa: GeradorMassa semente 123 — 20.000 pedidos, 1 a 5 itens cada

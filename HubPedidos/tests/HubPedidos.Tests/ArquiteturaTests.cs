@@ -7,7 +7,7 @@ namespace HubPedidos.Tests;
 /// <summary>Extensão: testes arquiteturais por reflexão, sem biblioteca externa.</summary>
 public class ArquiteturaTests
 {
-    private static readonly string[] Proibidos = ["Microsoft.AspNetCore", "Microsoft.EntityFrameworkCore", "HubPedidos.Api"];
+    private static readonly string[] Proibidos = ["Microsoft.AspNetCore", "Microsoft.EntityFrameworkCore", "Microsoft.Data.Sqlite", "HubPedidos.Api", "HubPedidos.Infrastructure"];
 
     [Fact]
     public void Dominio_nao_depende_de_outras_camadas_nem_de_infraestrutura()

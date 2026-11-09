@@ -208,6 +208,18 @@ public class ImportadorTests
         Assert.Equal(limpar, pool.UltimoClear);
     }
 
+}
+
+/// <summary>
+/// GC.GetTotalMemory mede o PROCESSO inteiro: com outros testes rodando em paralelo
+/// (semeando bancos, por exemplo), a medição fica instável. Esta coleção roda sozinha.
+/// </summary>
+[CollectionDefinition(nameof(SemParalelismo), DisableParallelization = true)]
+public sealed class SemParalelismo;
+
+[Collection(nameof(SemParalelismo))]
+public class FluxoGrandeTests
+{
     [Fact]
     public async Task Fluxo_grande_e_processado_sem_carregar_o_corpo_inteiro()
     {

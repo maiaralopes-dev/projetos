@@ -3,3 +3,6 @@ obj/
 TestResults/
 *.user
 .vs/
+*.db
+*.db-shm
+*.db-wal

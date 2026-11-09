@@ -1,0 +1,225 @@
+################ Listagem paginada com filtro (projeção + COUNT)
+$ curl 'localhost:5080/pedidos?regiao=Sul&status=Concluido&pagina=2&tamanho=5'
+{"itens":[{"id":"01a173b6-df58-7b2f-bdd9-c3dcd7f3ffa1","clienteId":"CLI-01629","regiao":"Sul","status":"Concluido","categoria":"Padrao","total":4570.53,"quantidadeItens":1,"criadoEmUtc":"2026-10-25T15:38:47"},{"id":"01a16b13-5318-71d3-8e3b-e69caed3f472","clienteId":"CLI-00302","regiao":"Sul","status":"Concluido","categoria":"Expresso","total":339.33,"quantidadeItens":1,"criadoEmUtc":"2026-10-23T23
+... (resposta truncada)
+--- SQL executado:
+      Executed DbCommand (2ms) [Parameters=[@regiao='?' (DbType = Int32), @status='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM "Pedidos" AS "p"
+      WHERE "p"."Regiao" = @regiao AND "p"."Status" = @status
+      Executed DbCommand (0ms) [Parameters=[@regiao='?' (DbType = Int32), @status='?' (DbType = Int32), @p='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT "p"."Id", "p"."ClienteId", CASE "p"."Regiao"
+          WHEN 1 THEN 'Sul'
+          WHEN 2 THEN 'Sudeste'
+          WHEN 3 THEN 'CentroOeste'
+          WHEN 4 THEN 'Nordeste'
+          WHEN 5 THEN 'Norte'
+          WHEN 6 THEN 'Internacional'
+          ELSE CAST("p"."Regiao" AS TEXT)
+      END, CASE "p"."Status"
+          WHEN 1 THEN 'Recebido'
+          WHEN 2 THEN 'EmProcessamento'
+          WHEN 3 THEN 'Concluido'
+          WHEN 4 THEN 'Cancelado'
+          ELSE CAST("p"."Status" AS TEXT)
+      END, CASE "p"."Categoria"
+          WHEN 0 THEN 'Invalido'
+          WHEN 1 THEN 'Padrao'
+          WHEN 2 THEN 'Atacado'
+          WHEN 3 THEN 'Expresso'
+          WHEN 4 THEN 'AltoValor'
+          WHEN 5 THEN 'Internacional'
+          WHEN 6 THEN 'RevisaoManual'
+          ELSE CAST("p"."Categoria" AS TEXT)
+      END, "p"."TotalCentavos", (
+          SELECT COUNT(*)
+          FROM "ItensPedido" AS "i"
+          WHERE "p"."Id" = "i"."PedidoId"), "p"."CriadoEmUtc"
+      FROM "Pedidos" AS "p"
+      WHERE "p"."Regiao" = @regiao AND "p"."Status" = @status
+      ORDER BY "p"."CriadoEmUtc" DESC, "p"."Id" DESC
+      LIMIT @p OFFSET @p
+
+################ Paginação por cursor
+$ curl 'localhost:5080/pedidos/cursor?tamanho=3'
+{"itens":[{"id":"01a17fc9-bd10-7eb5-809a-bd117423a656","clienteId":"CLI-00829","regiao":"Internacional","status":"Recebido","categoria":"Internacional","total":8554.03,"quantidadeItens":4,"criadoEmUtc":"2026-10-27T23:54:50"},{"id":"01a17fb0-5528-7e2c-83f1-9eb4d7e10a8c","clienteId":"CLI-01082","regiao":"CentroOeste","status":"Recebido","categoria":"AltoValor","total":17773.36,"quantidadeItens":4,"c
+... (resposta truncada)
+--- SQL executado:
+      Executed DbCommand (0ms) [Parameters=[@p='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT "p"."Id", "p"."ClienteId", CASE "p"."Regiao"
+          WHEN 1 THEN 'Sul'
+          WHEN 2 THEN 'Sudeste'
+          WHEN 3 THEN 'CentroOeste'
+          WHEN 4 THEN 'Nordeste'
+          WHEN 5 THEN 'Norte'
+          WHEN 6 THEN 'Internacional'
+          ELSE CAST("p"."Regiao" AS TEXT)
+      END, CASE "p"."Status"
+          WHEN 1 THEN 'Recebido'
+          WHEN 2 THEN 'EmProcessamento'
+          WHEN 3 THEN 'Concluido'
+          WHEN 4 THEN 'Cancelado'
+          ELSE CAST("p"."Status" AS TEXT)
+      END, CASE "p"."Categoria"
+          WHEN 0 THEN 'Invalido'
+          WHEN 1 THEN 'Padrao'
+          WHEN 2 THEN 'Atacado'
+          WHEN 3 THEN 'Expresso'
+          WHEN 4 THEN 'AltoValor'
+          WHEN 5 THEN 'Internacional'
+          WHEN 6 THEN 'RevisaoManual'
+          ELSE CAST("p"."Categoria" AS TEXT)
+      END, "p"."TotalCentavos", (
+          SELECT COUNT(*)
+          FROM "ItensPedido" AS "i"
+          WHERE "p"."Id" = "i"."PedidoId"), "p"."CriadoEmUtc"
+      FROM "Pedidos" AS "p"
+      ORDER BY "p"."CriadoEmUtc" DESC, "p"."Id" DESC
+      LIMIT @p
+
+################ Relatório pedidos + itens (1 comando, sem N+1)
+$ curl 'localhost:5080/relatorios/pedidos-itens?tamanho=3'
+[{"id":"01a17fc9-bd10-7eb5-809a-bd117423a656","clienteId":"CLI-00829","total":8554.03,"itens":[{"sku":"SKU-0019-2","quantidade":6,"subtotal":1963.38},{"sku":"SKU-0079-0","quantidade":2,"subtotal":326.56},{"sku":"SKU-0179-3","quantidade":3,"subtotal":4622.97},{"sku":"SKU-0247-1","quantidade":8,"subtotal":1641.12}]},{"id":"01a17fb0-5528-7e2c-83f1-9eb4d7e10a8c","clienteId":"CLI-01082","total":17773.3
+... (resposta truncada)
+--- SQL executado:
+      Executed DbCommand (0ms) [Parameters=[@p1='?' (DbType = Int32), @p='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT "p0"."Id", "p0"."ClienteId", "p0"."TotalCentavos", "i"."Sku", "i"."Quantidade", CAST("i"."Quantidade" AS INTEGER) * "i"."PrecoUnitarioCentavos", "i"."Id"
+      FROM (
+          SELECT "p"."Id", "p"."ClienteId", "p"."TotalCentavos", "p"."CriadoEmUtc"
+          FROM "Pedidos" AS "p"
+          ORDER BY "p"."CriadoEmUtc" DESC, "p"."Id" DESC
+          LIMIT @p1 OFFSET @p
+      ) AS "p0"
+      LEFT JOIN "ItensPedido" AS "i" ON "p0"."Id" = "i"."PedidoId"
+      ORDER BY "p0"."CriadoEmUtc" DESC, "p0"."Id" DESC, "i"."Sku"
+
+################ Painel por região (agregação no banco)
+$ curl 'localhost:5080/painel/regioes'
+[{"regiao":"Sul","pedidos":3343,"unidades":50094,"total":50200957.82,"ticketMedio":15016.74},{"regiao":"Sudeste","pedidos":3372,"unidades":50744,"total":50851781.11,"ticketMedio":15080.60},{"regiao":"CentroOeste","pedidos":3296,"unidades":49078,"total":48950715.89,"ticketMedio":14851.55},{"regiao":"Nordeste","pedidos":3325,"unidades":49519,"total":49559371.13,"ticketMedio":14905.07},{"regiao":"Nor
+... (resposta truncada)
+--- SQL executado:
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "p"."Regiao", COUNT(*) AS "Pedidos", COALESCE(SUM("p"."TotalCentavos"), 0) AS "Total"
+      FROM "Pedidos" AS "p"
+      GROUP BY "p"."Regiao"
+      Executed DbCommand (28ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "p"."Regiao", COALESCE(SUM("i"."Quantidade"), 0) AS "Unidades"
+      FROM "ItensPedido" AS "i"
+      INNER JOIN "Pedidos" AS "p" ON "i"."PedidoId" = "p"."Id"
+      GROUP BY "p"."Regiao"
+
+################ Detalhe (tipo complexo + JSON + itens)
+$ curl localhost:5080/pedidos/01a17fc9-bd10-7eb5-809a-bd117423a656
+{"id":"01a17fc9-bd10-7eb5-809a-bd117423a656","clienteId":"CLI-00829","regiao":"Internacional","prioridade":"Alta","status":"Recebido","categoria":"Internacional","total":8554.03,"criadoEmUtc":"2026-10-27T23:54:50","entrega":null,"metadados":{"canal":"api","origem":null,"campanha":null},"itens":[{"sku":"SKU-0019-2","quantidade":6,"precoUnitario":327.23,"subtotal":1963.38},{"sku":"SKU-0079-0","quant
+... (resposta truncada)
+--- SQL executado:
+      Executed DbCommand (0ms) [Parameters=[@id='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "p0"."Id", "p0"."ClienteId", "p0"."c", "p0"."c0", "p0"."c1", "p0"."c2", "p0"."TotalCentavos", "p0"."CriadoEmUtc", "p0"."c3", "p0"."Entrega_Logradouro", "p0"."Entrega_Cidade", "p0"."Entrega_Uf", "p0"."Entrega_Cep", "p0"."c4", "p0"."c5", "p0"."c6", "i"."Sku", "i"."Quantidade", "i"."PrecoUnitarioCentavos", CAST("i"."Quantidade" AS INTEGER) * "i"."PrecoUnitarioCentavos", "i"."Id"
+      FROM (
+          SELECT "p"."Id", "p"."ClienteId", CASE "p"."Regiao"
+              WHEN 1 THEN 'Sul'
+              WHEN 2 THEN 'Sudeste'
+              WHEN 3 THEN 'CentroOeste'
+              WHEN 4 THEN 'Nordeste'
+              WHEN 5 THEN 'Norte'
+              WHEN 6 THEN 'Internacional'
+              ELSE CAST("p"."Regiao" AS TEXT)
+          END AS "c", CASE "p"."Prioridade"
+              WHEN 1 THEN 'Normal'
+              WHEN 2 THEN 'Alta'
+              WHEN 3 THEN 'Urgente'
+              ELSE CAST("p"."Prioridade" AS TEXT)
+          END AS "c0", CASE "p"."Status"
+              WHEN 1 THEN 'Recebido'
+              WHEN 2 THEN 'EmProcessamento'
+              WHEN 3 THEN 'Concluido'
+              WHEN 4 THEN 'Cancelado'
+              ELSE CAST("p"."Status" AS TEXT)
+          END AS "c1", CASE "p"."Categoria"
+              WHEN 0 THEN 'Invalido'
+              WHEN 1 THEN 'Padrao'
+              WHEN 2 THEN 'Atacado'
+              WHEN 3 THEN 'Expresso'
+              WHEN 4 THEN 'AltoValor'
+              WHEN 5 THEN 'Internacional'
+              WHEN 6 THEN 'RevisaoManual'
+              ELSE CAST("p"."Categoria" AS TEXT)
+          END AS "c2", "p"."TotalCentavos", "p"."CriadoEmUtc", "p"."Entrega_Cep" IS NULL AS "c3", "p"."Entrega_Logradouro", "p"."Entrega_Cidade", "p"."Entrega_Uf", "p"."Entrega_Cep", "p"."Metadados" ->> 'Canal' AS "c4", "p"."Metadados" ->> 'Origem' AS "c5", "p"."Metadados" ->> 'Campanha' AS "c6"
+          FROM "Pedidos" AS "p"
+          WHERE "p"."Id" = @id
+          LIMIT 1
+      ) AS "p0"
+      LEFT JOIN "ItensPedido" AS "i" ON "p0"."Id" = "i"."PedidoId"
+      ORDER BY "p0"."Id", "i"."Sku"
+
+################ Alteração de status (consulta com tracking + UPDATE de 1 coluna)
+$ curl -i -X PUT -H 'Content-Type: application/json' -d '{"status":"Cancelado"}' localhost:5080/pedidos/01a17fc9-bd10-7eb5-809a-bd117423a656/status
+HTTP/1.1 204 No Content
+Date: Mon, 09 Nov 2026 01:19:08 GMT
+Server: Kestrel
+
+
+... (resposta truncada)
+--- SQL executado:
+      Executed DbCommand (0ms) [Parameters=[@id='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "p"."Id", "p"."Categoria", "p"."ClienteId", "p"."CriadoEmUtc", "p"."Prioridade", "p"."Regiao", "p"."Status", "p"."TotalCentavos", "p"."Entrega_Cep", "p"."Entrega_Cidade", "p"."Entrega_Logradouro", "p"."Entrega_Uf", "p"."Metadados"
+      FROM "Pedidos" AS "p"
+      WHERE "p"."Id" = @id
+      LIMIT 1
+      Executed DbCommand (0ms) [Parameters=[@p1='?' (DbType = Guid), @p0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      UPDATE "Pedidos" SET "Status" = @p0
+      WHERE "Id" = @p1
+      RETURNING 1;
+
+################ Criação (INSERT do pedido e dos itens)
+$ curl -X POST -H 'Content-Type: application/json' -d '{"clienteId":"CLI-NOVO","regiao":"Norte","prioridade":"Normal","itens":[{"sku":"a","quantidade":1,"precoUnitario":9.9},{"sku":"b","quantidade":2,"precoUnitario":1}],"entrega":{"logradouro":"Rua 1","cidade":"Belém","uf":"PA","cep":"66000000"},"metadados":{"canal":"app"}}' localhost:5080/pedidos
+{"id":"01a1bde3-3f26-7631-86c8-0152bb09f3a2","clienteId":"CLI-NOVO","regiao":"Norte","prioridade":"Normal","total":11.9,"categoria":"Padrao","processador":"ProcessadorPadrao","versaoProcessador":1,"mensagem":"Pedido com 2 item(ns) enviado para separação padrão (SLA 48h).","itens":[{"sku":"A","quantidade":1,"precoUnitario":9.9,"subtotal":9.9},{"sku":"B","quantidade":2,"precoUnitario":1,"subtotal
+... (resposta truncada)
+--- SQL executado:
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (Size = 45), @p1='?' (DbType = Guid), @p2='?' (DbType = Int32), @p3='?' (Size = 8), @p4='?' (DbType = DateTime), @p5='?' (DbType = Int32), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32), @p8='?' (DbType = Int64), @p9='?' (Size = 8), @p10='?' (Size = 5), @p11='?' (Size = 5), @p12='?' (Size = 2)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Pedidos" ("Metadados", "Id", "Categoria", "ClienteId", "CriadoEmUtc", "Prioridade", "Regiao", "Status", "TotalCentavos", "Entrega_Cep", "Entrega_Cidade", "Entrega_Logradouro", "Entrega_Uf")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12);
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Int64), @p2='?' (DbType = Int32), @p3='?' (Size = 1)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "ItensPedido" ("PedidoId", "PrecoUnitarioCentavos", "Quantidade", "Sku")
+      VALUES (@p0, @p1, @p2, @p3)
+      RETURNING "Id";
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Int64), @p2='?' (DbType = Int32), @p3='?' (Size = 1)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "ItensPedido" ("PedidoId", "PrecoUnitarioCentavos", "Quantidade", "Sku")
+      VALUES (@p0, @p1, @p2, @p3)
+      RETURNING "Id";
+
+################ Segunda página por cursor (keyset: WHERE em vez de OFFSET)
+$ curl 'localhost:5080/pedidos/cursor?tamanho=3&apos=NjM5Mjg3NDA0MjUwMDAwMDAwOjAxYTE3ZmIwNTUyODdlMmM4M2YxOWViNGQ3ZTEwYThj'
+--- SQL executado:
+      Executed DbCommand (1ms) [Parameters=[@data='?' (DbType = DateTime), @id='?' (DbType = Guid), @p='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT "p"."Id", "p"."ClienteId", CASE "p"."Regiao"
+          WHEN 1 THEN 'Sul'
+          WHEN 2 THEN 'Sudeste'
+          WHEN 3 THEN 'CentroOeste'
+          WHEN 4 THEN 'Nordeste'
+          WHEN 5 THEN 'Norte'
+          WHEN 6 THEN 'Internacional'
+          ELSE CAST("p"."Regiao" AS TEXT)
+      END, CASE "p"."Status"
+          WHEN 1 THEN 'Recebido'
+          WHEN 2 THEN 'EmProcessamento'
+          WHEN 3 THEN 'Concluido'
+          WHEN 4 THEN 'Cancelado'
+          ELSE CAST("p"."Status" AS TEXT)
+      END, CASE "p"."Categoria"
+          WHEN 0 THEN 'Invalido'
+          WHEN 1 THEN 'Padrao'
+          WHEN 2 THEN 'Atacado'
+          WHEN 3 THEN 'Expresso'
+          WHEN 4 THEN 'AltoValor'
+          WHEN 5 THEN 'Internacional'
+          WHEN 6 THEN 'RevisaoManual'
+          ELSE CAST("p"."Categoria" AS TEXT)
+      END, "p"."TotalCentavos", (
+          SELECT COUNT(*)
+          FROM "ItensPedido" AS "i"
+          WHERE "p"."Id" = "i"."PedidoId"), "p"."CriadoEmUtc"
+      FROM "Pedidos" AS "p"
+      WHERE "p"."CriadoEmUtc" < @data OR ("p"."CriadoEmUtc" = @data AND "p"."Id" < @id)
+      ORDER BY "p"."CriadoEmUtc" DESC, "p"."Id" DESC
+      LIMIT @p

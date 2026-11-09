@@ -11,6 +11,7 @@ var config = DefaultConfig.Instance
         .WithIterationCount(15)
         .WithLaunchCount(1)
         .WithId("Hub"))
-    .AddDiagnoser(MemoryDiagnoser.Default);
+    .AddDiagnoser(MemoryDiagnoser.Default)
+    .AddLogicalGroupRules(BenchmarkLogicalGroupRule.ByCategory);
 
 BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args, config);

@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace HubPedidos.Tests.Importacao;
 
-public class LoteEndpointTests(WebApplicationFactory<Program> factory) : IClassFixture<WebApplicationFactory<Program>>
+public class LoteEndpointTests(HubApiFactory factory) : IClassFixture<HubApiFactory>
 {
     private const string Lote = """
         CLI-001;Sudeste;Normal;CANETA:10:2.50|LAPIS:5:1.20

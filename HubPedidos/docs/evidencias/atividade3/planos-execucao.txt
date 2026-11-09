@@ -1,0 +1,48 @@
+# ANTES: planos capturados com a migration Inicial
+
+# EXPLAIN QUERY PLAN (executado com o módulo sqlite3 do Python, SQLite 3.53.1; a aplicação usa 3.53.3) — banco da API em Development, 20.000 pedidos
+# Parâmetros substituídos por valores de exemplo; estrutura idêntica ao SQL gerado pelo EF.
+
+## Listagem filtrada (regiao=Sul, status=Concluido), página 2
+SELECT p.Id FROM Pedidos p WHERE p.Regiao = 1 AND p.Status = 3 ORDER BY p.CriadoEmUtc DESC, p.Id DESC LIMIT 5 OFFSET 5
+    SEARCH p USING INDEX IX_Pedidos_Status_CriadoEm (Status=?)
+    USE TEMP B-TREE FOR LAST TERM OF ORDER BY
+
+## Listagem sem filtro, página 900 (OFFSET 17980)
+SELECT p.Id, (SELECT COUNT(*) FROM ItensPedido i WHERE p.Id = i.PedidoId) FROM Pedidos p ORDER BY p.CriadoEmUtc DESC, p.Id DESC LIMIT 20 OFFSET 17980
+    SCAN p USING COVERING INDEX IX_Pedidos_CriadoEm_Id
+    CORRELATED SCALAR SUBQUERY 1
+    SEARCH i USING COVERING INDEX UX_ItensPedido_Pedido_Sku (PedidoId=?)
+
+## Cursor na mesma posição (keyset)
+SELECT p.Id FROM Pedidos p WHERE p.CriadoEmUtc < ? OR (p.CriadoEmUtc = ? AND p.Id < ?) ORDER BY p.CriadoEmUtc DESC, p.Id DESC LIMIT 21
+    SCAN p USING COVERING INDEX IX_Pedidos_CriadoEm_Id
+
+## Filtro por cliente
+SELECT p.Id FROM Pedidos p WHERE p.ClienteId = 'CLI-00001' ORDER BY p.CriadoEmUtc DESC, p.Id DESC LIMIT 20
+    SEARCH p USING INDEX IX_Pedidos_Cliente_CriadoEm (ClienteId=?)
+    USE TEMP B-TREE FOR LAST TERM OF ORDER BY
+
+## Filtro JSON (Metadados ->> 'Canal') — sem índice
+SELECT COUNT(*) FROM Pedidos p WHERE p.Metadados ->> 'Canal' = 'web'
+    SCAN p
+
+## Itens do relatório (LEFT JOIN)
+SELECT p0.Id, i.Sku FROM (SELECT p.Id, p.CriadoEmUtc FROM Pedidos p ORDER BY p.CriadoEmUtc DESC, p.Id DESC LIMIT 20) p0 LEFT JOIN ItensPedido i ON p0.Id = i.PedidoId ORDER BY p0.CriadoEmUtc DESC, p0.Id DESC, i.Sku
+    CO-ROUTINE p0
+    SCAN p USING COVERING INDEX IX_Pedidos_CriadoEm_Id
+    SCAN p0
+    SEARCH i USING COVERING INDEX UX_ItensPedido_Pedido_Sku (PedidoId=?) LEFT-JOIN
+    USE TEMP B-TREE FOR LAST TERM OF ORDER BY
+
+
+# DEPOIS da migration IndicesComDesempate (Id incluído nos índices de filtro)
+
+## Listagem filtrada por status
+SELECT p.Id FROM Pedidos p WHERE p.Regiao = 1 AND p.Status = 3 ORDER BY p.CriadoEmUtc DESC, p.Id DESC LIMIT 5 OFFSET 5
+    SEARCH p USING INDEX IX_Pedidos_Status_CriadoEm_Id (Status=?)
+
+## Filtro por cliente
+SELECT p.Id FROM Pedidos p WHERE p.ClienteId = 'CLI-00001' ORDER BY p.CriadoEmUtc DESC, p.Id DESC LIMIT 20
+    SEARCH p USING COVERING INDEX IX_Pedidos_Cliente_CriadoEm_Id (ClienteId=?)
+

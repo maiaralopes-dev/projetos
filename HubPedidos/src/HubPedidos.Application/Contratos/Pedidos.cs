@@ -6,11 +6,17 @@ namespace HubPedidos.Application.Contratos;
 
 public sealed record ItemPedidoRequest(string? Sku, int Quantidade, decimal PrecoUnitario);
 
+public sealed record EnderecoDto(string? Logradouro, string? Cidade, string? Uf, string? Cep);
+
+public sealed record MetadadosDto(string? Canal, string? Origem, string? Campanha);
+
 public sealed record CriarPedidoRequest(
     string? ClienteId,
     string? Regiao,
     string? Prioridade,
-    IReadOnlyList<ItemPedidoRequest>? Itens);
+    IReadOnlyList<ItemPedidoRequest>? Itens,
+    EnderecoDto? Entrega = null,
+    MetadadosDto? Metadados = null);
 
 public sealed record ItemPedidoResponse(string Sku, int Quantidade, decimal PrecoUnitario, decimal Subtotal);
 

@@ -51,6 +51,9 @@ public static class MapeadorPedidos
                 break;
         }
 
+        ValidarEntrega(request.Entrega, erros);
+        ValidarMetadados(request.Metadados, erros);
+
         if (erros.Count > 0)
         {
             return Resultado<Pedido>.Falha(erros);
@@ -59,7 +62,9 @@ public static class MapeadorPedidos
         // Cópia defensiva: o domínio recebe um ImmutableArray próprio; alterar a lista
         // do DTO depois daqui não afeta o pedido.
         var itens = request.Itens!.Select(i => new ItemPedido(i.Sku!, i.Quantidade, i.PrecoUnitario));
-        return Resultado<Pedido>.Ok(Pedido.Criar(request.ClienteId!, regiao, prioridade, itens));
+        var entrega = request.Entrega is { } e ? new Endereco(e.Logradouro!, e.Cidade!, e.Uf!, e.Cep!) : null;
+        var metadados = request.Metadados is { } m ? new MetadadosPedido(m.Canal!, m.Origem, m.Campanha) : null;
+        return Resultado<Pedido>.Ok(Pedido.Criar(request.ClienteId!, regiao, prioridade, itens, entrega, metadados));
     }
 
     public static PedidoResponse ParaResposta(Pedido pedido, CategoriaProcessamento categoria, ResultadoProcessamento processamento) =>
@@ -107,8 +112,58 @@ public static class MapeadorPedidos
         }
     }
 
+    private static void ValidarEntrega(EnderecoDto? entrega, List<ErroValidacao> erros)
+    {
+        switch (entrega)
+        {
+            case null:
+                return;
+            case { Logradouro: var l } when string.IsNullOrWhiteSpace(l) || l.Length > 120:
+                erros.Add(new("entrega.logradouro", "Obrigatório, até 120 caracteres."));
+                break;
+        }
+
+        if (string.IsNullOrWhiteSpace(entrega.Cidade) || entrega.Cidade.Length > 60)
+        {
+            erros.Add(new("entrega.cidade", "Obrigatória, até 60 caracteres."));
+        }
+
+        if (entrega.Uf is not { Length: 2 } uf || !char.IsAsciiLetter(uf[0]) || !char.IsAsciiLetter(uf[1]))
+        {
+            erros.Add(new("entrega.uf", "Deve ter 2 letras."));
+        }
+
+        if (entrega.Cep is not { Length: 8 } cep || !cep.All(char.IsAsciiDigit))
+        {
+            erros.Add(new("entrega.cep", "Deve ter 8 dígitos, sem traço."));
+        }
+    }
+
+    private static void ValidarMetadados(MetadadosDto? metadados, List<ErroValidacao> erros)
+    {
+        if (metadados is null)
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(metadados.Canal) || metadados.Canal.Length > 20)
+        {
+            erros.Add(new("metadados.canal", "Obrigatório, até 20 caracteres."));
+        }
+
+        if (metadados.Origem is { Length: > 40 })
+        {
+            erros.Add(new("metadados.origem", "Até 40 caracteres."));
+        }
+
+        if (metadados.Campanha is { Length: > 40 })
+        {
+            erros.Add(new("metadados.campanha", "Até 40 caracteres."));
+        }
+    }
+
     // Enum.TryParse aceita "999" e "1,2"; aqui só nomes definidos são aceitos.
-    private static bool TentarEnum<TEnum>(string? texto, out TEnum valor) where TEnum : struct, Enum
+    public static bool TentarEnum<TEnum>(string? texto, out TEnum valor) where TEnum : struct, Enum
     {
         valor = default;
         return texto is { Length: > 0 }

@@ -26,8 +26,20 @@ public sealed record Pedido
         Itens = itens;
     }
 
-    public static Pedido Criar(string clienteId, Regiao regiao, Prioridade prioridade, IEnumerable<ItemPedido> itens) =>
-        new(PedidoId.Novo(), clienteId, regiao, prioridade, [.. itens]);
+    public static Pedido Criar(
+        string clienteId,
+        Regiao regiao,
+        Prioridade prioridade,
+        IEnumerable<ItemPedido> itens,
+        Endereco? entrega = null,
+        MetadadosPedido? metadados = null,
+        DateTimeOffset? criadoEm = null) =>
+        new(PedidoId.Novo(), clienteId, regiao, prioridade, [.. itens])
+        {
+            Entrega = entrega,
+            Metadados = metadados ?? MetadadosPedido.Padrao,
+            CriadoEm = criadoEm ?? DateTimeOffset.UtcNow,
+        };
 
     public static Pedido Reconstituir(PedidoId id, string clienteId, Regiao regiao, Prioridade prioridade, IEnumerable<ItemPedido> itens) =>
         new(id, clienteId, regiao, prioridade, [.. itens]);
@@ -70,6 +82,22 @@ public sealed record Pedido
             _ => value,
         };
     }
+
+    public StatusPedido Status
+    {
+        get;
+        init => field = Enum.IsDefined(value) ? value : throw new DomainException($"Status '{(int)value}' inexistente.");
+    } = StatusPedido.Recebido;
+
+    public Endereco? Entrega { get; init; }
+
+    public MetadadosPedido Metadados
+    {
+        get;
+        init => field = value ?? throw new DomainException("Metadados não podem ser nulos.");
+    } = MetadadosPedido.Padrao;
+
+    public DateTimeOffset CriadoEm { get; init; } = DateTimeOffset.UtcNow;
 
     public decimal Total => Itens.Sum(i => i.Subtotal);
 

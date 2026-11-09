@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\HubPedidos.Application\HubPedidos.Application.csproj" />
     <ProjectReference Include="..\HubPedidos.Domain\HubPedidos.Domain.csproj" />
+    <ProjectReference Include="..\HubPedidos.Infrastructure\HubPedidos.Infrastructure.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
