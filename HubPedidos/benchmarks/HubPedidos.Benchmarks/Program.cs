@@ -14,4 +14,10 @@ var config = DefaultConfig.Instance
     .AddDiagnoser(MemoryDiagnoser.Default)
     .AddLogicalGroupRules(BenchmarkLogicalGroupRule.ByCategory);
 
+if (args is ["experimento-fila", ..])
+{
+    await HubPedidos.Benchmarks.ExperimentoFila.ExecutarAsync(args);
+    return;
+}
+
 BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args, config);

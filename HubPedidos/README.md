@@ -24,7 +24,7 @@ Pré-requisito: SDK .NET 10 (ver `global.json`).
 
 ```bash
 dotnet build          # warnings são tratados como erro
-dotnet test           # 135 testes (atividades 1 a 3)
+dotnet test           # 158 testes (atividades 1 a 4)
 dotnet run --project src/HubPedidos.Api --launch-profile http   # http://localhost:5080
 ```
 
@@ -60,6 +60,17 @@ Requisições de exemplo em `src/HubPedidos.Api/HubPedidos.Api.http` (Visual Stu
 | 3     | PUT    | `/pedidos/{id}/status` | Altera status (máquina de estados; 204/404/409)             |
 | 3     | GET    | `/relatorios/pedidos-itens` | Pedidos com itens em uma única consulta                |
 | 3     | GET    | `/painel/regioes` | Agregações por região calculadas no banco                        |
+| 4     | POST   | `/pedidos/fila`  | Valida, classifica e enfileira → 202 (ou 503 + `Retry-After` com fila cheia) |
+| 4     | GET    | `/fila/metricas` | Profundidade, aceitos, rejeitados, descartados, processados, uso do banco |
+
+A partir da atividade 4, `POST /pedidos/lote` também enfileira cada linha aceita. A fila
+(`Channel` limitado) é configurada na seção `Fila` do `appsettings.json` e consumida por
+`ConsumidorPedidos` (BackgroundService). Experimento de backpressure:
+
+```bash
+dotnet run -c Release --project benchmarks/HubPedidos.Benchmarks -- experimento-fila linha-tempo.csv
+python3 docs/scripts/grafico_fila.py linha-tempo.csv profundidade-fila.svg
+```
 
 Formato do lote: `clienteId;regiao;prioridade;sku:quantidade:preco|sku:quantidade:preco`.
 Limites configuráveis em `appsettings.json`, seção `Importacao`.

@@ -1,0 +1,104 @@
+Taxa oferecida: 1500/s por 6s; trabalho externo simulado 2 ms/item (fora do semáforo).
+
+# Rodada 1
+## A: base (cap 200, 4 cons, banco 1, Wait 100ms)
+ofertados=8993 aceitos=3630 rejeitados=5363 descartados=0 processados=3630 falhas=0 abandonados=0
+throughput=562/s  fim_oferta=6.1s  drenado_em=6.5s
+profundidade max=200 media=193  banco_em_uso max=1
+espera_na_fila ms p50=438.0 p95=540.1 p99=544.6 max=549.4
+operacoes_banco=7260 (2.00 por pedido)
+operacao_banco ms p50=0.63 p95=0.93 p99=1.40 (n=7260)
+
+## B: mais paralelismo (cap 200, 16 cons, banco 8)
+ofertados=8997 aceitos=3039 rejeitados=5958 descartados=0 processados=3039 falhas=0 abandonados=0
+throughput=428/s  fim_oferta=6.1s  drenado_em=7.1s
+profundidade max=200 media=175  banco_em_uso max=8
+espera_na_fila ms p50=529.6 p95=817.6 p99=894.4 max=903.0
+operacoes_banco=6078 (2.00 por pedido)
+operacao_banco ms p50=0.61 p95=1.03 p99=301.07 (n=6078)
+
+## C: fila grande (cap 10000, 4 cons, banco 1)
+ofertados=8995 aceitos=8995 rejeitados=0 descartados=0 processados=8995 falhas=0 abandonados=0
+throughput=515/s  fim_oferta=6.0s  drenado_em=17.5s
+profundidade max=5801 media=2927  banco_em_uso max=1
+espera_na_fila ms p50=5554.0 p95=10903.4 p99=11350.0 max=11463.5
+operacoes_banco=17990 (2.00 por pedido)
+operacao_banco ms p50=0.66 p95=0.98 p99=1.65 (n=17990)
+
+## D: DropOldest (cap 200, 4 cons, banco 1)
+ofertados=8997 aceitos=8997 rejeitados=0 descartados=5557 processados=3440 falhas=0 abandonados=0
+throughput=538/s  fim_oferta=6.0s  drenado_em=6.4s
+profundidade max=200 media=193  banco_em_uso max=1
+espera_na_fila ms p50=132.3 p95=166.7 p99=341.4 max=388.9
+operacoes_banco=6880 (2.00 por pedido)
+operacao_banco ms p50=0.66 p95=0.99 p99=1.46 (n=6880)
+
+## E: rejeição imediata (cap 200, 4 cons, banco 1, Wait 0)
+ofertados=8996 aceitos=3427 rejeitados=5569 descartados=0 processados=3427 falhas=0 abandonados=0
+throughput=525/s  fim_oferta=6.0s  drenado_em=6.5s
+profundidade max=200 media=188  banco_em_uso max=1
+espera_na_fila ms p50=355.3 p95=494.9 p99=513.9 max=522.4
+operacoes_banco=6854 (2.00 por pedido)
+operacao_banco ms p50=0.69 p95=1.06 p99=1.68 (n=6854)
+
+## F: A + lote de até 32 itens por transação
+ofertados=8901 aceitos=5762 rejeitados=3139 descartados=0 processados=5762 falhas=0 abandonados=0
+throughput=913/s  fim_oferta=6.0s  drenado_em=6.3s
+profundidade max=200 media=187  banco_em_uso max=1
+espera_na_fila ms p50=293.6 p95=351.8 p99=406.6 max=422.0
+operacoes_banco=370 (0.06 por pedido)
+operacao_banco ms p50=3.27 p95=5.56 p99=39.97 (n=370)
+
+# Rodada 2
+## A: base (cap 200, 4 cons, banco 1, Wait 100ms)
+ofertados=8995 aceitos=3460 rejeitados=5535 descartados=0 processados=3460 falhas=0 abandonados=0
+throughput=533/s  fim_oferta=6.1s  drenado_em=6.5s
+profundidade max=200 media=193  banco_em_uso max=1
+espera_na_fila ms p50=455.0 p95=573.4 p99=582.9 max=588.5
+operacoes_banco=6920 (2.00 por pedido)
+operacao_banco ms p50=0.69 p95=1.05 p99=1.79 (n=6920)
+
+## B: mais paralelismo (cap 200, 16 cons, banco 8)
+ofertados=8979 aceitos=4055 rejeitados=4924 descartados=0 processados=4055 falhas=0 abandonados=0
+throughput=617/s  fim_oferta=6.1s  drenado_em=6.6s
+profundidade max=200 media=188  banco_em_uso max=6
+espera_na_fila ms p50=401.1 p95=522.0 p99=609.4 max=630.2
+operacoes_banco=8110 (2.00 por pedido)
+operacao_banco ms p50=0.63 p95=1.00 p99=2.34 (n=8110)
+
+## C: fila grande (cap 10000, 4 cons, banco 1)
+ofertados=8995 aceitos=8995 rejeitados=0 descartados=0 processados=8995 falhas=0 abandonados=0
+throughput=509/s  fim_oferta=6.0s  drenado_em=17.7s
+profundidade max=5938 media=2977  banco_em_uso max=1
+espera_na_fila ms p50=5642.0 p95=11101.7 p99=11537.5 max=11653.3
+operacoes_banco=17990 (2.00 por pedido)
+operacao_banco ms p50=0.67 p95=1.03 p99=1.58 (n=17990)
+
+## D: DropOldest (cap 200, 4 cons, banco 1)
+ofertados=8997 aceitos=8997 rejeitados=0 descartados=5563 processados=3434 falhas=0 abandonados=0
+throughput=539/s  fim_oferta=6.0s  drenado_em=6.4s
+profundidade max=200 media=192  banco_em_uso max=1
+espera_na_fila ms p50=132.4 p95=164.5 p99=333.5 max=370.1
+operacoes_banco=6868 (2.00 por pedido)
+operacao_banco ms p50=0.66 p95=0.99 p99=1.35 (n=6868)
+
+## E: rejeição imediata (cap 200, 4 cons, banco 1, Wait 0)
+ofertados=8997 aceitos=3424 rejeitados=5573 descartados=0 processados=3424 falhas=0 abandonados=0
+throughput=537/s  fim_oferta=6.0s  drenado_em=6.4s
+profundidade max=200 media=192  banco_em_uso max=1
+espera_na_fila ms p50=354.4 p95=466.3 p99=481.8 max=486.4
+operacoes_banco=6848 (2.00 por pedido)
+operacao_banco ms p50=0.68 p95=1.04 p99=1.48 (n=6848)
+
+## F: A + lote de até 32 itens por transação
+ofertados=8998 aceitos=5844 rejeitados=3154 descartados=0 processados=5844 falhas=0 abandonados=0
+throughput=913/s  fim_oferta=6.1s  drenado_em=6.4s
+profundidade max=200 media=184  banco_em_uso max=1
+espera_na_fila ms p50=290.3 p95=330.1 p99=405.4 max=421.9
+operacoes_banco=384 (0.07 por pedido)
+operacao_banco ms p50=1.86 p95=4.88 p99=17.30 (n=384)
+
+## Check-then-act com 4 threads, 800000 incrementos
+ingênuo=778243 (perdidos 21757)  AddOrUpdate=800000
+
+Linha do tempo salva em /tmp/claude-0/linha-tempo.csv

@@ -1,0 +1,189 @@
+Passed HubPedidos.Tests.ArquiteturaTests.Application_e_contratos_nao_dependem_de_infraestrutura
+Passed HubPedidos.Tests.ArquiteturaTests.Dtos_nao_expoem_tipos_do_dominio
+Passed HubPedidos.Tests.ArquiteturaTests.Dominio_nao_depende_de_outras_camadas_nem_de_infraestrutura [< 1 ms]
+Passed HubPedidos.Tests.ArquiteturaTests.Dtos_sao_records_selados
+Passed HubPedidos.Tests.ImutabilidadeTests.ItemPedido_rejeita_invariantes_quebradas(sku: "SKU", qtd: 0, preco: 1) [< 1 ms]
+Passed HubPedidos.Tests.ImutabilidadeTests.ItemPedido_rejeita_invariantes_quebradas(sku: "", qtd: 1, preco: 1) [< 1 ms]
+Passed HubPedidos.Tests.ImutabilidadeTests.ItemPedido_rejeita_invariantes_quebradas(sku: "SKU", qtd: 1001, preco: 1) [< 1 ms]
+Passed HubPedidos.Tests.ImutabilidadeTests.ItemPedido_rejeita_invariantes_quebradas(sku: "SKU", qtd: 1, preco: 0) [< 1 ms]
+Passed HubPedidos.Tests.ImutabilidadeTests.ItemPedido_rejeita_invariantes_quebradas(sku: "SKU", qtd: 1, preco: -5) [< 1 ms]
+Passed HubPedidos.Tests.ImutabilidadeTests.Pedido_usa_igualdade_por_identidade
+Passed HubPedidos.Tests.ImutabilidadeTests.Copia_com_with_nao_altera_o_original
+Passed HubPedidos.Tests.ImutabilidadeTests.ItemPedido_tem_igualdade_por_valor [< 1 ms]
+Passed HubPedidos.Tests.ImutabilidadeTests.With_no_pedido_nao_permite_estado_invalido [< 1 ms]
+Passed HubPedidos.Tests.ImutabilidadeTests.Pedido_rejeita_sku_repetido [< 1 ms]
+Passed HubPedidos.Tests.ImutabilidadeTests.With_tambem_passa_pela_validacao_do_init [< 1 ms]
+Passed HubPedidos.Tests.ImutabilidadeTests.Pedido_nao_compartilha_a_colecao_de_entrada
+Passed HubPedidos.Tests.Importacao.EscritorNdjsonTests.Flush_agrupado_reduz_chamadas_sem_mudar_a_saida(itensPorFlush: 1000, flushesEsperados: 1)
+Passed HubPedidos.Tests.Importacao.EscritorNdjsonTests.Flush_agrupado_reduz_chamadas_sem_mudar_a_saida(itensPorFlush: 100, flushesEsperados: 3) [< 1 ms]
+Passed HubPedidos.Tests.Importacao.EscritorNdjsonTests.Flush_agrupado_reduz_chamadas_sem_mudar_a_saida(itensPorFlush: 1, flushesEsperados: 250) [< 1 ms]
+Passed HubPedidos.Tests.Importacao.ImportadorTests.Utf8_multibyte_cortado_em_qualquer_byte_e_preservado
+Passed HubPedidos.Tests.Importacao.ImportadorTests.Linha_incompleta_ou_malformada_gera_o_mesmo_erro_nas_tres(linha: "A;Sul;Normal", erro: "Esperados 4 campos separados por ';'.")
+Passed HubPedidos.Tests.Importacao.ImportadorTests.Linha_incompleta_ou_malformada_gera_o_mesmo_erro_nas_tres(linha: "A;Sul;Normal;X:1:1;extra", erro: "Esperados 4 campos separados por ';'.") [< 1 ms]
+Passed HubPedidos.Tests.Importacao.ImportadorTests.Linha_incompleta_ou_malformada_gera_o_mesmo_erro_nas_tres(linha: "A;Sul;Normal;X:1:2,50", erro: "Item 1: preço '2,50' inválido.")
+Passed HubPedidos.Tests.Importacao.ImportadorTests.Linha_incompleta_ou_malformada_gera_o_mesmo_erro_nas_tres(linha: "A;Sul;Normal;X:um:1", erro: "Item 1: quantidade 'um' inválida.") [< 1 ms]
+Passed HubPedidos.Tests.Importacao.ImportadorTests.Linha_incompleta_ou_malformada_gera_o_mesmo_erro_nas_tres(linha: "A;Sul;Normal;X:1:", erro: "Item 1: preço '' inválido.") [< 1 ms]
+Passed HubPedidos.Tests.Importacao.ImportadorTests.Linha_incompleta_ou_malformada_gera_o_mesmo_erro_nas_tres(linha: "A;Sul;Normal;X:1", erro: "Item 1: formato esperado sku:quantidade:preco.") [< 1 ms]
+Passed HubPedidos.Tests.Importacao.ImportadorTests.Linha_incompleta_ou_malformada_gera_o_mesmo_erro_nas_tres(linha: "A;Sul;Normal;X:1:1|Y:1:1:1", erro: "Item 2: formato esperado sku:quantidade:preco.") [< 1 ms]
+Passed HubPedidos.Tests.Importacao.ImportadorTests.Linha_incompleta_ou_malformada_gera_o_mesmo_erro_nas_tres(linha: "A;Sul;Normal;X:-1:1", erro: "Item 1: quantidade '-1' inválida.") [< 1 ms]
+Passed HubPedidos.Tests.Importacao.ImportadorTests.Limpeza_do_buffer_segue_a_opcao(limpar: True)
+Passed HubPedidos.Tests.Importacao.ImportadorTests.Limpeza_do_buffer_segue_a_opcao(limpar: False) [< 1 ms]
+Passed HubPedidos.Tests.Importacao.ImportadorTests.Lote_acima_do_limite_falha_e_devolve_o_buffer
+Passed HubPedidos.Tests.ClassificadorTests.Classifica_cada_classe_de_equivalencia(caso: "sem itens", valor: 100, itens: 0, regiao: Sul, prioridade: Normal, esperado: Invalido)
+Passed HubPedidos.Tests.ClassificadorTests.Classifica_cada_classe_de_equivalencia(caso: "internacional 10.000 (limite revisão)", valor: 10000, itens: 1, regiao: Internacional, prioridade: Normal, esperado: RevisaoManual) [< 1 ms]
+Passed HubPedidos.Tests.ClassificadorTests.Classifica_cada_classe_de_equivalencia(caso: "urgente barato", valor: 10, itens: 1, regiao: Nordeste, prioridade: Urgente, esperado: Expresso) [< 1 ms]
+Passed HubPedidos.Tests.ClassificadorTests.Classifica_cada_classe_de_equivalencia(caso: "normal nacional", valor: 100, itens: 1, regiao: Sudeste, prioridade: Normal, esperado: Padrao) [< 1 ms]
+Passed HubPedidos.Tests.ClassificadorTests.Classifica_cada_classe_de_equivalencia(caso: "prioridade desconhecida", valor: 100, itens: 1, regiao: Sul, prioridade: 42, esperado: Invalido) [< 1 ms]
+Passed HubPedidos.Tests.ClassificadorTests.Classifica_cada_classe_de_equivalencia(caso: "valor mínimo positivo", valor: 0.01, itens: 1, regiao: Norte, prioridade: Normal, esperado: Padrao) [< 1 ms]
+Passed HubPedidos.Tests.ClassificadorTests.Classifica_cada_classe_de_equivalencia(caso: "região desconhecida (99)", valor: 100, itens: 1, regiao: 99, prioridade: Normal, esperado: Invalido) [< 1 ms]
+Passed HubPedidos.Tests.ClassificadorTests.Classifica_cada_classe_de_equivalencia(caso: "5.000 (limite alto valor)", valor: 5000, itens: 1, regiao: CentroOeste, prioridade: Normal, esperado: AltoValor) [< 1 ms]
+Passed HubPedidos.Tests.ClassificadorTests.Classifica_cada_classe_de_equivalencia(caso: "20 itens (limite atacado)", valor: 300, itens: 20, regiao: Sul, prioridade: Normal, esperado: Atacado) [< 1 ms]
+Passed HubPedidos.Tests.ClassificadorTests.Classifica_cada_classe_de_equivalencia(caso: "urgente com 20 itens: expresso vence", valor: 300, itens: 20, regiao: Sul, prioridade: Urgente, esperado: Expresso) [< 1 ms]
+Passed HubPedidos.Tests.ClassificadorTests.Classifica_cada_classe_de_equivalencia(caso: "alto valor vence urgência", valor: 8000, itens: 1, regiao: Sudeste, prioridade: Urgente, esperado: AltoValor) [< 1 ms]
+Passed HubPedidos.Tests.ClassificadorTests.Classifica_cada_classe_de_equivalencia(caso: "4.999,99 (abaixo do alto valor)", valor: 4999.99, itens: 1, regiao: CentroOeste, prioridade: Normal, esperado: Padrao) [< 1 ms]
+Passed HubPedidos.Tests.ClassificadorTests.Classifica_cada_classe_de_equivalencia(caso: "alta 500 (limite expresso)", valor: 500, itens: 1, regiao: Sul, prioridade: Alta, esperado: Expresso) [< 1 ms]
+Passed HubPedidos.Tests.ClassificadorTests.Classifica_cada_classe_de_equivalencia(caso: "internacional 9.999,99", valor: 9999.99, itens: 1, regiao: Internacional, prioridade: Normal, esperado: Internacional) [< 1 ms]
+Passed HubPedidos.Tests.ClassificadorTests.Classifica_cada_classe_de_equivalencia(caso: "região default (0)", valor: 100, itens: 1, regiao: 0, prioridade: Normal, esperado: Invalido) [< 1 ms]
+Passed HubPedidos.Tests.ClassificadorTests.Classifica_cada_classe_de_equivalencia(caso: "19 itens (abaixo do atacado)", valor: 300, itens: 19, regiao: Sul, prioridade: Normal, esperado: Padrao) [< 1 ms]
+Passed HubPedidos.Tests.ClassificadorTests.Classifica_cada_classe_de_equivalencia(caso: "alta 499,99 (abaixo do limite)", valor: 499.99, itens: 1, regiao: Sul, prioridade: Alta, esperado: Padrao) [< 1 ms]
+Passed HubPedidos.Tests.ClassificadorTests.Classifica_cada_classe_de_equivalencia(caso: "valor zero", valor: 0, itens: 1, regiao: Sul, prioridade: Normal, esperado: Invalido) [< 1 ms]
+Passed HubPedidos.Tests.ClassificadorTests.Classifica_cada_classe_de_equivalencia(caso: "internacional", valor: 100, itens: 1, regiao: Internacional, prioridade: Normal, esperado: Internacional) [< 1 ms]
+Passed HubPedidos.Tests.ClassificadorTests.Classifica_cada_classe_de_equivalencia(caso: "valor negativo", valor: -1, itens: 1, regiao: Sul, prioridade: Normal, esperado: Invalido) [< 1 ms]
+Passed HubPedidos.Tests.ClassificadorTests.Classifica_cada_classe_de_equivalencia(caso: "internacional urgente", valor: 100, itens: 1, regiao: Internacional, prioridade: Urgente, esperado: Internacional) [< 1 ms]
+Passed HubPedidos.Tests.Importacao.ImportadorTests.Utf8_e_equivalente_com_qualquer_tamanho_de_buffer(bufferInicial: 37)
+Passed HubPedidos.Tests.ClassificadorTests.Toda_categoria_exceto_invalido_e_alcancavel
+Passed HubPedidos.Tests.Importacao.ImportadorTests.Utf8_e_equivalente_com_qualquer_tamanho_de_buffer(bufferInicial: 16)
+Passed HubPedidos.Tests.ClassificadorTests.Pedido_nulo_e_invalido
+Passed HubPedidos.Tests.ClassificadorTests.Classifica_a_partir_da_entidade
+Passed HubPedidos.Tests.Importacao.ImportadorTests.Utf8_e_equivalente_com_qualquer_tamanho_de_buffer(bufferInicial: 4096)
+Passed HubPedidos.Tests.Importacao.ImportadorTests.Ultima_linha_sem_quebra_e_processada_e_numeracao_conta_linhas_em_branco(impl: "ImportadorUtf8Pool")
+Passed HubPedidos.Tests.Importacao.ImportadorTests.Ultima_linha_sem_quebra_e_processada_e_numeracao_conta_linhas_em_branco(impl: "ImportadorSpanChar") [< 1 ms]
+Passed HubPedidos.Tests.Importacao.ImportadorTests.Ultima_linha_sem_quebra_e_processada_e_numeracao_conta_linhas_em_branco(impl: "ImportadorBaseline") [< 1 ms]
+Passed HubPedidos.Tests.PedidoIdTests.Funciona_via_restricao_generica_IParsable [< 1 ms]
+Passed HubPedidos.Tests.PedidoIdTests.TryParse_rejeita_texto_invalido_sem_excecao(texto: null) [< 1 ms]
+Passed HubPedidos.Tests.PedidoIdTests.TryParse_rejeita_texto_invalido_sem_excecao(texto: "00000000-0000-0000-0000-000000000000") [< 1 ms]
+Passed HubPedidos.Tests.PedidoIdTests.TryParse_rejeita_texto_invalido_sem_excecao(texto: "") [< 1 ms]
+Passed HubPedidos.Tests.PedidoIdTests.TryParse_rejeita_texto_invalido_sem_excecao(texto: "nao-e-guid") [< 1 ms]
+Passed HubPedidos.Tests.PedidoIdTests.Default_nao_e_valido [< 1 ms]
+Passed HubPedidos.Tests.PedidoIdTests.Ida_e_volta_por_texto_preserva_o_valor
+Passed HubPedidos.Tests.Importacao.ImportadorTests.Tres_implementacoes_produzem_o_mesmo_resultado(linhas: 3000, semente: 42)
+Passed HubPedidos.Tests.Importacao.ImportadorTests.Tres_implementacoes_produzem_o_mesmo_resultado(linhas: 500, semente: 7)
+Passed HubPedidos.Tests.Importacao.ImportadorTests.Tres_implementacoes_produzem_o_mesmo_resultado(linhas: 1, semente: 1) [< 1 ms]
+Passed HubPedidos.Tests.Importacao.ImportadorTests.Regiao_e_prioridade_conhecidas_reutilizam_a_string_do_enum [< 1 ms]
+Passed HubPedidos.Tests.Importacao.ImportadorTests.Linha_acima_do_limite_falha_e_devolve_todos_os_buffers_inclusive_os_do_crescimento
+Passed HubPedidos.Tests.Importacao.ImportadorTests.Utf8_invalido_e_rejeitado_na_linha_sem_derrubar_o_lote [< 1 ms]
+Passed HubPedidos.Tests.Importacao.ImportadorTests.Entrada_vazia_ou_so_com_linhas_em_branco_nao_gera_resultado(impl: "ImportadorBaseline") [< 1 ms]
+Passed HubPedidos.Tests.Importacao.ImportadorTests.Entrada_vazia_ou_so_com_linhas_em_branco_nao_gera_resultado(impl: "ImportadorSpanChar") [< 1 ms]
+Passed HubPedidos.Tests.Importacao.ImportadorTests.Entrada_vazia_ou_so_com_linhas_em_branco_nao_gera_resultado(impl: "ImportadorUtf8Pool") [< 1 ms]
+Passed HubPedidos.Tests.Importacao.ImportadorTests.Abandonar_o_await_foreach_tambem_devolve_o_buffer
+Passed HubPedidos.Tests.Importacao.ImportadorTests.Cancelamento_interrompe_e_devolve_o_buffer
+Passed HubPedidos.Tests.Processamento.ConsumidorTests.Concorrencia_no_banco_nunca_passa_do_limite
+Passed HubPedidos.Tests.Processamento.ConsumidorTests.Encerramento_drenar_recusa_novos_e_processa_os_pendentes
+Passed HubPedidos.Tests.Processamento.ConsumidorTests.Encerramento_abandonar_interrompe_e_contabiliza_os_pendentes
+Passed HubPedidos.Tests.Processamento.ConsumidorTests.Nenhum_pedido_e_processado_duas_vezes
+Passed HubPedidos.Tests.Processamento.ConsumidorTests.Falha_de_um_item_nao_derruba_o_consumidor_nem_perde_slot
+Passed HubPedidos.Tests.Processamento.ConsumidorTests.Prazo_de_drenagem_esgotado_nao_trava_o_encerramento
+Passed HubPedidos.Tests.Processamento.FilaTests.Espera_esgotada_vira_rejeicao_explicita
+Passed HubPedidos.Tests.Processamento.FilaTests.Modos_de_descarte_aceitam_tudo_e_descartam_conforme_a_politica(modo: DropWrite, restantes: [0, 1, 2])
+Passed HubPedidos.Tests.Processamento.FilaTests.Modos_de_descarte_aceitam_tudo_e_descartam_conforme_a_politica(modo: DropOldest, restantes: [2, 3, 4]) [< 1 ms]
+Passed HubPedidos.Tests.Processamento.FilaTests.Modos_de_descarte_aceitam_tudo_e_descartam_conforme_a_politica(modo: DropNewest, restantes: [0, 1, 4]) [< 1 ms]
+Passed HubPedidos.Tests.Processamento.FilaTests.Job_e_imutavel_e_nao_carrega_tipos_do_ef
+Passed HubPedidos.Tests.Processamento.FilaTests.Cancelamento_do_cliente_propaga_e_nao_conta_como_rejeicao
+Passed HubPedidos.Tests.Processamento.FilaTests.Sem_espera_TryWrite_rejeita_imediatamente
+"TotalCentavos" INTEGER NOT NULL,
+"TotalCentavos" INTEGER NOT NULL,
+INSERT INTO "Pedidos" ("Metadados", "Id", "Categoria", "ClienteId", "CriadoEmUtc", "Prioridade", "Regiao", "Status", "TotalCentavos", "Entrega_Cep", "Entrega_Cidade", "Entrega_Logradouro", "Entrega_Uf")
+SELECT "p"."Id", "p"."Categoria", "p"."ClienteId", "p"."CriadoEmUtc", "p"."Prioridade", "p"."Regiao", "p"."Status", "p"."TotalCentavos", "p"."Entrega_Cep", "p"."Entrega_Cidade", "p"."Entrega_Logradouro", "p"."Entrega_Uf", "p"."Metadados"
+SELECT "p"."Id", "p"."Categoria", "p"."ClienteId", "p"."CriadoEmUtc", "p"."Prioridade", "p"."Regiao", "p"."Status", "p"."TotalCentavos", "p"."Entrega_Cep", "p"."Entrega_Cidade", "p"."Entrega_Logradouro", "p"."Entrega_Uf", "p"."Metadados"
+INSERT INTO "Pedidos" ("Metadados", "Id", "Categoria", "ClienteId", "CriadoEmUtc", "Prioridade", "Regiao", "Status", "TotalCentavos", "Entrega_Cep", "Entrega_Cidade", "Entrega_Logradouro", "Entrega_Uf")
+SELECT "p"."Id", "p"."Categoria", "p"."ClienteId", "p"."CriadoEmUtc", "p"."Prioridade", "p"."Regiao", "p"."Status", "p"."TotalCentavos", "p"."Entrega_Cep", "p"."Entrega_Cidade", "p"."Entrega_Logradouro", "p"."Entrega_Uf", "p"."Metadados"
+SELECT "p"."Id", "p"."Categoria", "p"."ClienteId", "p"."CriadoEmUtc", "p"."Prioridade", "p"."Regiao", "p"."Status", "p"."TotalCentavos", "p"."Entrega_Cep", "p"."Entrega_Cidade", "p"."Entrega_Logradouro", "p"."Entrega_Uf", "p"."Metadados"
+SELECT "p0"."Id", "p0"."ClienteId", "p0"."c", "p0"."c0", "p0"."c1", "p0"."c2", "p0"."TotalCentavos", "p0"."CriadoEmUtc", "p0"."c3", "p0"."Entrega_Logradouro", "p0"."Entrega_Cidade", "p0"."Entrega_Uf", "p0"."Entrega_Cep", "p0"."c4", "p0"."c5", "p0"."c6", "i"."Sku", "i"."Quantidade", "i"."PrecoUnitarioCentavos", CAST("i"."Quantidade" AS INTEGER) * "i"."PrecoUnitarioCentavos", "i"."Id"
+END AS "c2", "p"."TotalCentavos", "p"."CriadoEmUtc", "p"."Entrega_Cep" IS NULL AS "c3", "p"."Entrega_Logradouro", "p"."Entrega_Cidade", "p"."Entrega_Uf", "p"."Entrega_Cep", "p"."Metadados" ->> 'Canal' AS "c4", "p"."Metadados" ->> 'Origem' AS "c5", "p"."Metadados" ->> 'Campanha' AS "c6"
+SELECT "p0"."Id", "p0"."ClienteId", "p0"."c", "p0"."c0", "p0"."c1", "p0"."c2", "p0"."TotalCentavos", "p0"."CriadoEmUtc", "p0"."c3", "p0"."Entrega_Logradouro", "p0"."Entrega_Cidade", "p0"."Entrega_Uf", "p0"."Entrega_Cep", "p0"."c4", "p0"."c5", "p0"."c6", "i"."Sku", "i"."Quantidade", "i"."PrecoUnitarioCentavos", CAST("i"."Quantidade" AS INTEGER) * "i"."PrecoUnitarioCentavos", "i"."Id"
+END AS "c2", "p"."TotalCentavos", "p"."CriadoEmUtc", "p"."Entrega_Cep" IS NULL AS "c3", "p"."Entrega_Logradouro", "p"."Entrega_Cidade", "p"."Entrega_Uf", "p"."Entrega_Cep", "p"."Metadados" ->> 'Canal' AS "c4", "p"."Metadados" ->> 'Origem' AS "c5", "p"."Metadados" ->> 'Campanha' AS "c6"
+"TotalCentavos" INTEGER NOT NULL,
+Passed HubPedidos.Tests.Processamento.FilaTests.Modo_wait_faz_o_produtor_aguardar_ate_haver_espaco
+Passed HubPedidos.Tests.Processamento.FilaEndpointTests.Fila_cheia_responde_503_com_retry_after_sem_gravar
+Passed HubPedidos.Tests.Infra.PersistenciaLoteTests.Lote_com_item_invalido_nao_grava_nenhum
+Passed HubPedidos.Tests.Infra.PersistenciaLoteTests.Lote_grava_em_uma_transacao_e_conclui_com_um_comando
+Passed HubPedidos.Tests.Processamento.FilaEndpointTests.Pedido_enfileirado_e_processado_e_gravado_como_concluido
+Passed HubPedidos.Tests.Infra.ConsultasEndpointTests.Status_segue_a_maquina_de_estados
+Passed HubPedidos.Tests.Infra.PersistenciaTests.Json_e_relacional_filtram_igual_mas_geram_sql_diferente(modo: Relacional, trechoFiltro: "\"p\".\"Metadados_Canal\"", trechoUpdate: "UPDATE \"Pedidos\" SET \"Metadados_Canal\" = @")
+Passed HubPedidos.Tests.Infra.PersistenciaTests.Json_e_relacional_filtram_igual_mas_geram_sql_diferente(modo: Json, trechoFiltro: "\"p\".\"Metadados\" ->> 'Canal'", trechoUpdate: "UPDATE \"Pedidos\" SET \"Metadados\" = @")
+Passed HubPedidos.Tests.Infra.PersistenciaTests.Alteracao_com_tracking_gera_update_somente_do_status
+Passed HubPedidos.Tests.Infra.PersistenciaTests.Modelos_json_e_relacional_coexistem_no_mesmo_processo
+Passed HubPedidos.Tests.Infra.PersistenciaTests.Transicao_invalida_e_pedido_inexistente_nao_gravam_nada
+Passed HubPedidos.Tests.Infra.ConsultasTests.Cursor_invalido_e_tratado_como_primeira_pagina(cursor: "lixo")
+Passed HubPedidos.Tests.Infra.ConsultasTests.Cursor_invalido_e_tratado_como_primeira_pagina(cursor: "")
+Passed HubPedidos.Tests.Infra.ConsultasTests.Cursor_invalido_e_tratado_como_primeira_pagina(cursor: "AAAA")
+Passed HubPedidos.Tests.Infra.PersistenciaTests.Alternativa_sem_tracking_anexa_explicitamente_e_nao_corrompe_outras_colunas
+Passed HubPedidos.Tests.Infra.ConsultasTests.Relatorio_de_pedidos_e_itens_usa_um_unico_comando(tamanho: 50)
+Passed HubPedidos.Tests.Infra.ConsultasTests.Relatorio_de_pedidos_e_itens_usa_um_unico_comando(tamanho: 5)
+Passed HubPedidos.Tests.Infra.PersistenciaTests.Ida_e_volta_preserva_valores_monetarios_endereco_e_metadados
+Passed HubPedidos.Tests.Infra.ConsultasTests.Consulta_compilada_devolve_o_mesmo_que_a_normal
+Passed HubPedidos.Tests.Infra.PersistenciaTests.Migration_corresponde_ao_modelo_e_ao_provedor_registrado
+Passed HubPedidos.Tests.Infra.PersistenciaTests.Endereco_opcional_nulo_volta_nulo
+Passed HubPedidos.Tests.Infra.ConsultasTests.Cursor_percorre_a_mesma_sequencia_que_o_offset
+Passed HubPedidos.Tests.Infra.ConsultasTests.Consulta_dividida_usa_dois_comandos_e_produz_o_mesmo_resultado
+Passed HubPedidos.Tests.Infra.PersistenciaTests.ExecuteUpdate_em_json_usa_json_set_sem_reescrever_o_documento_no_cliente
+Passed HubPedidos.Tests.MapeadorTests.Regiao_aceita_somente_nomes_definidos(regiao: "2")
+Passed HubPedidos.Tests.MapeadorTests.Regiao_aceita_somente_nomes_definidos(regiao: null) [< 1 ms]
+Passed HubPedidos.Tests.MapeadorTests.Regiao_aceita_somente_nomes_definidos(regiao: "-1") [< 1 ms]
+Passed HubPedidos.Tests.MapeadorTests.Regiao_aceita_somente_nomes_definidos(regiao: " ") [< 1 ms]
+Passed HubPedidos.Tests.MapeadorTests.Regiao_aceita_somente_nomes_definidos(regiao: "Sul,Norte") [< 1 ms]
+Passed HubPedidos.Tests.MapeadorTests.Lista_do_dto_alterada_depois_nao_afeta_o_pedido [< 1 ms]
+Passed HubPedidos.Tests.MapeadorTests.Dto_valido_vira_pedido [< 1 ms]
+Passed HubPedidos.Tests.MapeadorTests.Requisicao_nula_e_sem_itens_sao_rejeitadas [< 1 ms]
+INSERT INTO "Pedidos" ("Metadados", "Id", "Categoria", "ClienteId", "CriadoEmUtc", "Prioridade", "Regiao", "Status", "TotalCentavos", "Entrega_Cep", "Entrega_Cidade", "Entrega_Logradouro", "Entrega_Uf")
+SELECT "p0"."Id", "p0"."ClienteId", "p0"."c", "p0"."c0", "p0"."c1", "p0"."c2", "p0"."TotalCentavos", "p0"."CriadoEmUtc", "p0"."c3", "p0"."Entrega_Logradouro", "p0"."Entrega_Cidade", "p0"."Entrega_Uf", "p0"."Entrega_Cep", "p0"."c4", "p0"."c5", "p0"."c6", "i"."Sku", "i"."Quantidade", "i"."PrecoUnitarioCentavos", CAST("i"."Quantidade" AS INTEGER) * "i"."PrecoUnitarioCentavos", "i"."Id"
+END AS "c2", "p"."TotalCentavos", "p"."CriadoEmUtc", "p"."Entrega_Cep" IS NULL AS "c3", "p"."Entrega_Logradouro", "p"."Entrega_Cidade", "p"."Entrega_Uf", "p"."Entrega_Cep", "p"."Metadados" ->> 'Canal' AS "c4", "p"."Metadados" ->> 'Origem' AS "c5", "p"."Metadados" ->> 'Campanha' AS "c6"
+Passed HubPedidos.Tests.MapeadorTests.Nomes_de_enum_sao_case_insensitive [< 1 ms]
+Passed HubPedidos.Tests.MapeadorTests.Dto_invalido_e_rejeitado_antes_do_dominio_com_todos_os_erros
+Passed HubPedidos.Tests.Infra.ConsultasTests.Ordenacao_e_deterministica_e_paginas_cobrem_tudo_sem_repetir
+Passed HubPedidos.Tests.Processamento.PrimitivasTests.Metricas_por_categoria_sao_exatas_sob_concorrencia
+Passed HubPedidos.Tests.Processamento.PrimitivasTests.Limitador_libera_slot_mesmo_com_excecao
+Passed HubPedidos.Tests.Infra.ConsultasTests.Valores_do_usuario_viram_parametros_e_nao_mudam_a_forma_do_sql
+Passed HubPedidos.Tests.Infra.ConsultasEndpointTests.Pedido_criado_e_persistido_e_consultado_pelo_detalhe
+INSERT INTO "Pedidos" ("Metadados", "Id", "Categoria", "ClienteId", "CriadoEmUtc", "Prioridade", "Regiao", "Status", "TotalCentavos", "Entrega_Cep", "Entrega_Cidade", "Entrega_Logradouro", "Entrega_Uf")
+INSERT INTO "Pedidos" ("Metadados", "Id", "Categoria", "ClienteId", "CriadoEmUtc", "Prioridade", "Regiao", "Status", "TotalCentavos", "Entrega_Cep", "Entrega_Cidade", "Entrega_Logradouro", "Entrega_Uf")
+Passed HubPedidos.Tests.Processamento.PrimitivasTests.Limitador_nao_libera_slot_que_nao_obteve
+Passed HubPedidos.Tests.CatalogoProcessadoresTests.Maior_versao_vence_e_prefixo_de_namespace_e_exato [< 1 ms]
+Passed HubPedidos.Tests.CatalogoProcessadoresTests.Metadados_inconsistentes_sao_todos_reportados
+Passed HubPedidos.Tests.CatalogoProcessadoresTests.Catalogo_real_cobre_todas_as_categorias_processaveis
+Passed HubPedidos.Tests.CatalogoProcessadoresTests.Cobertura_incompleta_falha_quando_exigida
+Passed HubPedidos.Tests.CatalogoProcessadoresTests.Um_tipo_pode_atender_mais_de_uma_categoria [< 1 ms]
+Passed HubPedidos.Tests.CatalogoProcessadoresTests.Duplicidade_falha_de_forma_legivel
+Passed HubPedidos.Tests.CatalogoProcessadoresTests.Catalogo_e_deterministico
+Passed HubPedidos.Tests.CatalogoProcessadoresTests.Catalogo_real_nao_enxerga_tipos_de_outros_assemblies [< 1 ms]
+END, "p"."TotalCentavos", (
+SELECT "p0"."Id", "p0"."ClienteId", "p0"."c", "p0"."c0", "p0"."c1", "p0"."c2", "p0"."TotalCentavos", "p0"."CriadoEmUtc", "p0"."c3", "p0"."Entrega_Logradouro", "p0"."Entrega_Cidade", "p0"."Entrega_Uf", "p0"."Entrega_Cep", "p0"."c4", "p0"."c5", "p0"."c6", "i"."Sku", "i"."Quantidade", "i"."PrecoUnitarioCentavos", CAST("i"."Quantidade" AS INTEGER) * "i"."PrecoUnitarioCentavos", "i"."Id"
+END AS "c2", "p"."TotalCentavos", "p"."CriadoEmUtc", "p"."Entrega_Cep" IS NULL AS "c3", "p"."Entrega_Logradouro", "p"."Entrega_Cidade", "p"."Entrega_Uf", "p"."Entrega_Cep", "p"."Metadados" ->> 'Canal' AS "c4", "p"."Metadados" ->> 'Origem' AS "c5", "p"."Metadados" ->> 'Campanha' AS "c6"
+"TotalCentavos" INTEGER NOT NULL,
+INSERT INTO "Pedidos" ("Metadados", "Id", "Categoria", "ClienteId", "CriadoEmUtc", "Prioridade", "Regiao", "Status", "TotalCentavos", "Entrega_Cep", "Entrega_Cidade", "Entrega_Logradouro", "Entrega_Uf")
+INSERT INTO "Pedidos" ("Metadados", "Id", "Categoria", "ClienteId", "CriadoEmUtc", "Prioridade", "Regiao", "Status", "TotalCentavos", "Entrega_Cep", "Entrega_Cidade", "Entrega_Logradouro", "Entrega_Uf")
+INSERT INTO "Pedidos" ("Metadados", "Id", "Categoria", "ClienteId", "CriadoEmUtc", "Prioridade", "Regiao", "Status", "TotalCentavos", "Entrega_Cep", "Entrega_Cidade", "Entrega_Logradouro", "Entrega_Uf")
+INSERT INTO "Pedidos" ("Metadados", "Id", "Categoria", "ClienteId", "CriadoEmUtc", "Prioridade", "Regiao", "Status", "TotalCentavos", "Entrega_Cep", "Entrega_Cidade", "Entrega_Logradouro", "Entrega_Uf")
+Passed HubPedidos.Tests.Importacao.LoteEndpointTests.Corpo_chunked_acima_do_limite_termina_com_linha_abortado
+Passed HubPedidos.Tests.Processamento.ProcessamentoEmLoteTests.Lote_processa_todos_uma_vez_com_menos_idas_ao_banco
+Passed HubPedidos.Tests.Infra.ConsultasEndpointTests.Listagem_filtra_por_cliente_e_valida_parametros
+Passed HubPedidos.Tests.Processamento.ProcessamentoEmLoteTests.Falha_no_lote_cai_para_item_a_item_e_isola_o_problematico
+Passed HubPedidos.Tests.Importacao.LoteEndpointTests.Lote_misto_retorna_um_resultado_por_linha_em_ndjson
+Passed HubPedidos.Tests.EndpointTests.Fluxo_completo_classifica_e_seleciona_processador(regiao: "Norte", prioridade: "Normal", qtd: 1, preco: 6000, categoria: "AltoValor", processador: "ProcessadorAntifraude")
+Passed HubPedidos.Tests.Infra.ConsultasTests.Painel_agrega_no_banco_e_bate_com_o_calculo_em_memoria
+INSERT INTO "Pedidos" ("Metadados", "Id", "Categoria", "ClienteId", "CriadoEmUtc", "Prioridade", "Regiao", "Status", "TotalCentavos", "Entrega_Cep", "Entrega_Cidade", "Entrega_Logradouro", "Entrega_Uf")
+INSERT INTO "Pedidos" ("Metadados", "Id", "Categoria", "ClienteId", "CriadoEmUtc", "Prioridade", "Regiao", "Status", "TotalCentavos", "Entrega_Cep", "Entrega_Cidade", "Entrega_Logradouro", "Entrega_Uf")
+INSERT INTO "Pedidos" ("Metadados", "Id", "Categoria", "ClienteId", "CriadoEmUtc", "Prioridade", "Regiao", "Status", "TotalCentavos", "Entrega_Cep", "Entrega_Cidade", "Entrega_Logradouro", "Entrega_Uf")
+Passed HubPedidos.Tests.EndpointTests.Fluxo_completo_classifica_e_seleciona_processador(regiao: "Sul", prioridade: "Urgente", qtd: 1, preco: 50, categoria: "Expresso", processador: "ProcessadorExpresso")
+Passed HubPedidos.Tests.Importacao.LoteEndpointTests.Content_length_acima_do_limite_retorna_413_sem_ler_o_corpo
+Passed HubPedidos.Tests.EndpointTests.Fluxo_completo_classifica_e_seleciona_processador(regiao: "Sudeste", prioridade: "Normal", qtd: 2, preco: 3.5, categoria: "Padrao", processador: "ProcessadorPadrao")
+Passed HubPedidos.Tests.Infra.ConsultasTests.Abordagem_ingenua_gera_N_mais_1_e_a_guarda_detecta
+Passed HubPedidos.Tests.EndpointTests.Fluxo_completo_classifica_e_seleciona_processador(regiao: "Internacional", prioridade: "Normal", qtd: 2, preco: 5000, categoria: "RevisaoManual", processador: "ProcessadorAntifraude")
+Passed HubPedidos.Tests.Infra.ConsultasTests.Pagina_traz_somente_colunas_e_linhas_necessarias
+Passed HubPedidos.Tests.EndpointTests.Fluxo_completo_classifica_e_seleciona_processador(regiao: "Internacional", prioridade: "Alta", qtd: 1, preco: 200, categoria: "Internacional", processador: "ProcessadorInternacional")
+Passed HubPedidos.Tests.EndpointTests.Catalogo_e_exposto_em_ordem_deterministica
+Passed HubPedidos.Tests.EndpointTests.Dto_invalido_retorna_400_com_erros_por_campo
+Passed HubPedidos.Tests.Importacao.FluxoGrandeTests.Fluxo_grande_e_processado_sem_carregar_o_corpo_inteiro
+Passed HubPedidos.Tests.Infra.ConsultaCompiladaModeloTests.Consulta_compilada_fica_presa_ao_primeiro_modelo
+Total tests: 158
+Total time: 7.0207 Seconds

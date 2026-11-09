@@ -200,3 +200,53 @@ public class ConsultaCompiladaModeloTests
         Assert.Contains("Compiled queries can only be used with a single model", invalida.Message);
     }
 }
+
+public class PersistenciaLoteTests
+{
+    [Fact]
+    public async Task Lote_grava_em_uma_transacao_e_conclui_com_um_comando()
+    {
+        await using var banco = await BancoEmMemoria.CriarAsync();
+        var pedidos = Enumerable.Range(0, 20)
+            .Select(_ => (Construtores.Pedido() with { Status = StatusPedido.EmProcessamento }, CategoriaProcessamento.Padrao))
+            .ToList();
+
+        await using (var db = banco.NovoContexto())
+        {
+            await new RepositorioPedidos(db).AdicionarLoteAsync(pedidos, default);
+        }
+
+        banco.Contador.Limpar();
+        await using (var db = banco.NovoContexto())
+        {
+            var alterados = await new RepositorioPedidos(db).ConcluirLoteAsync([.. pedidos.Take(15).Select(p => p.Item1.Id.Valor)], default);
+            Assert.Equal(15, alterados);
+        }
+
+        var update = Assert.Single(banco.Contador.Comandos);
+        Assert.StartsWith("UPDATE \"Pedidos\" AS \"p\"", update);
+        await using var leitura = banco.NovoContexto();
+        Assert.Equal(15, await leitura.Pedidos.CountAsync(p => p.Status == StatusPedido.Concluido));
+        Assert.Equal(5, await leitura.Pedidos.CountAsync(p => p.Status == StatusPedido.EmProcessamento));
+    }
+
+    [Fact]
+    public async Task Lote_com_item_invalido_nao_grava_nenhum()
+    {
+        await using var banco = await BancoEmMemoria.CriarAsync();
+        var repetido = Construtores.Pedido();
+        await using (var db = banco.NovoContexto())
+        {
+            await new RepositorioPedidos(db).AdicionarAsync(repetido, CategoriaProcessamento.Padrao, default);
+        }
+
+        await using (var db = banco.NovoContexto())
+        {
+            List<(Domain.Pedidos.Pedido, CategoriaProcessamento)> lote = [(Construtores.Pedido(), CategoriaProcessamento.Padrao), (repetido, CategoriaProcessamento.Padrao)];
+            await Assert.ThrowsAsync<DbUpdateException>(() => new RepositorioPedidos(db).AdicionarLoteAsync(lote, default));
+        }
+
+        await using var leitura = banco.NovoContexto();
+        Assert.Equal(1, await leitura.Pedidos.CountAsync()); // o primeiro do lote também foi desfeito
+    }
+}

@@ -1,0 +1,9 @@
+Data: 2026-11-09T03:38Z
+SO: Ubuntu 24.04.5 LTS x86_64
+CPU: Intel(R) Xeon(R) Processor @ 2.30GHz (4 núcleos lógicos)
+SDK: 10.0.114
+Microsoft.AspNetCore.App 10.0.14 [/usr/lib/dotnet/shared/Microsoft.AspNetCore.App]
+Microsoft.NETCore.App 10.0.14 [/usr/lib/dotnet/shared/Microsoft.NETCore.App]
+System.Threading.Channels: parte do runtime .NET 10.0.14
+EF Core / SQLite: 10.0.14 / 3.53.3 (arquivo local, journal padrão)
+Experimento: 1.500 pedidos/s por 6 s, trabalho externo simulado de 2 ms/item, SQLite em arquivo novo por cenário, 1 rodada de aquecimento descartada + 2 rodadas

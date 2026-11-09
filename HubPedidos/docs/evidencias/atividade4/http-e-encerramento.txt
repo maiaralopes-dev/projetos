@@ -1,0 +1,47 @@
+################ 1) Fila pausada (Fila__Consumidores=0, Fila__Capacidade=2, Fila__TempoMaximoEsperaMs=0)
+$ curl -i -X POST localhost:5080/pedidos/fila  (requisição 1)
+HTTP/1.1 202 Accepted
+Content-Type: application/json; charset=utf-8
+Location: /pedidos/01a1be61-cf12-7325-80db-9d78d2b98685
+
+{"id":"01a1be61-cf12-7325-80db-9d78d2b98685","categoria":"Padrao","status":"Enfileirado"}
+
+
+$ curl -i -X POST localhost:5080/pedidos/fila  (requisição 2)
+HTTP/1.1 202 Accepted
+Content-Type: application/json; charset=utf-8
+Location: /pedidos/01a1be61-cf26-7c81-b3ea-25c9c7b4e603
+
+{"id":"01a1be61-cf26-7c81-b3ea-25c9c7b4e603","categoria":"Padrao","status":"Enfileirado"}
+
+
+$ curl -i -X POST localhost:5080/pedidos/fila  (requisição 3)
+HTTP/1.1 503 Service Unavailable
+Content-Type: application/problem+json
+Retry-After: 1
+
+{"type":"https://tools.ietf.org/html/rfc9110#section-15.6.4","title":"Fila cheia","status":503,"detail":"Capacidade de 2 itens atingida. Tente novamente em instantes.","traceId":"00-0e3f066c0dedfe08d7520d85aed46f4d-7a197bf0113695da-00"}
+
+
+$ curl localhost:5080/fila/metricas
+{"profundidade":2,"capacidade":2,"modoCheio":"Wait","aceitos":2,"rejeitadosFilaCheia":1,"rejeitadosEncerrando":0,"descartados":0,"processados":0,"falhas":0,"abandonados":0,"emAndamento":0,"limiteBanco":1,"bancoEmUso":0,"maximoBancoObservado":0,"processadosPorCategoria":{}}
+
+################ 2) Configuração padrão (4 consumidores, banco 1): 202 e depois Concluido
+$ curl -X POST localhost:5080/pedidos/fila
+{"id":"01a1be61-dfee-79d9-a5ba-87c19a2c1427","categoria":"Padrao","status":"Enfileirado"}
+$ curl localhost:5080/pedidos/01a1be61-dfee-79d9-a5ba-87c19a2c1427   (consulta logo depois)
+{"id":"01a1be61-dfee-79d9-a5ba-87c19a2c1427","clienteId":"CLI-1","regiao":"Sul","prioridade":"Normal","status":"EmProcessamento","categoria":"Padrao","total":10,"criadoEmUtc":"2026-11-09T03:37:27.7941477","entrega":null,"metadados":{"canal":"api","origem":null
+
+--- log do consumidor:
+Pedido 01a1be61-dfee-79d9-a5ba-87c19a2c1427 processado por ProcessadorPadrao em 946.1 ms (espera na fila 3.5 ms)
+(Primeiro item após a inicialização: inclui JIT e construção do modelo do EF.)
+
+################ 3) Encerramento com itens na fila (SIGTERM durante um lote de 3000 linhas)
+métricas logo antes do SIGTERM (observação: "processados" e "processadosPorCategoria" são lidos em momentos ligeiramente diferentes; cada contador é exato, mas o retrato do conjunto não é atômico):
+{"profundidade":496,"capacidade":500,"modoCheio":"Wait","aceitos":2998,"rejeitadosFilaCheia":3,"rejeitadosEncerrando":0,"descartados":0,"processados":2498,"falhas":0,"abandonados":0,"emAndamento":4,"limiteBanco":1,"bancoEmUso":1,"maximoBancoObservado":1,"processadosPorCategoria":{"Padrao":2501}}
+--- log do encerramento:
+Application is shutting down...
+Fila encerrando (política Drenar), 480 item(ns) pendente(s)
+--- pedidos gravados no banco após o encerramento:
+{1: 1, 3: 2998}
+(Status 3 = Concluido: os 2.998 aceitos foram todos drenados e gravados. O único Status 1 é o pedido 'CLI-NOVO' criado manualmente na atividade 3.)

@@ -10,6 +10,12 @@ public interface IRepositorioPedidos
     Task AdicionarAsync(Pedido pedido, CategoriaProcessamento categoria, CancellationToken cancellationToken);
 
     Task<ResultadoAlteracaoStatus> AlterarStatusAsync(Guid id, StatusPedido novo, CancellationToken cancellationToken);
+
+    /// <summary>Grava vários pedidos numa única transação (tudo ou nada).</summary>
+    Task AdicionarLoteAsync(IReadOnlyList<(Pedido Pedido, CategoriaProcessamento Categoria)> pedidos, CancellationToken cancellationToken);
+
+    /// <summary>EmProcessamento → Concluido para todos os ids, num único comando. Devolve quantos mudaram.</summary>
+    Task<int> ConcluirLoteAsync(IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken);
 }
 
 public enum ResultadoAlteracaoStatus

@@ -3,6 +3,7 @@ using HubPedidos.Application.Contratos;
 using HubPedidos.Application.Importacao;
 using HubPedidos.Application.Mapeamento;
 using HubPedidos.Application.Persistencia;
+using HubPedidos.Application.Processamento;
 using HubPedidos.Application.Processadores;
 using HubPedidos.Application.Processadores.Implementacoes;
 using HubPedidos.Api;
@@ -38,6 +39,15 @@ builder.Services.AddSingleton(opcoesImportacao);
 
 builder.Services.AddInfraestrutura(builder.Configuration);
 
+// Atividade 4: fila limitada + consumidores em segundo plano.
+var opcoesFila = (builder.Configuration.GetSection("Fila").Get<OpcoesFila>() ?? new OpcoesFila()).Validar();
+builder.Services.AddSingleton(opcoesFila);
+builder.Services.AddSingleton<MetricasFila>();
+builder.Services.AddSingleton<FilaPedidos>();
+builder.Services.AddSingleton(new LimitadorBanco(opcoesFila.LimiteBanco));
+builder.Services.AddHostedService<ConsumidorPedidos>();
+builder.Services.Configure<HostOptions>(o => o.ShutdownTimeout = TimeSpan.FromSeconds(opcoesFila.PrazoDrenagemSegundos));
+
 var app = builder.Build();
 
 await app.Services.PrepararBancoAsync(app.Configuration);
@@ -51,6 +61,7 @@ app.MapPost("/pedidos/lote", ImportarLoteAsync)
     .WithName("ImportarLote");
 
 app.MapConsultasPedidos();
+app.MapFila();
 
 app.MapGet("/processadores", (CatalogoProcessadores c) =>
     c.Registros.Select(r => new ProcessadorInfoResponse(r.Categoria.ToString(), r.Versao, r.Tipo.Name)));
@@ -97,7 +108,7 @@ static async Task<Results<Created<PedidoResponse>, ValidationProblem, ProblemHtt
 
 // Lê o corpo de forma incremental (nunca carrega o lote inteiro) e responde em NDJSON,
 // agrupando a escrita: um flush a cada OpcoesImportacao.ItensPorFlush linhas.
-static async Task<IResult> ImportarLoteAsync(HttpContext http, OpcoesImportacao opcoes, CancellationToken cancellationToken)
+static async Task<IResult> ImportarLoteAsync(HttpContext http, OpcoesImportacao opcoes, FilaPedidos fila, CancellationToken cancellationToken)
 {
     // Corpo com tamanho declarado acima do limite: recusa antes de ler qualquer byte.
     if (http.Request.ContentLength > opcoes.LimiteBytes)
@@ -116,7 +127,9 @@ static async Task<IResult> ImportarLoteAsync(HttpContext http, OpcoesImportacao 
     {
         await foreach (var linha in importador.LerAsync(http.Request.Body, cancellationToken))
         {
-            await escritor.EscreverAsync(Avaliar(linha), cancellationToken);
+            // Com a fila em modo Wait, este await segura a leitura do corpo quando os
+            // consumidores atrasam: o backpressure chega até o cliente HTTP.
+            await escritor.EscreverAsync(await AvaliarAsync(linha, fila, cancellationToken), cancellationToken);
         }
     }
     catch (LoteInvalidoException ex)
@@ -128,7 +141,7 @@ static async Task<IResult> ImportarLoteAsync(HttpContext http, OpcoesImportacao 
 
     return TypedResults.Empty;
 
-    static ResultadoImportacaoResponse Avaliar(ResultadoLinha linha)
+    static async Task<ResultadoImportacaoResponse> AvaliarAsync(ResultadoLinha linha, FilaPedidos fila, CancellationToken cancellationToken)
     {
         if (linha.Erro is not null)
         {
@@ -141,8 +154,14 @@ static async Task<IResult> ImportarLoteAsync(HttpContext http, OpcoesImportacao 
             return new(linha.Linha, "rejeitado", null, null, [.. resultado.Erros.Select(e => $"{e.Campo}: {e.Mensagem}")]);
         }
 
-        var categoria = ClassificadorPedidos.Classificar(resultado.Valor);
-        return new(linha.Linha, "aceito", resultado.Valor!.Id.ToString(), categoria.ToString(), null);
+        var pedido = resultado.Valor!;
+        var categoria = ClassificadorPedidos.Classificar(pedido);
+        return await fila.EnfileirarAsync(pedido, categoria, cancellationToken) switch
+        {
+            ResultadoEnfileiramento.Aceito => new(linha.Linha, "aceito", pedido.Id.ToString(), categoria.ToString(), null),
+            ResultadoEnfileiramento.RejeitadoFilaCheia => new(linha.Linha, "rejeitado", pedido.Id.ToString(), categoria.ToString(), ["fila cheia"]),
+            _ => new(linha.Linha, "rejeitado", pedido.Id.ToString(), categoria.ToString(), ["serviço encerrando"]),
+        };
     }
 }
 

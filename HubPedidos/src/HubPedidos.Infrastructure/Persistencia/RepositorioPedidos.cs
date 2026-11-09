@@ -13,6 +13,21 @@ public sealed class RepositorioPedidos(HubDbContext db) : IRepositorioPedidos
         await db.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task AdicionarLoteAsync(IReadOnlyList<(Pedido Pedido, CategoriaProcessamento Categoria)> pedidos, CancellationToken cancellationToken)
+    {
+        db.Pedidos.AddRange(pedidos.Select(p => MapeadorRegistro.ParaRegistro(p.Pedido, p.Categoria)));
+        await db.SaveChangesAsync(cancellationToken); // SaveChanges já abre UMA transação para tudo
+    }
+
+    /// <summary>
+    /// Atualização em massa sem carregar entidades. A condição de status garante a
+    /// transição válida no próprio banco (sem leitura prévia).
+    /// </summary>
+    public Task<int> ConcluirLoteAsync(IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken) =>
+        db.Pedidos
+            .Where(p => ids.Contains(p.Id) && p.Status == StatusPedido.EmProcessamento)
+            .ExecuteUpdateAsync(s => s.SetProperty(p => p.Status, StatusPedido.Concluido), cancellationToken);
+
     /// <summary>
     /// Estratégia padrão: consulta COM tracking, porque o mesmo DbContext vai alterar a
     /// entidade. O change tracker detecta que só Status mudou e gera um UPDATE de uma coluna.
