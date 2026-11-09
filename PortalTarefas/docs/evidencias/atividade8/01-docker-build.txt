@@ -1,130 +1,105 @@
-$ docker build --build-arg APP_VERSION=1.0.0+6a1dece --build-arg APP_COMMIT=6a1dece -t portal-tarefas:6a1dece -t portal-tarefas:dev .
+$ docker build --build-arg APP_VERSION=1.0.0+87ccb46 --build-arg APP_COMMIT=87ccb46 -t portal-tarefas:87ccb46 -t portal-tarefas:dev .
 #0 building with "default" instance using docker driver
 
 #1 [internal] load build definition from Dockerfile
-#1 transferring dockerfile: 2.95kB done
+#1 DONE 0.0s
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 3.12kB done
 #1 DONE 0.0s
 
 #2 resolve image config for docker-image://docker.io/docker/dockerfile:1
-#2 DONE 0.6s
+#2 DONE 1.1s
 
 #3 docker-image://docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
 #3 resolve docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e 0.0s done
 #3 CACHED
 
-#4 [internal] load metadata for mcr.microsoft.com/dotnet/sdk:10.0.403@sha256:212fe4cb74627d5adf9817a4088906ae3edff1bd853bb27565d4b46731efe61e
+#4 [internal] load metadata for docker.io/library/node:22.23.4-alpine@sha256:0e1754758c2df4cfa3e68d59e2e1b7374bb7fd9ea6328eaaacf15cc934af8202
 #4 DONE 0.0s
 
-#5 [internal] load metadata for mcr.microsoft.com/dotnet/aspnet:10.0.14@sha256:1a48394b6f29d3a32c79d9edecd4abda0ecbe8776d567dbfc4590ed6979c740c
+#5 [internal] load metadata for mcr.microsoft.com/dotnet/sdk:10.0.403@sha256:212fe4cb74627d5adf9817a4088906ae3edff1bd853bb27565d4b46731efe61e
 #5 DONE 0.0s
 
-#6 [internal] load metadata for docker.io/library/node:22.23.4-alpine@sha256:0e1754758c2df4cfa3e68d59e2e1b7374bb7fd9ea6328eaaacf15cc934af8202
+#6 [internal] load metadata for mcr.microsoft.com/dotnet/aspnet:10.0.14@sha256:1a48394b6f29d3a32c79d9edecd4abda0ecbe8776d567dbfc4590ed6979c740c
 #6 DONE 0.0s
 
 #7 [internal] load .dockerignore
 #7 transferring context: 353B done
 #7 DONE 0.0s
 
-#8 [final 1/3] FROM mcr.microsoft.com/dotnet/aspnet:10.0.14@sha256:1a48394b6f29d3a32c79d9edecd4abda0ecbe8776d567dbfc4590ed6979c740c
+#8 [final 1/4] FROM mcr.microsoft.com/dotnet/aspnet:10.0.14@sha256:1a48394b6f29d3a32c79d9edecd4abda0ecbe8776d567dbfc4590ed6979c740c
 #8 resolve mcr.microsoft.com/dotnet/aspnet:10.0.14@sha256:1a48394b6f29d3a32c79d9edecd4abda0ecbe8776d567dbfc4590ed6979c740c 0.0s done
 #8 DONE 0.0s
 
-#9 [final 2/3] WORKDIR /app
-#9 CACHED
+#9 [frontend 1/6] FROM docker.io/library/node:22.23.4-alpine@sha256:0e1754758c2df4cfa3e68d59e2e1b7374bb7fd9ea6328eaaacf15cc934af8202
+#9 resolve docker.io/library/node:22.23.4-alpine@sha256:0e1754758c2df4cfa3e68d59e2e1b7374bb7fd9ea6328eaaacf15cc934af8202 0.0s done
+#9 DONE 0.0s
 
 #10 [backend 1/9] FROM mcr.microsoft.com/dotnet/sdk:10.0.403@sha256:212fe4cb74627d5adf9817a4088906ae3edff1bd853bb27565d4b46731efe61e
 #10 resolve mcr.microsoft.com/dotnet/sdk:10.0.403@sha256:212fe4cb74627d5adf9817a4088906ae3edff1bd853bb27565d4b46731efe61e 0.0s done
 #10 DONE 0.0s
 
-#11 [frontend 1/6] FROM docker.io/library/node:22.23.4-alpine@sha256:0e1754758c2df4cfa3e68d59e2e1b7374bb7fd9ea6328eaaacf15cc934af8202
-#11 resolve docker.io/library/node:22.23.4-alpine@sha256:0e1754758c2df4cfa3e68d59e2e1b7374bb7fd9ea6328eaaacf15cc934af8202 0.0s done
+#11 [internal] load build context
+#11 transferring context: 9.17kB 0.0s done
 #11 DONE 0.0s
 
-#12 [internal] load build context
-#12 transferring context: 9.17kB 0.0s done
-#12 DONE 0.0s
+#12 [frontend 3/6] COPY src/PortalTarefas.Frontend/package.json src/PortalTarefas.Frontend/package-lock.json ./
+#12 CACHED
 
-#13 [backend 2/9] WORKDIR /src
+#13 [backend 7/9] COPY docs/openapi/ docs/openapi/
 #13 CACHED
 
-#14 [backend 3/9] COPY global.json ./
+#14 [backend 2/9] WORKDIR /src
 #14 CACHED
 
-#15 [backend 4/9] COPY src/PortalTarefas.Web/PortalTarefas.Web.csproj src/PortalTarefas.Web/
+#15 [frontend 2/6] WORKDIR /src
 #15 CACHED
 
-#16 [frontend 2/6] WORKDIR /src
+#16 [frontend 6/6] RUN npm run build                                   # tsc -b && vite build -> /src/dist (base /app/)
 #16 CACHED
 
-#17 [frontend 3/6] COPY src/PortalTarefas.Frontend/package.json src/PortalTarefas.Frontend/package-lock.json ./
+#17 [backend 4/9] COPY src/PortalTarefas.Web/PortalTarefas.Web.csproj src/PortalTarefas.Web/
 #17 CACHED
 
 #18 [frontend 4/6] RUN --mount=type=secret,id=ca_extra,required=false     if [ -f /run/secrets/ca_extra ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/ca_extra; fi;     npm ci --ignore-scripts --no-audit --no-fund
-#18 4.070 
-#18 4.070 added 110 packages in 4s
-#18 4.072 npm notice
-#18 4.072 npm notice New major version of npm available! 10.9.9 -> 12.2.2
-#18 4.072 npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.2
-#18 4.072 npm notice To update run: npm install -g npm@12.2.2
-#18 4.072 npm notice
-#18 DONE 4.6s
+#18 CACHED
 
-#19 [backend 5/9] RUN --mount=type=secret,id=ca_extra,required=false     if [ -f /run/secrets/ca_extra ]; then export SSL_CERT_FILE=/run/secrets/ca_extra; fi;     dotnet restore src/PortalTarefas.Web/PortalTarefas.Web.csproj
-#19 0.666   Determining projects to restore...
-#19 ...
+#19 [frontend 5/6] COPY src/PortalTarefas.Frontend/ ./
+#19 CACHED
 
-#20 [frontend 5/6] COPY src/PortalTarefas.Frontend/ ./
-#20 DONE 0.1s
+#20 [backend 8/9] RUN dotnet publish src/PortalTarefas.Web/PortalTarefas.Web.csproj -c Release -o /app/publish       --no-restore -p:OpenApiGenerateDocuments=false -p:UseAppHost=false
+#20 CACHED
 
-#21 [frontend 6/6] RUN npm run build                                   # tsc -b && vite build -> /src/dist (base /app/)
-#21 0.187 
-#21 0.187 > portal-tarefas-frontend@0.0.0 build
-#21 0.187 > tsc -b && vite build
-#21 0.187 
-#21 0.980 vite v8.3.6 building client environment for production...
-#21 1.016 transforming...
-#21 1.117 ✓ 104 modules transformed.
-#21 1.153 rendering chunks...
-#21 1.205 computing gzip size...
-#21 1.209 dist/index.html                   0.48 kB │ gzip:  0.31 kB
-#21 1.209 dist/assets/index-DqONARHM.css    2.71 kB │ gzip:  1.11 kB
-#21 1.209 dist/assets/index-BqLhLNGV.js   281.57 kB │ gzip: 87.44 kB
-#21 1.209 
-#21 1.211 ✓ built in 220ms
-#21 DONE 1.3s
+#21 [backend 6/9] COPY src/PortalTarefas.Web/ src/PortalTarefas.Web/
+#21 CACHED
 
-#19 [backend 5/9] RUN --mount=type=secret,id=ca_extra,required=false     if [ -f /run/secrets/ca_extra ]; then export SSL_CERT_FILE=/run/secrets/ca_extra; fi;     dotnet restore src/PortalTarefas.Web/PortalTarefas.Web.csproj
-#19 16.62   Restored /src/src/PortalTarefas.Web/PortalTarefas.Web.csproj (in 15.68 sec).
-#19 DONE 17.0s
+#22 [backend 3/9] COPY global.json ./
+#22 CACHED
 
-#22 [backend 6/9] COPY src/PortalTarefas.Web/ src/PortalTarefas.Web/
-#22 DONE 0.0s
+#23 [backend 5/9] RUN --mount=type=secret,id=ca_extra,required=false     if [ -f /run/secrets/ca_extra ]; then export SSL_CERT_FILE=/run/secrets/ca_extra; fi;     dotnet restore src/PortalTarefas.Web/PortalTarefas.Web.csproj
+#23 CACHED
 
-#23 [backend 7/9] COPY docs/openapi/ docs/openapi/
-#23 DONE 0.0s
+#24 [backend 9/9] COPY --from=frontend /src/dist /app/publish/wwwroot/app
+#24 CACHED
 
-#24 [backend 8/9] RUN dotnet publish src/PortalTarefas.Web/PortalTarefas.Web.csproj -c Release -o /app/publish       --no-restore -p:OpenApiGenerateDocuments=false -p:UseAppHost=false
-#24 5.357 /src/src/PortalTarefas.Web/Controllers/ContaController.cs(40,16): warning ASP0026: This [Authorize] attribute is overridden by an [AllowAnonymous] attribute from farther away on 'ContaController'. See https://aka.ms/aspnetcore-warnings/ASP0026 for more details. (https://aka.ms/aspnet/analyzers) [/src/src/PortalTarefas.Web/PortalTarefas.Web.csproj]
-#24 5.576   PortalTarefas.Web -> /src/src/PortalTarefas.Web/bin/Release/net10.0/PortalTarefas.Web.dll
-#24 5.852   PortalTarefas.Web -> /app/publish/
-#24 DONE 6.0s
+#25 [final 2/4] WORKDIR /app
+#25 CACHED
 
-#25 [backend 9/9] COPY --from=frontend /src/dist /app/publish/wwwroot/app
-#25 DONE 0.0s
+#26 [final 3/4] COPY --from=backend --chown=root:root /app/publish ./
+#26 CACHED
 
-#26 [final 3/3] COPY --from=backend --chown=root:root /app/publish ./
-#26 DONE 0.1s
+#27 [final 4/4] RUN mkdir -p /chaves && chown 1654:1654 /chaves && chmod 700 /chaves
+#27 DONE 0.1s
 
-#27 exporting to image
-#27 exporting layers
-#27 exporting layers 2.5s done
-#27 exporting manifest sha256:4e26abca2b0179cf4c85b44cfbd90d46a94b219b185281dba5a7c1aebbfa8fa8 done
-#27 exporting config sha256:2d662f6cc6300290d46423c901936d52d0568cda3940f98ddb6b95f4ac234bff done
-#27 exporting attestation manifest sha256:95376482efe1aad89721a46fb4ed215107d1a92d570d43dd0409d33382c0951f done
-#27 exporting manifest list sha256:cfa9d1dfc306fd75a87ec172aa901b374016f49254cd56d276a19dff4f6c425f done
-#27 naming to docker.io/library/portal-tarefas:6a1dece done
-#27 unpacking to docker.io/library/portal-tarefas:6a1dece
-#27 unpacking to docker.io/library/portal-tarefas:6a1dece 0.4s done
-#27 naming to docker.io/library/portal-tarefas:dev done
-#27 unpacking to docker.io/library/portal-tarefas:dev done
-#27 DONE 3.0s
+#28 exporting to image
+#28 exporting layers 0.0s done
+#28 exporting manifest sha256:3445f2987883753d7753b05024c11a569d289331e7bfe6338149f018ebd10e89 done
+#28 exporting config sha256:aeffcee5e2684dc7f2c6df9850369e1e76e6d3a64b559e5de1ae239b29ea46ee done
+#28 exporting attestation manifest sha256:47700895cb422483a7ae30d22c5abd5c4caaa423899fdc246ce2094194c1804b done
+#28 exporting manifest list sha256:c33f83168f766e1bf716cbae42f9e800eeb39b8ea67b431f1eaa2b52a5c2ceef done
+#28 naming to docker.io/library/portal-tarefas:87ccb46 done
+#28 unpacking to docker.io/library/portal-tarefas:87ccb46 done
+#28 naming to docker.io/library/portal-tarefas:dev done
+#28 unpacking to docker.io/library/portal-tarefas:dev done
+#28 DONE 0.1s

@@ -43,6 +43,8 @@ ENV ASPNETCORE_HTTP_PORTS=8080 \
     APP_COMMIT=${APP_COMMIT}
 WORKDIR /app
 COPY --from=backend --chown=root:root /app/publish ./
+# Única pasta gravável pelo app: chaves do Data Protection (montada como volume no compose).
+RUN mkdir -p /chaves && chown $APP_UID:$APP_UID /chaves && chmod 700 /chaves
 # Usuário não privilegiado já existente na imagem oficial (UID 1654). Arquivos da aplicação pertencem ao root (somente leitura para o app).
 USER $APP_UID
 EXPOSE 8080

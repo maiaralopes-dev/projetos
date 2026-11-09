@@ -1,0 +1,29 @@
+===== Mesma imagem, outro ambiente, sem alterar código: Production =====
+$ docker run -d --name prod-sim --network portal-tarefas_default -p 8081:8080 -e ASPNETCORE_ENVIRONMENT=Production -e ConnectionStrings__PortalTarefas=*** -e Dependencias__Calendario__Url=http://calendario:5099/ portal-tarefas:87ccb46
+### Versão (Production)
+$ curl http://localhost:8081/api/versao
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+X-Correlation-Id: 135c60e6834d4d11b84e34e81671b851
+{
+    "versao": "1.0.0+87ccb46",
+    "commit": "87ccb46",
+    "ambiente": "Production"
+}
+
+### Readiness (Production)
+$ curl http://localhost:8081/health/ready
+HTTP/1.1 200 OK
+Content-Type: text/plain
+Cache-Control: no-store, no-cache
+X-Correlation-Id: a49d8325af1b426cbb1e4f0806c68ce7
+Healthy
+
+===== Configuração obrigatória ausente: falha na inicialização com mensagem segura =====
+$ docker run --rm -e Dependencias__Calendario__Url= -e ConnectionStrings__PortalTarefas=*** portal-tarefas:87ccb46
+{"Timestamp":"2026-11-09T02:04:19.838Z","EventId":11,"LogLevel":"Error","Category":"Microsoft.Extensions.Hosting.Internal.Host","Message":"Hosting failed to start","Exception":"Microsoft.Extensions.Options.OptionsValidationException: DataAnnotation validation 
+Unhandled exception. Microsoft.Extensions.Options.OptionsValidationException: DataAnnotation validation failed for 'DependenciasOptions' members: 'Url' with the error: 'Dependencias:Calendario:Url é obrigatória.'.
+(a senha fictícia 'NAO_DEVE_APARECER' aparece na saída? 0 ocorrência(s))
+
+$ docker run --rm portal-tarefas:87ccb46   # sem connection string
+Unhandled exception. System.InvalidOperationException: Connection string 'PortalTarefas' não configurada. Use 'dotnet user-secrets set ConnectionStrings:PortalTarefas ...' ou a variável de ambiente ConnectionStrings__PortalTarefas.

@@ -1,0 +1,56 @@
+===== Imagem portal-tarefas:87ccb46 =====
+tamanho em disco: 462MB
+
+-- Rótulos (rastreabilidade):
+org.opencontainers.image.revision=87ccb46
+org.opencontainers.image.source=https://github.com/maiaralopes-dev/projetos
+org.opencontainers.image.title=portal-tarefas
+org.opencontainers.image.version=1.0.0+87ccb46
+-- Usuário de execução: 1654  (UID não-root da imagem oficial)
+uid=1654(app) gid=1654(app) groups=1654(app)
+
+-- Variáveis de ambiente gravadas na imagem (nenhum segredo):
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+APP_UID=1654
+ASPNETCORE_HTTP_PORTS=8080
+DOTNET_RUNNING_IN_CONTAINER=true
+DOTNET_VERSION=10.0.14
+ASPNET_VERSION=10.0.14
+ASPNETCORE_ENVIRONMENT=Production
+ASPNETCORE_FORWARDEDHEADERS_ENABLED=true
+DOTNET_NOLOGO=1
+APP_VERSION=1.0.0+87ccb46
+APP_COMMIT=87ccb46
+
+-- Histórico de camadas da imagem final:
+0B	ENTRYPOINT ["dotnet" "PortalTarefas.Web.dll"]
+0B	HEALTHCHECK {Test:[CMD dotnet PortalTarefas.…
+0B	EXPOSE [8080/tcp]
+0B	USER 1654
+89.1MB	COPY --chown=root:root /app/publish ./ # bui…
+8.19kB	WORKDIR /app
+0B	ENV ASPNETCORE_HTTP_PORTS=8080 ASPNETCORE_EN…
+0B	LABEL org.opencontainers.image.title=portal-…
+0B	ARG APP_COMMIT=87ccb46
+0B	ARG APP_VERSION=1.0.0+87ccb46
+27.4MB	COPY /dotnet /usr/share/dotnet # buildkit
+0B	ENV ASPNET_VERSION=10.0.14
+
+-- Busca por segredos dentro da imagem:
+-rw-r--r-- 1 root root 40787 Nov  9 02:02 /app/PortalTarefas.Web.deps.json
+-rw-r--r-- 1 root root   540 Nov  9 02:02 /app/PortalTarefas.Web.runtimeconfig.json
+-rw-r--r-- 1 root root 13198 Nov  9 02:02 /app/PortalTarefas.Web.staticwebassets.endpoints.json
+-rw-r--r-- 1 root root   459 Nov  9 01:18 /app/appsettings.Development.json
+-rw-r--r-- 1 root root   252 Nov  9 01:57 /app/appsettings.Production.json
+-rw-r--r-- 1 root root   186 Nov  9 01:58 /app/appsettings.Staging.json
+-rw-r--r-- 1 root root   789 Nov  9 01:48 /app/appsettings.json
+0
+nenhum .env/secrets.json em /app
+ocorrências das senhas locais em /app: 0
+
+-- Ferramentas de build ausentes na imagem final:
+node ausente
+npm ausente
+curl ausente
+wget ausente
+SDKs .NET instalados: 0

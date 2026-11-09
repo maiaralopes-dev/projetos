@@ -31,8 +31,7 @@ services:
     depends_on:
       sql: { condition: service_healthy }
       calendario: { condition: service_started }
-    ports:
-      - "8080:8080"
+    expose: ["8080"]                   # sem porta publicada: o acesso externo passa pelo proxy TLS
     environment:
       ASPNETCORE_ENVIRONMENT: Staging
       ConnectionStrings__PortalTarefas: "Server=sql,1433;Database=PortalTarefas;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;Encrypt=True"
@@ -46,6 +45,16 @@ services:
       - chaves-dp:/chaves              # chaves do Data Protection sobrevivem à recriação do contêiner
     security_opt: ["no-new-privileges:true"]
     cap_drop: [ALL]
+
+  # Proxy reverso que termina o TLS (como um ingress/load balancer faria em produção).
+  # A API recebe X-Forwarded-Proto=https (ASPNETCORE_FORWARDEDHEADERS_ENABLED) e emite cookies Secure.
+  proxy:
+    image: caddy:2.10.2-alpine@sha256:4c6e91c6ed0e2fa03efd5b44747b625fec79bc9cd06ac5235a779726618e530d
+    command: ["caddy", "reverse-proxy", "--from", "https://localhost:8443", "--to", "api:8080", "--internal-certs"]
+    ports:
+      - "8443:8443"
+    depends_on:
+      api: { condition: service_healthy }
 
 volumes:
   chaves-dp:
