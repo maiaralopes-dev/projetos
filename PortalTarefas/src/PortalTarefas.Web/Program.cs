@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Http.Resilience;
 using Polly;
 using PortalTarefas.Web.Observabilidade;
@@ -15,7 +16,30 @@ using PortalTarefas.Web.Seguranca;
 using PortalTarefas.Web.Infraestrutura;
 using PortalTarefas.Web.Servicos;
 
+using PortalTarefas.Web.Configuracao;
+
+if (args.Contains("--sondar-saude"))           // usado pelo HEALTHCHECK do contêiner
+    return await SondaSaude.ExecutarAsync();
+
 var builder = WebApplication.CreateBuilder(args);
+
+// Durante o build, a ferramenta GetDocument executa o Program só para gerar o documento OpenAPI (sem banco).
+var gerandoOpenApi = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Name == "GetDocument.Insider";
+
+// ---------- Configuração validada na inicialização (unidade 8) ----------
+// Falha cedo, com mensagem que cita a CHAVE ausente e nunca o valor.
+if (!gerandoOpenApi)
+{
+    builder.Services.AddOptions<DependenciasOptions>().BindConfiguration(DependenciasOptions.Secao)
+        .ValidateDataAnnotations().ValidateOnStart();
+    builder.Services.AddOptions<ConexaoOptions>().BindConfiguration("ConnectionStrings")
+        .ValidateDataAnnotations().ValidateOnStart();
+}
+
+// Chaves do Data Protection (cifram o cookie de sessão) persistidas fora do contêiner, se configurado.
+if (builder.Configuration["DataProtection:Caminho"] is { Length: > 0 } caminhoChaves)
+    builder.Services.AddDataProtection().SetApplicationName("PortalTarefas")
+        .PersistKeysToFileSystem(new DirectoryInfo(caminhoChaves));
 
 // ---------- Observabilidade (unidade 7) ----------
 builder.AddObservabilidade();
@@ -44,8 +68,6 @@ builder.Services.ConfigureHttpJsonOptions(o =>
 builder.Services.AddSingleton(TimeProvider.System);
 
 // Persistência: a connection string vem de User Secrets (dev) ou variável de ambiente (produção).
-// Durante o build, a ferramenta GetDocument executa o Program só para gerar o documento OpenAPI (sem banco).
-var gerandoOpenApi = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Name == "GetDocument.Insider";
 var conexao = builder.Configuration.GetConnectionString("PortalTarefas")
     ?? (gerandoOpenApi ? "Server=nao-usado" : null)
     ?? throw new InvalidOperationException(
@@ -115,7 +137,7 @@ builder.Services.AddAntiforgery(o =>
 builder.Services.AddScoped<AntiforgeryApiFilter>();
 
 // ---------- Dependência externa com resiliência (unidade 7) ----------
-var urlCalendario = builder.Configuration["Dependencias:Calendario:Url"] ?? "http://localhost:5099/";
+var urlCalendario = builder.Configuration["Dependencias:Calendario:Url"] is { Length: > 0 } u ? u : "http://invalido/";
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddTransient<PropagarCorrelacaoHandler>();
 builder.Services.AddHttpClient<CalendarioCliente>(c => c.BaseAddress = new Uri(urlCalendario))
@@ -243,4 +265,14 @@ app.MapControllerRoute(          //    rota convencional da interface MVC
     name: "default",
     pattern: "{controller=Tarefas}/{action=Index}/{id:int?}");
 
+// Versão implantada (sem dados sensíveis): liga a execução ao commit que gerou a imagem.
+app.MapGet("/api/versao", (IConfiguration c, IWebHostEnvironment env) =>
+        new VersaoDto(c["APP_VERSION"] ?? "dev", c["APP_COMMIT"] ?? "local", env.EnvironmentName))
+    .AllowAnonymous().WithTags("Operação");
+
+// SPA React publicada junto com a API (implantação integrada): /app/* devolve o index.html,
+// e o roteamento do cliente assume a partir daí. Arquivos estáticos (JS/CSS) vêm de wwwroot/app.
+app.MapFallbackToFile("/app/{*caminho}", "app/index.html").AllowAnonymous();
+
 app.Run();
+return 0;

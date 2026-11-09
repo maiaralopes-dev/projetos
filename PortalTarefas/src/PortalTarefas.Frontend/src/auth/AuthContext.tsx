@@ -25,7 +25,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setCarregando(false)
   }, [])
 
-  useEffect(() => { restaurar() }, [restaurar])
+  // Sincroniza com um sistema externo (a API) uma única vez ao montar.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { void restaurar() }, [restaurar])
   useEffect(() => {
     registrarAoNaoAutenticado(() => setSessao(anonima))   // 401 em qualquer chamada => sessão encerrada
     return () => registrarAoNaoAutenticado(undefined)

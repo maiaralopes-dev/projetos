@@ -1,0 +1,18 @@
+# Nada de segredos, artefatos locais ou dependências instaladas no contexto de build.
+**/bin/
+**/obj/
+**/node_modules/
+**/dist/
+**/.env
+**/.env.*
+!**/.env.example
+!src/PortalTarefas.Frontend/.env.development
+**/*.user
+**/secrets.json
+.git/
+.vs/
+docs/evidencias/
+docs/relatorios/
+tests/
+TestResults/
+artifacts/

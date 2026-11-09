@@ -32,6 +32,3 @@ export function MensagemErro({ erro, onTentarNovamente }: { erro: ErroApi; onTen
 export function Selo({ children, classe }: { children: ReactNode; classe?: string }) {
   return <span className={`selo ${classe ?? ''}`}>{children}</span>
 }
-
-export const formatarData = (iso?: string) => (iso ? iso.split('-').reverse().join('/') : '—')
-export const rotuloSituacao: Record<string, string> = { Pendente: 'Pendente', EmAndamento: 'Em andamento', Concluida: 'Concluída' }

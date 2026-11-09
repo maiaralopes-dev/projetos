@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router'
 import { chamar, type ErroApi, type TarefaDetalhesDto } from '../api/http'
-import { Carregando, MensagemErro, Selo, TituloPagina, formatarData, rotuloSituacao } from '../components/Comuns'
+import { Carregando, MensagemErro, Selo, TituloPagina } from '../components/Comuns'
+import { formatarData, rotuloSituacao } from '../components/formatacao'
 import { useRequisicao } from '../hooks/useRequisicao'
 import { useAuth } from '../auth/AuthContext'
 

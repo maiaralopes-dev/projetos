@@ -6,6 +6,8 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   const alvo = env.API_PROXY_TARGET || 'https://localhost:7080'
   return {
+    // Em produção a SPA é servida pela API em /app/ (implantação integrada); em dev, na raiz do Vite.
+    base: mode === 'production' ? '/app/' : '/',
     plugins: [react()],
     server: {
       port: 5173,

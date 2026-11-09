@@ -1,6 +1,7 @@
 import { Link, useSearchParams } from 'react-router'
 import type { PaginaTarefaResumo, PrioridadeTarefa, SituacaoTarefa } from '../api/http'
-import { Carregando, MensagemErro, Selo, TituloPagina, formatarData, rotuloSituacao } from '../components/Comuns'
+import { Carregando, MensagemErro, Selo, TituloPagina } from '../components/Comuns'
+import { formatarData, rotuloSituacao } from '../components/formatacao'
 import { useRequisicao } from '../hooks/useRequisicao'
 
 const TAMANHO = 5
