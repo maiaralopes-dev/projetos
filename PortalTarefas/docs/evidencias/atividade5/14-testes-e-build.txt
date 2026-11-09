@@ -1,0 +1,17 @@
+$ npm test
+ RUN  v5.1.0 /home/user/projetos/PortalTarefas/src/PortalTarefas.Frontend
+
+
+ Test Files  2 passed (2)
+      Tests  16 passed (16)
+   Start at  01:36:43
+   Duration  888ms (environment 56%, tests 22%, setup 14%, import 5%, transform 3%)
+
+
+$ npm run build
+computing gzip size...
+dist/index.html                   0.47 kB │ gzip:  0.30 kB
+dist/assets/index-DE8CcRa0.css    2.47 kB │ gzip:  1.04 kB
+dist/assets/index-KaC6dK8A.js   275.24 kB │ gzip: 86.19 kB
+
+✓ built in 153ms

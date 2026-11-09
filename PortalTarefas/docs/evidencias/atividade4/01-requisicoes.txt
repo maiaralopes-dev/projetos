@@ -4,7 +4,7 @@ HTTP/2 200
 content-type: application/json; charset=utf-8
 x-total-count: 8
 link: </api/v2/tarefas?tamanho=3&pagina=1>; rel="first", </api/v2/tarefas?tamanho=3&pagina=2>; rel="next", </api/v2/tarefas?tamanho=3&pagina=3>; rel="last"
-x-correlation-id: 7baeb98a44774bbdb33693bc4f032721
+x-correlation-id: 142bbb9ff8934b9fb495309080ebf1fa
 {
     "itens": [
         {
@@ -44,7 +44,7 @@ HTTP/2 200
 content-type: application/json; charset=utf-8
 x-total-count: 8
 link: </api/v2/tarefas?pagina=1>; rel="first", </api/v2/tarefas?pagina=98>; rel="prev", </api/v2/tarefas?pagina=1>; rel="last"
-x-correlation-id: a017672c5d314c638b8419409a7b3d55
+x-correlation-id: ee725e79726d458f925affe5ba5bc6ec
 {
     "itens": [],
     "pagina": 99,
@@ -57,7 +57,7 @@ x-correlation-id: a017672c5d314c638b8419409a7b3d55
 $ curl https://localhost:7080/api/v2/tarefas?tamanho=0
 HTTP/2 400 
 content-type: application/problem+json
-x-correlation-id: 1e90f2b8de744514a07684b9e030901e
+x-correlation-id: f4bd9d5e55824a38a91408e0fc84fbd1
 {
     "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
     "title": "One or more validation errors occurred.",
@@ -68,15 +68,15 @@ x-correlation-id: 1e90f2b8de744514a07684b9e030901e
             "O tamanho deve estar entre 1 e 50."
         ]
     },
-    "traceId": "00-5f322e43682dda3ac85be0a1c9c19706-2a8e6c8607124556-00",
-    "correlationId": "1e90f2b8de744514a07684b9e030901e"
+    "traceId": "00-43afd75de3f200bf3cc82909264bf621-df13940b022e6b00-00",
+    "correlationId": "f4bd9d5e55824a38a91408e0fc84fbd1"
 }
 
 ### Limite máximo violado: tamanho=51
 $ curl https://localhost:7080/api/v2/tarefas?tamanho=51
 HTTP/2 400 
 content-type: application/problem+json
-x-correlation-id: 85baf1fce5a24f31963a8a4742d80780
+x-correlation-id: 2993ba90457b4056ae99ad8ed2bccef7
 {
     "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
     "title": "One or more validation errors occurred.",
@@ -87,15 +87,15 @@ x-correlation-id: 85baf1fce5a24f31963a8a4742d80780
             "O tamanho deve estar entre 1 e 50."
         ]
     },
-    "traceId": "00-74455a39dcbab4fb7be90a5fe02e3ae2-1086fe0d3f661613-00",
-    "correlationId": "85baf1fce5a24f31963a8a4742d80780"
+    "traceId": "00-020365bab65043cd05ae9dd265132a48-a76a1ed04f8cdc05-00",
+    "correlationId": "2993ba90457b4056ae99ad8ed2bccef7"
 }
 
 ### Limite mínimo violado: pagina=0
 $ curl https://localhost:7080/api/v2/tarefas?pagina=0
 HTTP/2 400 
 content-type: application/problem+json
-x-correlation-id: 5883a0dd30b54284b042c4ce0233b0e6
+x-correlation-id: aa7bf9c779074a8795b29c5ed98283ca
 {
     "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
     "title": "One or more validation errors occurred.",
@@ -106,8 +106,8 @@ x-correlation-id: 5883a0dd30b54284b042c4ce0233b0e6
             "A página deve ser maior ou igual a 1."
         ]
     },
-    "traceId": "00-796b31287706d3b6d05b96ef4b777fef-88e2ad66e4da2f2d-00",
-    "correlationId": "5883a0dd30b54284b042c4ce0233b0e6"
+    "traceId": "00-362f0aa28668a909e58aca9b5b37918f-8252e3e12f946576-00",
+    "correlationId": "aa7bf9c779074a8795b29c5ed98283ca"
 }
 
 ### Limite máximo aceito: tamanho=50
@@ -116,7 +116,7 @@ HTTP/2 200
 content-type: application/json; charset=utf-8
 x-total-count: 8
 link: </api/v2/tarefas?tamanho=50&ordenarPor=id&direcao=desc&pagina=1>; rel="first", </api/v2/tarefas?tamanho=50&ordenarPor=id&direcao=desc&pagina=1>; rel="last"
-x-correlation-id: 21165e07d85f4ab9ad8ead1cdaca4e84
+x-correlation-id: 044650c714f248958e963e5fd04eef90
 {
     "itens": [
         {
@@ -184,7 +184,7 @@ HTTP/2 200
 content-type: application/json; charset=utf-8
 x-total-count: 8
 link: </api/v2/tarefas?ordenarPor=prazo&tamanho=4&pagina=1>; rel="first", </api/v2/tarefas?ordenarPor=prazo&tamanho=4&pagina=2>; rel="next", </api/v2/tarefas?ordenarPor=prazo&tamanho=4&pagina=2>; rel="last"
-x-correlation-id: c5d3b89c85e24b8983a08b40b9913af4
+x-correlation-id: 844a5bae7b144f6a8fd5568bdf65dfe2
 {
     "itens": [
         {
@@ -230,7 +230,7 @@ x-correlation-id: c5d3b89c85e24b8983a08b40b9913af4
 $ curl https://localhost:7080/api/v2/tarefas?ordenarPor=versao
 HTTP/2 400 
 content-type: application/problem+json
-x-correlation-id: 4683a19609da400f8b905e3986e06038
+x-correlation-id: bfae9d4ee883436ca908142f00aa8a09
 {
     "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
     "title": "Parâmetros de consulta inválidos.",
@@ -241,8 +241,8 @@ x-correlation-id: 4683a19609da400f8b905e3986e06038
             "Campo de ordenação não permitido. Use: id, titulo, prazo, prioridade, situacao, criadaEm."
         ]
     },
-    "traceId": "00-f52a709f56076f13c08474e7ee27ed7c-508fa21532d7c453-00",
-    "correlationId": "4683a19609da400f8b905e3986e06038"
+    "traceId": "00-78b3f9072b5b5fcfd26305ea5c7d03c5-af935b3a89a4f8fc-00",
+    "correlationId": "bfae9d4ee883436ca908142f00aa8a09"
 }
 
 ### Combinação de dois filtros (situacao + prioridade)
@@ -251,7 +251,7 @@ HTTP/2 200
 content-type: application/json; charset=utf-8
 x-total-count: 1
 link: </api/v2/tarefas?situacao=Pendente&prioridade=Alta&pagina=1>; rel="first", </api/v2/tarefas?situacao=Pendente&prioridade=Alta&pagina=1>; rel="last"
-x-correlation-id: 13b807c3ca8841c0aeecc7454838fd4d
+x-correlation-id: 153236103a1d4aca9ffb2061bac20264
 {
     "itens": [
         {
@@ -275,7 +275,7 @@ HTTP/2 200
 content-type: application/json; charset=utf-8
 x-total-count: 3
 link: </api/v2/tarefas?situacao=Pendente&prazoAte=2026-11-20&pagina=1>; rel="first", </api/v2/tarefas?situacao=Pendente&prazoAte=2026-11-20&pagina=1>; rel="last"
-x-correlation-id: 544c8bffc0214b0186ac97e99b3f67ea
+x-correlation-id: b9fa6b21c88c4295a44557dcca8abcfe
 {
     "itens": [
         {
@@ -314,22 +314,22 @@ $ curl https://localhost:7080/api/v2/tarefas?situacao=Arquivada
 HTTP/2 400 
 content-type: application/problem+json
 cache-control: no-cache,no-store
-x-correlation-id: d39ec9d0ef734f759dac880cc6c18dd2
+x-correlation-id: 7e1706cf2f504203b2610ffc77dd1a1c
 {
     "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
     "title": "Requisição inválida.",
     "status": 400,
     "detail": "Verifique o formato dos parâmetros e do corpo JSON.",
     "instance": "GET /api/v2/tarefas",
-    "traceId": "00-f1d142b4d95808cacf4a73a2d9426843-db69240114ed3f93-00",
-    "correlationId": "d39ec9d0ef734f759dac880cc6c18dd2"
+    "traceId": "00-ca2122fb838890ddcc61fc8cf877c73c-98aba9812dae6484-00",
+    "correlationId": "7e1706cf2f504203b2610ffc77dd1a1c"
 }
 
 ### GET por id existente
 $ curl https://localhost:7080/api/v2/tarefas/5
 HTTP/2 200 
 content-type: application/json; charset=utf-8
-x-correlation-id: 7886adfd6e054d8092bca986d552a7d2
+x-correlation-id: 1e3f1dd68120487cbccedd75e7fa3492
 {
     "id": 5,
     "titulo": "Mapear entidades no EF Core",
@@ -337,7 +337,7 @@ x-correlation-id: 7886adfd6e054d8092bca986d552a7d2
     "situacao": "EmAndamento",
     "prioridade": "Alta",
     "prazo": "2026-11-12",
-    "criadaEm": "2026-11-09T01:31:36.8249255+00:00",
+    "criadaEm": "2026-11-09T01:36:18.6983755+00:00",
     "versao": "AAAAAAAAB9U="
 }
 
@@ -345,15 +345,15 @@ x-correlation-id: 7886adfd6e054d8092bca986d552a7d2
 $ curl https://localhost:7080/api/v2/tarefas/999
 HTTP/2 404 
 content-type: application/problem+json
-x-correlation-id: b54440b4d3044d18921d5613b334d72d
+x-correlation-id: 8148ff526a5542fa80b1fce217737e6c
 {
     "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
     "title": "Tarefa não encontrada.",
     "status": 404,
     "detail": "Não existe tarefa com id 999.",
     "instance": "GET /api/v2/tarefas/999",
-    "traceId": "00-8698b0c53d167baf8428c739525c695e-3c51cbcf9e276a01-00",
-    "correlationId": "b54440b4d3044d18921d5613b334d72d"
+    "traceId": "00-efab1b6cb589fa84fc2f87035a438559-1aefa918c97a3fae-00",
+    "correlationId": "8148ff526a5542fa80b1fce217737e6c"
 }
 
 ### POST válido (201 + Location)
@@ -361,7 +361,7 @@ $ curl -X POST -H Content-Type: application/json -d {"titulo":"Documentar API RE
 HTTP/2 201 
 content-type: application/json; charset=utf-8
 location: /api/v2/tarefas/9
-x-correlation-id: 62f986d4a1eb4a34803b7eeddc0ef1d3
+x-correlation-id: 32fdf99db35b4d59bebf5502a53e45c2
 {
     "id": 9,
     "titulo": "Documentar API REST",
@@ -369,7 +369,7 @@ x-correlation-id: 62f986d4a1eb4a34803b7eeddc0ef1d3
     "situacao": "Pendente",
     "prioridade": "Media",
     "prazo": "2026-12-01",
-    "criadaEm": "2026-11-09T01:31:41.8664923+00:00",
+    "criadaEm": "2026-11-09T01:36:22.7511165+00:00",
     "versao": "AAAAAAAAB9k="
 }
 
@@ -377,7 +377,7 @@ x-correlation-id: 62f986d4a1eb4a34803b7eeddc0ef1d3
 $ curl -X POST -H Content-Type: application/json -d {"titulo":"ab","prioridade":"Alta"} https://localhost:7080/api/v2/tarefas
 HTTP/2 400 
 content-type: application/problem+json
-x-correlation-id: 1b165e5f2f734686b72915db94c8ee81
+x-correlation-id: 6db01e2e734a4f918a0a9b320836c583
 {
     "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
     "title": "One or more validation errors occurred.",
@@ -385,18 +385,18 @@ x-correlation-id: 1b165e5f2f734686b72915db94c8ee81
     "instance": "POST /api/v2/tarefas",
     "errors": {
         "Titulo": [
-            "The field Titulo must be a string with a minimum length of 3 and a maximum length of 120."
+            "O título deve ter entre 3 e 120 caracteres."
         ]
     },
-    "traceId": "00-3b5b872696785dd13d857301900d2fa0-4e04e3f70f4cb5fb-00",
-    "correlationId": "1b165e5f2f734686b72915db94c8ee81"
+    "traceId": "00-e923ed718c1bb06f46bf5ddd508eea7e-4721967872dcfada-00",
+    "correlationId": "6db01e2e734a4f918a0a9b320836c583"
 }
 
 ### POST regra de negócio (Alta sem prazo)
 $ curl -X POST -H Content-Type: application/json -d {"titulo":"Urgente sem prazo","prioridade":"Alta"} https://localhost:7080/api/v2/tarefas
 HTTP/2 400 
 content-type: application/problem+json
-x-correlation-id: 1a5ef5159b604df7b3a34f6b2122c4d3
+x-correlation-id: b2077e954b1e4dfabcfd162e6762710c
 {
     "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
     "title": "One or more validation errors occurred.",
@@ -407,30 +407,30 @@ x-correlation-id: 1a5ef5159b604df7b3a34f6b2122c4d3
             "Tarefas de prioridade Alta precisam de prazo."
         ]
     },
-    "traceId": "00-0f626e33019dfc214367db1272c37807-7fb54f7aba06919f-00",
-    "correlationId": "1a5ef5159b604df7b3a34f6b2122c4d3"
+    "traceId": "00-3cc9a478d25bbf101ec78ebdd7b510ba-c83371361d0f08d2-00",
+    "correlationId": "b2077e954b1e4dfabcfd162e6762710c"
 }
 
 ### POST conflito (título duplicado → 409)
 $ curl -X POST -H Content-Type: application/json -d {"titulo":"Montar pipeline HTTP"} https://localhost:7080/api/v2/tarefas
 HTTP/2 409 
 content-type: application/problem+json
-x-correlation-id: 593e6c8b007044ce87dfd487be0452ca
+x-correlation-id: 4f236ea57088465db1ed40e301a29d33
 {
     "type": "https://portaltarefas.example/problemas/conflito",
     "title": "Título já utilizado.",
     "status": 409,
     "detail": "Já existe uma tarefa com o título 'Montar pipeline HTTP'.",
     "instance": "POST /api/v2/tarefas",
-    "traceId": "00-c07925eb2cb6814c423458440ae1ad07-2f2a57552203e1e1-00",
-    "correlationId": "593e6c8b007044ce87dfd487be0452ca"
+    "traceId": "00-406caa07e94d0cc26bea1a7d2e15aebf-c28a6b578b71eb7b-00",
+    "correlationId": "4f236ea57088465db1ed40e301a29d33"
 }
 
 ### PUT com versão atual (200)
 $ curl -X PUT -H Content-Type: application/json -d {"titulo":"Testar concorrência","situacao":"EmAndamento","prioridade":"Alta","prazo":"2026-11-30","versao":"AAAAAAAAB9c="} https://localhost:7080/api/v2/tarefas/7
 HTTP/2 200 
 content-type: application/json; charset=utf-8
-x-correlation-id: d9de9a596f84418994b5035c791e6577
+x-correlation-id: 6b0f55edaa7f416cba568066f3ada189
 {
     "id": 7,
     "titulo": "Testar concorrência",
@@ -438,7 +438,7 @@ x-correlation-id: d9de9a596f84418994b5035c791e6577
     "situacao": "EmAndamento",
     "prioridade": "Alta",
     "prazo": "2026-11-30",
-    "criadaEm": "2026-11-09T01:31:36.8249259+00:00",
+    "criadaEm": "2026-11-09T01:36:18.6983832+00:00",
     "versao": "AAAAAAAAB9o="
 }
 
@@ -446,7 +446,7 @@ x-correlation-id: d9de9a596f84418994b5035c791e6577
 $ curl -X PUT -H Content-Type: application/json -d {"titulo":"Testar concorrência","situacao":"Concluida","prioridade":"Alta","prazo":"2026-11-30","versao":"AAAAAAAAB9c="} https://localhost:7080/api/v2/tarefas/7
 HTTP/2 409 
 content-type: application/problem+json
-x-correlation-id: 1f922be73ab64fa4aa9d33d254c04c2a
+x-correlation-id: abb335cf156f450581111f854bd47d96
 {
     "type": "https://portaltarefas.example/problemas/conflito",
     "title": "A tarefa foi alterada por outra requisição.",
@@ -454,43 +454,43 @@ x-correlation-id: 1f922be73ab64fa4aa9d33d254c04c2a
     "detail": "Obtenha a tarefa novamente, reaplique suas alterações e envie a nova versão.",
     "instance": "PUT /api/v2/tarefas/7",
     "versaoAtual": "AAAAAAAAB9o=",
-    "traceId": "00-3dd80b1ed81d42f3373e6bd66b371a4c-0856a57275a5e1b6-00",
-    "correlationId": "1f922be73ab64fa4aa9d33d254c04c2a"
+    "traceId": "00-865b7a31a1da661e35cd04310c650aaf-4c55d6d6eebeed8c-00",
+    "correlationId": "abb335cf156f450581111f854bd47d96"
 }
 
 ### PUT em id inexistente (404)
 $ curl -X PUT -H Content-Type: application/json -d {"titulo":"Qualquer","situacao":"Pendente","prioridade":"Baixa","versao":"AAAAAAAAB9c="} https://localhost:7080/api/v2/tarefas/999
 HTTP/2 404 
 content-type: application/problem+json
-x-correlation-id: 5cc17a5f73134b9c9ef95e9992aad47e
+x-correlation-id: 2576923bdc5a48b8baf26c8e5362ef50
 {
     "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
     "title": "Tarefa não encontrada.",
     "status": 404,
     "detail": "Não existe tarefa com id 999.",
     "instance": "PUT /api/v2/tarefas/999",
-    "traceId": "00-2c0dacc05a074cad8d966d646aa7d12a-428d98b9656d9d61-00",
-    "correlationId": "5cc17a5f73134b9c9ef95e9992aad47e"
+    "traceId": "00-426c940e99e5315393595f7d94af17a5-3b04662d77d67e43-00",
+    "correlationId": "2576923bdc5a48b8baf26c8e5362ef50"
 }
 
 ### DELETE existente (204)
 $ curl -X DELETE https://localhost:7080/api/v2/tarefas/8
 HTTP/2 204 
-x-correlation-id: 41587ee8a33d47df868ce0d3475015f3
+x-correlation-id: 1f80959084a84db0a16fb9c1a4772b32
 
 ### DELETE repetido (404)
 $ curl -X DELETE https://localhost:7080/api/v2/tarefas/8
 HTTP/2 404 
 content-type: application/problem+json
-x-correlation-id: eeb7aeab63334cbcb7f0e506ac8a4627
+x-correlation-id: a39442fb49b84613a6d761a646a3ceca
 {
     "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
     "title": "Tarefa não encontrada.",
     "status": 404,
     "detail": "Não existe tarefa com id 8.",
     "instance": "DELETE /api/v2/tarefas/8",
-    "traceId": "00-9ce82d755b136b68dbf16d9d3af2e300-323421852adb0df1-00",
-    "correlationId": "eeb7aeab63334cbcb7f0e506ac8a4627"
+    "traceId": "00-cda2155c09fe331b4aa90b339d2bb730-8544ecd0d0034d5d-00",
+    "correlationId": "a39442fb49b84613a6d761a646a3ceca"
 }
 
 ### v1 continua ativa, mas sinaliza descontinuação
@@ -499,7 +499,7 @@ HTTP/2 200
 content-type: application/json; charset=utf-8
 deprecation: @1798761600
 link: </api/v2/tarefas>; rel="successor-version"
-x-correlation-id: 7e2610ee2b2740c092cda1e6ba9f1359
+x-correlation-id: 84e9bae277e7429c99e29bea3ed03e40
 {
     "id": 1,
     "titulo": "Configurar ambiente .NET 10",

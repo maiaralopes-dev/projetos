@@ -1,190 +1,190 @@
-01:31:39 info Command                      corr=-            Executed DbCommand (25ms) [Parameters=[], CommandType='Text', CommandTimeout='30'] SELECT 1
-01:31:39 info Migrations                   corr=-            Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.
-01:31:39 info Command                      corr=-            Executed DbCommand (27ms) [Parameters=[], CommandType='Text', CommandTimeout='30'] DECLARE @result int;
-01:31:40 info Command                      corr=-            Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30'] IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL BEGIN     CREATE TABLE [__EFMigrationsHistory] (         [MigrationId] nvarchar(150) NOT NULL,         [ProductVersion] nvarchar(32) NOT NULL,         CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY ([MigrationId])     ); END;
-01:31:40 info Command                      corr=-            Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30'] SELECT 1
-01:31:40 info Command                      corr=-            Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30'] SELECT OBJECT_ID(N'[__EFMigrationsHistory]');
-01:31:40 info Command                      corr=-            Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30'] SELECT [MigrationId], [ProductVersion] FROM [__EFMigrationsHistory] ORDER BY [MigrationId];
-01:31:40 info Migrations                   corr=-            No migrations were applied. The database is already up to date.
-01:31:40 info Command                      corr=-            Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30'] SELECT CASE     WHEN EXISTS (         SELECT 1         FROM [Tarefas] AS [t]) THEN CAST(1 AS bit)     ELSE CAST(0 AS bit) END
-01:31:40 info Command                      corr=-            Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30'] DECLARE @result int;
-01:31:40 warn KestrelServer                corr=-            The ASP.NET Core developer certificate is not trusted. For information about trusting the ASP.NET Core developer certificate, see https://aka.ms/aspnet/https-trust-dev-cert
-01:31:40 info Lifetime                     corr=-            Now listening on: https://localhost:7080
-01:31:40 info Lifetime                     corr=-            Now listening on: http://localhost:5080
-01:31:40 info Lifetime                     corr=-            Application started. Press Ctrl+C to shut down.
-01:31:40 info Lifetime                     corr=-            Hosting environment: Development
-01:31:40 info Lifetime                     corr=-            Content root path: /home/user/projetos/PortalTarefas/src/PortalTarefas.Web
-01:31:40 dbug CorrelationIdMiddleware      corr=77f12812a803 [1-Correlação] entrada /ping
-01:31:40 info RequestLoggingMiddleware     corr=77f12812a803 [2-Log] entrada GET /ping
-01:31:40 info RequestLoggingMiddleware     corr=77f12812a803 [2-Log] saída GET /ping -> 200 em 67.9 ms
-01:31:40 dbug CorrelationIdMiddleware      corr=77f12812a803 [1-Correlação] saída /ping
-01:31:40 dbug CorrelationIdMiddleware      corr=7baeb98a4477 [1-Correlação] entrada /api/v2/tarefas
-01:31:40 info RequestLoggingMiddleware     corr=7baeb98a4477 [2-Log] entrada GET /api/v2/tarefas
-01:31:40 info Command                      corr=7baeb98a4477 Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30'] SELECT COUNT(*) FROM [Tarefas] AS [t]
-01:31:41 info Command                      corr=7baeb98a4477 Executed DbCommand (13ms) [Parameters=[@hoje='?' (DbType = Date), @p='?' (DbType = Int32), @p1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT [t].[Id], [t].[Titulo], [t].[Situacao], [t].[Prioridade], [t].[Prazo], CASE     WHEN CASE         WHEN [t].[Prazo] < @hoje THEN CAST(1 AS bit)         ELSE CAST(0 AS bit)     END = CAST(1 AS bit) AND [t].[Situacao] <> N'Concluida' THEN CAST(1 AS bit)     ELSE CAST(0 AS bit) END FROM [Tarefas] AS [t] ORDER BY [t].[Id] OFFSET @p ROWS FETCH NEXT @p1 ROWS ONLY
-01:31:41 info RequestLoggingMiddleware     corr=7baeb98a4477 [2-Log] saída GET /api/v2/tarefas -> 200 em 163.3 ms
-01:31:41 dbug CorrelationIdMiddleware      corr=7baeb98a4477 [1-Correlação] saída /api/v2/tarefas
-01:31:41 dbug CorrelationIdMiddleware      corr=a017672c5d31 [1-Correlação] entrada /api/v2/tarefas
-01:31:41 info RequestLoggingMiddleware     corr=a017672c5d31 [2-Log] entrada GET /api/v2/tarefas
-01:31:41 info Command                      corr=a017672c5d31 Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30'] SELECT COUNT(*) FROM [Tarefas] AS [t]
-01:31:41 info Command                      corr=a017672c5d31 Executed DbCommand (1ms) [Parameters=[@hoje='?' (DbType = Date), @p='?' (DbType = Int32), @p1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT [t].[Id], [t].[Titulo], [t].[Situacao], [t].[Prioridade], [t].[Prazo], CASE     WHEN CASE         WHEN [t].[Prazo] < @hoje THEN CAST(1 AS bit)         ELSE CAST(0 AS bit)     END = CAST(1 AS bit) AND [t].[Situacao] <> N'Concluida' THEN CAST(1 AS bit)     ELSE CAST(0 AS bit) END FROM [Tarefas] AS [t] ORDER BY [t].[Id] OFFSET @p ROWS FETCH NEXT @p1 ROWS ONLY
-01:31:41 info RequestLoggingMiddleware     corr=a017672c5d31 [2-Log] saída GET /api/v2/tarefas -> 200 em 11.8 ms
-01:31:41 dbug CorrelationIdMiddleware      corr=a017672c5d31 [1-Correlação] saída /api/v2/tarefas
-01:31:41 dbug CorrelationIdMiddleware      corr=1e90f2b8de74 [1-Correlação] entrada /api/v2/tarefas
-01:31:41 info RequestLoggingMiddleware     corr=1e90f2b8de74 [2-Log] entrada GET /api/v2/tarefas
-01:31:41 info RequestLoggingMiddleware     corr=1e90f2b8de74 [2-Log] saída GET /api/v2/tarefas -> 400 em 19.8 ms
-01:31:41 dbug CorrelationIdMiddleware      corr=1e90f2b8de74 [1-Correlação] saída /api/v2/tarefas
-01:31:41 dbug CorrelationIdMiddleware      corr=85baf1fce5a2 [1-Correlação] entrada /api/v2/tarefas
-01:31:41 info RequestLoggingMiddleware     corr=85baf1fce5a2 [2-Log] entrada GET /api/v2/tarefas
-01:31:41 info RequestLoggingMiddleware     corr=85baf1fce5a2 [2-Log] saída GET /api/v2/tarefas -> 400 em 0.8 ms
-01:31:41 dbug CorrelationIdMiddleware      corr=85baf1fce5a2 [1-Correlação] saída /api/v2/tarefas
-01:31:41 dbug CorrelationIdMiddleware      corr=5883a0dd30b5 [1-Correlação] entrada /api/v2/tarefas
-01:31:41 info RequestLoggingMiddleware     corr=5883a0dd30b5 [2-Log] entrada GET /api/v2/tarefas
-01:31:41 info RequestLoggingMiddleware     corr=5883a0dd30b5 [2-Log] saída GET /api/v2/tarefas -> 400 em 1.0 ms
-01:31:41 dbug CorrelationIdMiddleware      corr=5883a0dd30b5 [1-Correlação] saída /api/v2/tarefas
-01:31:41 dbug CorrelationIdMiddleware      corr=21165e07d85f [1-Correlação] entrada /api/v2/tarefas
-01:31:41 info RequestLoggingMiddleware     corr=21165e07d85f [2-Log] entrada GET /api/v2/tarefas
-01:31:41 info Command                      corr=21165e07d85f Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30'] SELECT COUNT(*) FROM [Tarefas] AS [t]
-01:31:41 info Command                      corr=21165e07d85f Executed DbCommand (2ms) [Parameters=[@hoje='?' (DbType = Date), @p='?' (DbType = Int32), @p1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT [t].[Id], [t].[Titulo], [t].[Situacao], [t].[Prioridade], [t].[Prazo], CASE     WHEN CASE         WHEN [t].[Prazo] < @hoje THEN CAST(1 AS bit)         ELSE CAST(0 AS bit)     END = CAST(1 AS bit) AND [t].[Situacao] <> N'Concluida' THEN CAST(1 AS bit)     ELSE CAST(0 AS bit) END FROM [Tarefas] AS [t] ORDER BY [t].[Id] DESC OFFSET @p ROWS FETCH NEXT @p1 ROWS ONLY
-01:31:41 info RequestLoggingMiddleware     corr=21165e07d85f [2-Log] saída GET /api/v2/tarefas -> 200 em 19.7 ms
-01:31:41 dbug CorrelationIdMiddleware      corr=21165e07d85f [1-Correlação] saída /api/v2/tarefas
-01:31:41 dbug CorrelationIdMiddleware      corr=c5d3b89c85e2 [1-Correlação] entrada /api/v2/tarefas
-01:31:41 info RequestLoggingMiddleware     corr=c5d3b89c85e2 [2-Log] entrada GET /api/v2/tarefas
-01:31:41 info Command                      corr=c5d3b89c85e2 Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30'] SELECT COUNT(*) FROM [Tarefas] AS [t]
-01:31:41 info Command                      corr=c5d3b89c85e2 Executed DbCommand (2ms) [Parameters=[@hoje='?' (DbType = Date), @p='?' (DbType = Int32), @p1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT [t].[Id], [t].[Titulo], [t].[Situacao], [t].[Prioridade], [t].[Prazo], CASE     WHEN CASE         WHEN [t].[Prazo] < @hoje THEN CAST(1 AS bit)         ELSE CAST(0 AS bit)     END = CAST(1 AS bit) AND [t].[Situacao] <> N'Concluida' THEN CAST(1 AS bit)     ELSE CAST(0 AS bit) END FROM [Tarefas] AS [t] ORDER BY [t].[Prazo], [t].[Id] OFFSET @p ROWS FETCH NEXT @p1 ROWS ONLY
-01:31:41 info RequestLoggingMiddleware     corr=c5d3b89c85e2 [2-Log] saída GET /api/v2/tarefas -> 200 em 20.6 ms
-01:31:41 dbug CorrelationIdMiddleware      corr=c5d3b89c85e2 [1-Correlação] saída /api/v2/tarefas
-01:31:41 dbug CorrelationIdMiddleware      corr=4683a19609da [1-Correlação] entrada /api/v2/tarefas
-01:31:41 info RequestLoggingMiddleware     corr=4683a19609da [2-Log] entrada GET /api/v2/tarefas
-01:31:41 info RequestLoggingMiddleware     corr=4683a19609da [2-Log] saída GET /api/v2/tarefas -> 400 em 1.2 ms
-01:31:41 dbug CorrelationIdMiddleware      corr=4683a19609da [1-Correlação] saída /api/v2/tarefas
-01:31:41 dbug CorrelationIdMiddleware      corr=13b807c3ca88 [1-Correlação] entrada /api/v2/tarefas
-01:31:41 info RequestLoggingMiddleware     corr=13b807c3ca88 [2-Log] entrada GET /api/v2/tarefas
-01:31:41 info Command                      corr=13b807c3ca88 Executed DbCommand (9ms) [Parameters=[@situacao='?' (Size = 20), @prioridade='?' (Size = 10)], CommandType='Text', CommandTimeout='30'] SELECT COUNT(*) FROM [Tarefas] AS [t] WHERE [t].[Situacao] = @situacao AND [t].[Prioridade] = @prioridade
-01:31:41 info Command                      corr=13b807c3ca88 Executed DbCommand (3ms) [Parameters=[@hoje='?' (DbType = Date), @situacao='?' (Size = 20), @prioridade='?' (Size = 10), @p='?' (DbType = Int32), @p3='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT [t].[Id], [t].[Titulo], [t].[Situacao], [t].[Prioridade], [t].[Prazo], CASE     WHEN CASE         WHEN [t].[Prazo] < @hoje THEN CAST(1 AS bit)         ELSE CAST(0 AS bit)     END = CAST(1 AS bit) AND [t].[Situacao] <> N'Concluida' THEN CAST(1 AS bit)     ELSE CAST(0 AS bit) END FROM [Tarefas] AS [t] WHERE [t].[Situacao] = @situacao AND [t].[Prioridade] = @prioridade ORDER BY [t].[Id] OFFSET @p ROWS FETCH NEXT @p3 ROWS ONLY
-01:31:41 info RequestLoggingMiddleware     corr=13b807c3ca88 [2-Log] saída GET /api/v2/tarefas -> 200 em 39.0 ms
-01:31:41 dbug CorrelationIdMiddleware      corr=13b807c3ca88 [1-Correlação] saída /api/v2/tarefas
-01:31:41 dbug CorrelationIdMiddleware      corr=544c8bffc021 [1-Correlação] entrada /api/v2/tarefas
-01:31:41 info RequestLoggingMiddleware     corr=544c8bffc021 [2-Log] entrada GET /api/v2/tarefas
-01:31:41 info Command                      corr=544c8bffc021 Executed DbCommand (5ms) [Parameters=[@situacao='?' (Size = 20), @prazoAte='?' (DbType = Date)], CommandType='Text', CommandTimeout='30'] SELECT COUNT(*) FROM [Tarefas] AS [t] WHERE [t].[Situacao] = @situacao AND [t].[Prazo] <= @prazoAte
-01:31:41 info Command                      corr=544c8bffc021 Executed DbCommand (4ms) [Parameters=[@hoje='?' (DbType = Date), @situacao='?' (Size = 20), @prazoAte='?' (DbType = Date), @p='?' (DbType = Int32), @p3='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT [t].[Id], [t].[Titulo], [t].[Situacao], [t].[Prioridade], [t].[Prazo], CASE     WHEN CASE         WHEN [t].[Prazo] < @hoje THEN CAST(1 AS bit)         ELSE CAST(0 AS bit)     END = CAST(1 AS bit) AND [t].[Situacao] <> N'Concluida' THEN CAST(1 AS bit)     ELSE CAST(0 AS bit) END FROM [Tarefas] AS [t] WHERE [t].[Situacao] = @situacao AND [t].[Prazo] <= @prazoAte ORDER BY [t].[Id] OFFSET @p ROWS FETCH NEXT @p3 ROWS ONLY
-01:31:41 info RequestLoggingMiddleware     corr=544c8bffc021 [2-Log] saída GET /api/v2/tarefas -> 200 em 31.9 ms
-01:31:41 dbug CorrelationIdMiddleware      corr=544c8bffc021 [1-Correlação] saída /api/v2/tarefas
-01:31:41 dbug CorrelationIdMiddleware      corr=d39ec9d0ef73 [1-Correlação] entrada /api/v2/tarefas
-01:31:41 info RequestLoggingMiddleware     corr=d39ec9d0ef73 [2-Log] entrada GET /api/v2/tarefas
-01:31:41 warn TratadorExcecoesGlobal       corr=d39ec9d0ef73 Requisição inválida em GET /api/v2/tarefas: Failed to bind parameter "Nullable<SituacaoTarefa> Situacao" from "Arquivada".
-01:31:41 info RequestLoggingMiddleware     corr=d39ec9d0ef73 [2-Log] saída GET /api/v2/tarefas -> 400 em 3.5 ms
-01:31:41 dbug CorrelationIdMiddleware      corr=d39ec9d0ef73 [1-Correlação] saída /api/v2/tarefas
-01:31:41 dbug CorrelationIdMiddleware      corr=7886adfd6e05 [1-Correlação] entrada /api/v2/tarefas/5
-01:31:41 info RequestLoggingMiddleware     corr=7886adfd6e05 [2-Log] entrada GET /api/v2/tarefas/5
-01:31:41 info Command                      corr=7886adfd6e05 Executed DbCommand (4ms) [Parameters=[@id='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT TOP(1) [t].[Id], [t].[CriadaEm], [t].[Descricao], [t].[Prazo], [t].[Prioridade], [t].[Situacao], [t].[Titulo], [t].[Versao] FROM [Tarefas] AS [t] WHERE [t].[Id] = @id
-01:31:41 info RequestLoggingMiddleware     corr=7886adfd6e05 [2-Log] saída GET /api/v2/tarefas/5 -> 200 em 54.2 ms
-01:31:41 dbug CorrelationIdMiddleware      corr=7886adfd6e05 [1-Correlação] saída /api/v2/tarefas/5
-01:31:41 dbug CorrelationIdMiddleware      corr=b54440b4d304 [1-Correlação] entrada /api/v2/tarefas/999
-01:31:41 info RequestLoggingMiddleware     corr=b54440b4d304 [2-Log] entrada GET /api/v2/tarefas/999
-01:31:41 info Command                      corr=b54440b4d304 Executed DbCommand (1ms) [Parameters=[@id='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT TOP(1) [t].[Id], [t].[CriadaEm], [t].[Descricao], [t].[Prazo], [t].[Prioridade], [t].[Situacao], [t].[Titulo], [t].[Versao] FROM [Tarefas] AS [t] WHERE [t].[Id] = @id
-01:31:41 info RequestLoggingMiddleware     corr=b54440b4d304 [2-Log] saída GET /api/v2/tarefas/999 -> 404 em 4.5 ms
-01:31:41 dbug CorrelationIdMiddleware      corr=b54440b4d304 [1-Correlação] saída /api/v2/tarefas/999
-01:31:41 dbug CorrelationIdMiddleware      corr=62f986d4a1eb [1-Correlação] entrada /api/v2/tarefas
-01:31:41 info RequestLoggingMiddleware     corr=62f986d4a1eb [2-Log] entrada POST /api/v2/tarefas
-01:31:41 info Command                      corr=62f986d4a1eb Executed DbCommand (3ms) [Parameters=[@normalizado='?' (Size = 120)], CommandType='Text', CommandTimeout='30'] SELECT CASE     WHEN EXISTS (         SELECT 1         FROM [Tarefas] AS [t]         WHERE [t].[Titulo] = @normalizado) THEN CAST(1 AS bit)     ELSE CAST(0 AS bit) END
-01:31:42 info Command                      corr=62f986d4a1eb Executed DbCommand (3ms) [Parameters=[@p0='?' (DbType = DateTimeOffset), @p1='?' (Size = 1000), @p2='?' (DbType = Date), @p3='?' (Size = 10), @p4='?' (Size = 20), @p5='?' (Size = 120)], CommandType='Text', CommandTimeout='30'] SET IMPLICIT_TRANSACTIONS OFF; SET NOCOUNT ON; INSERT INTO [Tarefas] ([CriadaEm], [Descricao], [Prazo], [Prioridade], [Situacao], [Titulo]) OUTPUT INSERTED.[Id], INSERTED.[Versao] VALUES (@p0, @p1, @p2, @p3, @p4, @p5);
-01:31:42 info Command                      corr=62f986d4a1eb Executed DbCommand (3ms) [Parameters=[@p6='?' (Size = 50), @p7='?' (Size = 500), @p8='?' (DbType = DateTimeOffset), @p9='?' (DbType = Int32), @p10='?' (Size = 100)], CommandType='Text', CommandTimeout='30'] SET IMPLICIT_TRANSACTIONS OFF; SET NOCOUNT ON; INSERT INTO [EventosAuditoria] ([Acao], [Detalhe], [OcorridoEm], [TarefaId], [Usuario]) OUTPUT INSERTED.[Id] VALUES (@p6, @p7, @p8, @p9, @p10);
-01:31:42 info RequestLoggingMiddleware     corr=62f986d4a1eb [2-Log] saída POST /api/v2/tarefas -> 201 em 264.5 ms
-01:31:42 dbug CorrelationIdMiddleware      corr=62f986d4a1eb [1-Correlação] saída /api/v2/tarefas
-01:31:42 dbug CorrelationIdMiddleware      corr=1b165e5f2f73 [1-Correlação] entrada /api/v2/tarefas
-01:31:42 info RequestLoggingMiddleware     corr=1b165e5f2f73 [2-Log] entrada POST /api/v2/tarefas
-01:31:42 info RequestLoggingMiddleware     corr=1b165e5f2f73 [2-Log] saída POST /api/v2/tarefas -> 400 em 2.4 ms
-01:31:42 dbug CorrelationIdMiddleware      corr=1b165e5f2f73 [1-Correlação] saída /api/v2/tarefas
-01:31:42 dbug CorrelationIdMiddleware      corr=1a5ef5159b60 [1-Correlação] entrada /api/v2/tarefas
-01:31:42 info RequestLoggingMiddleware     corr=1a5ef5159b60 [2-Log] entrada POST /api/v2/tarefas
-01:31:42 info RequestLoggingMiddleware     corr=1a5ef5159b60 [2-Log] saída POST /api/v2/tarefas -> 400 em 1.2 ms
-01:31:42 dbug CorrelationIdMiddleware      corr=1a5ef5159b60 [1-Correlação] saída /api/v2/tarefas
-01:31:42 dbug CorrelationIdMiddleware      corr=593e6c8b0070 [1-Correlação] entrada /api/v2/tarefas
-01:31:42 info RequestLoggingMiddleware     corr=593e6c8b0070 [2-Log] entrada POST /api/v2/tarefas
-01:31:42 info Command                      corr=593e6c8b0070 Executed DbCommand (1ms) [Parameters=[@normalizado='?' (Size = 120)], CommandType='Text', CommandTimeout='30'] SELECT CASE     WHEN EXISTS (         SELECT 1         FROM [Tarefas] AS [t]         WHERE [t].[Titulo] = @normalizado) THEN CAST(1 AS bit)     ELSE CAST(0 AS bit) END
-01:31:42 info RequestLoggingMiddleware     corr=593e6c8b0070 [2-Log] saída POST /api/v2/tarefas -> 409 em 3.5 ms
-01:31:42 dbug CorrelationIdMiddleware      corr=593e6c8b0070 [1-Correlação] saída /api/v2/tarefas
-01:31:42 dbug CorrelationIdMiddleware      corr=b36e976b9b04 [1-Correlação] entrada /api/v2/tarefas/7
-01:31:42 info RequestLoggingMiddleware     corr=b36e976b9b04 [2-Log] entrada GET /api/v2/tarefas/7
-01:31:42 info Command                      corr=b36e976b9b04 Executed DbCommand (1ms) [Parameters=[@id='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT TOP(1) [t].[Id], [t].[CriadaEm], [t].[Descricao], [t].[Prazo], [t].[Prioridade], [t].[Situacao], [t].[Titulo], [t].[Versao] FROM [Tarefas] AS [t] WHERE [t].[Id] = @id
-01:31:42 info RequestLoggingMiddleware     corr=b36e976b9b04 [2-Log] saída GET /api/v2/tarefas/7 -> 200 em 2.3 ms
-01:31:42 dbug CorrelationIdMiddleware      corr=b36e976b9b04 [1-Correlação] saída /api/v2/tarefas/7
-01:31:42 dbug CorrelationIdMiddleware      corr=d9de9a596f84 [1-Correlação] entrada /api/v2/tarefas/7
-01:31:42 info RequestLoggingMiddleware     corr=d9de9a596f84 [2-Log] entrada PUT /api/v2/tarefas/7
-01:31:42 info Command                      corr=d9de9a596f84 Executed DbCommand (1ms) [Parameters=[@id='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT TOP(1) [t].[Id], [t].[CriadaEm], [t].[Descricao], [t].[Prazo], [t].[Prioridade], [t].[Situacao], [t].[Titulo], [t].[Versao] FROM [Tarefas] AS [t] WHERE [t].[Id] = @id
-01:31:42 info Command                      corr=d9de9a596f84 Executed DbCommand (2ms) [Parameters=[@normalizado='?' (Size = 120), @ignorarId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT CASE     WHEN EXISTS (         SELECT 1         FROM [Tarefas] AS [t]         WHERE [t].[Titulo] = @normalizado AND [t].[Id] <> @ignorarId) THEN CAST(1 AS bit)     ELSE CAST(0 AS bit) END
-01:31:42 info Command                      corr=d9de9a596f84 Executed DbCommand (2ms) [Parameters=[@tarefa_Id='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT TOP(1) [t].[Id], [t].[CriadaEm], [t].[Descricao], [t].[Prazo], [t].[Prioridade], [t].[Situacao], [t].[Titulo], [t].[Versao] FROM [Tarefas] AS [t] WHERE [t].[Id] = @tarefa_Id
-01:31:42 info Command                      corr=d9de9a596f84 Executed DbCommand (4ms) [Parameters=[@p0='?' (Size = 50), @p1='?' (Size = 500), @p2='?' (DbType = DateTimeOffset), @p3='?' (DbType = Int32), @p4='?' (Size = 100), @p8='?' (DbType = Int32), @p5='?' (DbType = Date), @p6='?' (Size = 20), @p7='?' (Size = 120), @p9='?' (Size = 8) (DbType = Binary)], CommandType='Text', CommandTimeout='30'] SET NOCOUNT ON; INSERT INTO [EventosAuditoria] ([Acao], [Detalhe], [OcorridoEm], [TarefaId], [Usuario]) OUTPUT INSERTED.[Id] VALUES (@p0, @p1, @p2, @p3, @p4); UPDATE [Tarefas] SET [Prazo] = @p5, [Situacao] = @p6, [Titulo] = @p7 OUTPUT INSERTED.[Versao] WHERE [Id] = @p8 AND [Versao] = @p9;
-01:31:42 info Command                      corr=d9de9a596f84 Executed DbCommand (1ms) [Parameters=[@id='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT TOP(1) [t].[Id], [t].[CriadaEm], [t].[Descricao], [t].[Prazo], [t].[Prioridade], [t].[Situacao], [t].[Titulo], [t].[Versao] FROM [Tarefas] AS [t] WHERE [t].[Id] = @id
-01:31:42 info RequestLoggingMiddleware     corr=d9de9a596f84 [2-Log] saída PUT /api/v2/tarefas/7 -> 200 em 58.7 ms
-01:31:42 dbug CorrelationIdMiddleware      corr=d9de9a596f84 [1-Correlação] saída /api/v2/tarefas/7
-01:31:42 dbug CorrelationIdMiddleware      corr=1f922be73ab6 [1-Correlação] entrada /api/v2/tarefas/7
-01:31:42 info RequestLoggingMiddleware     corr=1f922be73ab6 [2-Log] entrada PUT /api/v2/tarefas/7
-01:31:42 info Command                      corr=1f922be73ab6 Executed DbCommand (1ms) [Parameters=[@id='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT TOP(1) [t].[Id], [t].[CriadaEm], [t].[Descricao], [t].[Prazo], [t].[Prioridade], [t].[Situacao], [t].[Titulo], [t].[Versao] FROM [Tarefas] AS [t] WHERE [t].[Id] = @id
-01:31:42 info Command                      corr=1f922be73ab6 Executed DbCommand (1ms) [Parameters=[@normalizado='?' (Size = 120), @ignorarId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT CASE     WHEN EXISTS (         SELECT 1         FROM [Tarefas] AS [t]         WHERE [t].[Titulo] = @normalizado AND [t].[Id] <> @ignorarId) THEN CAST(1 AS bit)     ELSE CAST(0 AS bit) END
-01:31:42 info Command                      corr=1f922be73ab6 Executed DbCommand (1ms) [Parameters=[@tarefa_Id='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT TOP(1) [t].[Id], [t].[CriadaEm], [t].[Descricao], [t].[Prazo], [t].[Prioridade], [t].[Situacao], [t].[Titulo], [t].[Versao] FROM [Tarefas] AS [t] WHERE [t].[Id] = @tarefa_Id
-01:31:42 info Command                      corr=1f922be73ab6 Executed DbCommand (3ms) [Parameters=[@p0='?' (Size = 50), @p1='?' (Size = 500), @p2='?' (DbType = DateTimeOffset), @p3='?' (DbType = Int32), @p4='?' (Size = 100), @p7='?' (DbType = Int32), @p5='?' (Size = 20), @p6='?' (Size = 120), @p8='?' (Size = 8) (DbType = Binary)], CommandType='Text', CommandTimeout='30'] SET NOCOUNT ON; INSERT INTO [EventosAuditoria] ([Acao], [Detalhe], [OcorridoEm], [TarefaId], [Usuario]) OUTPUT INSERTED.[Id] VALUES (@p0, @p1, @p2, @p3, @p4); UPDATE [Tarefas] SET [Situacao] = @p5, [Titulo] = @p6 OUTPUT INSERTED.[Versao] WHERE [Id] = @p7 AND [Versao] = @p8;
-01:31:42 info Command                      corr=1f922be73ab6 Executed DbCommand (2ms) [Parameters=[@p='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT TOP(1) [t].[Id], [t].[CriadaEm], [t].[Descricao], [t].[Prazo], [t].[Prioridade], [t].[Situacao], [t].[Titulo], [t].[Versao] FROM [Tarefas] AS [t] WHERE [t].[Id] = @p
-01:31:42 warn TarefaServicoEf              corr=1f922be73ab6 Conflito de concorrência ao editar a tarefa 7
-01:31:42 info RequestLoggingMiddleware     corr=1f922be73ab6 [2-Log] saída PUT /api/v2/tarefas/7 -> 409 em 52.5 ms
-01:31:42 dbug CorrelationIdMiddleware      corr=1f922be73ab6 [1-Correlação] saída /api/v2/tarefas/7
-01:31:42 dbug CorrelationIdMiddleware      corr=5cc17a5f7313 [1-Correlação] entrada /api/v2/tarefas/999
-01:31:42 info RequestLoggingMiddleware     corr=5cc17a5f7313 [2-Log] entrada PUT /api/v2/tarefas/999
-01:31:42 info Command                      corr=5cc17a5f7313 Executed DbCommand (1ms) [Parameters=[@id='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT TOP(1) [t].[Id], [t].[CriadaEm], [t].[Descricao], [t].[Prazo], [t].[Prioridade], [t].[Situacao], [t].[Titulo], [t].[Versao] FROM [Tarefas] AS [t] WHERE [t].[Id] = @id
-01:31:42 info RequestLoggingMiddleware     corr=5cc17a5f7313 [2-Log] saída PUT /api/v2/tarefas/999 -> 404 em 3.3 ms
-01:31:42 dbug CorrelationIdMiddleware      corr=5cc17a5f7313 [1-Correlação] saída /api/v2/tarefas/999
-01:31:42 dbug CorrelationIdMiddleware      corr=41587ee8a33d [1-Correlação] entrada /api/v2/tarefas/8
-01:31:42 info RequestLoggingMiddleware     corr=41587ee8a33d [2-Log] entrada DELETE /api/v2/tarefas/8
-01:31:42 info Command                      corr=41587ee8a33d Executed DbCommand (6ms) [Parameters=[@id='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] DELETE FROM [t] FROM [Tarefas] AS [t] WHERE [t].[Id] = @id
-01:31:42 info RequestLoggingMiddleware     corr=41587ee8a33d [2-Log] saída DELETE /api/v2/tarefas/8 -> 204 em 17.3 ms
-01:31:42 dbug CorrelationIdMiddleware      corr=41587ee8a33d [1-Correlação] saída /api/v2/tarefas/8
-01:31:42 dbug CorrelationIdMiddleware      corr=eeb7aeab6333 [1-Correlação] entrada /api/v2/tarefas/8
-01:31:42 info RequestLoggingMiddleware     corr=eeb7aeab6333 [2-Log] entrada DELETE /api/v2/tarefas/8
-01:31:42 info Command                      corr=eeb7aeab6333 Executed DbCommand (1ms) [Parameters=[@id='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] DELETE FROM [t] FROM [Tarefas] AS [t] WHERE [t].[Id] = @id
-01:31:42 info RequestLoggingMiddleware     corr=eeb7aeab6333 [2-Log] saída DELETE /api/v2/tarefas/8 -> 404 em 2.3 ms
-01:31:42 dbug CorrelationIdMiddleware      corr=eeb7aeab6333 [1-Correlação] saída /api/v2/tarefas/8
-01:31:42 dbug CorrelationIdMiddleware      corr=7e2610ee2b27 [1-Correlação] entrada /api/v1/tarefas/1
-01:31:42 info RequestLoggingMiddleware     corr=7e2610ee2b27 [2-Log] entrada GET /api/v1/tarefas/1
-01:31:42 info Command                      corr=7e2610ee2b27 Executed DbCommand (1ms) [Parameters=[@id='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT TOP(1) [t].[Id], [t].[CriadaEm], [t].[Descricao], [t].[Prazo], [t].[Prioridade], [t].[Situacao], [t].[Titulo], [t].[Versao] FROM [Tarefas] AS [t] WHERE [t].[Id] = @id
-01:31:42 info RequestLoggingMiddleware     corr=7e2610ee2b27 [2-Log] saída GET /api/v1/tarefas/1 -> 200 em 7.1 ms
-01:31:42 dbug CorrelationIdMiddleware      corr=7e2610ee2b27 [1-Correlação] saída /api/v1/tarefas/1
-01:31:42 dbug CorrelationIdMiddleware      corr=10951356882f [1-Correlação] entrada /openapi/v2.json
-01:31:42 info RequestLoggingMiddleware     corr=10951356882f [2-Log] entrada GET /openapi/v2.json
-01:31:42 info RequestLoggingMiddleware     corr=10951356882f [2-Log] saída GET /openapi/v2.json -> 200 em 127.0 ms
-01:31:42 dbug CorrelationIdMiddleware      corr=10951356882f [1-Correlação] saída /openapi/v2.json
-01:31:43 dbug CorrelationIdMiddleware      corr=0b166683ab40 [1-Correlação] entrada /scalar/v2
-01:31:43 info RequestLoggingMiddleware     corr=0b166683ab40 [2-Log] entrada GET /scalar/v2
-01:31:43 info RequestLoggingMiddleware     corr=0b166683ab40 [2-Log] saída GET /scalar/v2 -> 200 em 86.4 ms
-01:31:43 dbug CorrelationIdMiddleware      corr=0b166683ab40 [1-Correlação] saída /scalar/v2
-01:31:43 dbug CorrelationIdMiddleware      corr=5f09e5380928 [1-Correlação] entrada /scalar/scalar.js
-01:31:43 info RequestLoggingMiddleware     corr=5f09e5380928 [2-Log] entrada GET /scalar/scalar.js
-01:31:43 dbug CorrelationIdMiddleware      corr=37fbd293622b [1-Correlação] entrada /scalar/scalar.aspnetcore.js
-01:31:43 info RequestLoggingMiddleware     corr=37fbd293622b [2-Log] entrada GET /scalar/scalar.aspnetcore.js
-01:31:43 info RequestLoggingMiddleware     corr=37fbd293622b [2-Log] saída GET /scalar/scalar.aspnetcore.js -> 200 em 25.8 ms
-01:31:43 dbug CorrelationIdMiddleware      corr=37fbd293622b [1-Correlação] saída /scalar/scalar.aspnetcore.js
-01:31:43 info RequestLoggingMiddleware     corr=5f09e5380928 [2-Log] saída GET /scalar/scalar.js -> 200 em 35.2 ms
-01:31:43 dbug CorrelationIdMiddleware      corr=5f09e5380928 [1-Correlação] saída /scalar/scalar.js
-01:31:43 dbug CorrelationIdMiddleware      corr=d481c2977ed9 [1-Correlação] entrada /openapi/v2.json
-01:31:43 info RequestLoggingMiddleware     corr=d481c2977ed9 [2-Log] entrada GET /openapi/v2.json
-01:31:43 info RequestLoggingMiddleware     corr=d481c2977ed9 [2-Log] saída GET /openapi/v2.json -> 200 em 18.4 ms
-01:31:43 dbug CorrelationIdMiddleware      corr=d481c2977ed9 [1-Correlação] saída /openapi/v2.json
-01:31:47 dbug CorrelationIdMiddleware      corr=15426720acaa [1-Correlação] entrada /api/v2/tarefas
-01:31:47 info RequestLoggingMiddleware     corr=15426720acaa [2-Log] entrada GET /api/v2/tarefas
-01:31:47 info Command                      corr=15426720acaa Executed DbCommand (3ms) [Parameters=[@situacao='?' (Size = 20)], CommandType='Text', CommandTimeout='30'] SELECT COUNT(*) FROM [Tarefas] AS [t] WHERE [t].[Situacao] = @situacao
-01:31:47 info Command                      corr=15426720acaa Executed DbCommand (3ms) [Parameters=[@hoje='?' (DbType = Date), @situacao='?' (Size = 20), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT [t].[Id], [t].[Titulo], [t].[Situacao], [t].[Prioridade], [t].[Prazo], CASE     WHEN CASE         WHEN [t].[Prazo] < @hoje THEN CAST(1 AS bit)         ELSE CAST(0 AS bit)     END = CAST(1 AS bit) AND [t].[Situacao] <> N'Concluida' THEN CAST(1 AS bit)     ELSE CAST(0 AS bit) END FROM [Tarefas] AS [t] WHERE [t].[Situacao] = @situacao ORDER BY [t].[Prazo], [t].[Id] OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
-01:31:47 info RequestLoggingMiddleware     corr=15426720acaa [2-Log] saída GET /api/v2/tarefas -> 200 em 33.9 ms
-01:31:47 dbug CorrelationIdMiddleware      corr=15426720acaa [1-Correlação] saída /api/v2/tarefas
-01:31:47 dbug CorrelationIdMiddleware      corr=4bccea9044a7 [1-Correlação] entrada /api/v2/tarefas
-01:31:47 info RequestLoggingMiddleware     corr=4bccea9044a7 [2-Log] entrada POST /api/v2/tarefas
-01:31:47 info Command                      corr=4bccea9044a7 Executed DbCommand (2ms) [Parameters=[@normalizado='?' (Size = 120)], CommandType='Text', CommandTimeout='30'] SELECT CASE     WHEN EXISTS (         SELECT 1         FROM [Tarefas] AS [t]         WHERE [t].[Titulo] = @normalizado) THEN CAST(1 AS bit)     ELSE CAST(0 AS bit) END
-01:31:47 info Command                      corr=4bccea9044a7 Executed DbCommand (1ms) [Parameters=[@p0='?' (DbType = DateTimeOffset), @p1='?' (Size = 1000), @p2='?' (DbType = Date), @p3='?' (Size = 10), @p4='?' (Size = 20), @p5='?' (Size = 120)], CommandType='Text', CommandTimeout='30'] SET IMPLICIT_TRANSACTIONS OFF; SET NOCOUNT ON; INSERT INTO [Tarefas] ([CriadaEm], [Descricao], [Prazo], [Prioridade], [Situacao], [Titulo]) OUTPUT INSERTED.[Id], INSERTED.[Versao] VALUES (@p0, @p1, @p2, @p3, @p4, @p5);
-01:31:47 info Command                      corr=4bccea9044a7 Executed DbCommand (1ms) [Parameters=[@p6='?' (Size = 50), @p7='?' (Size = 500), @p8='?' (DbType = DateTimeOffset), @p9='?' (DbType = Int32), @p10='?' (Size = 100)], CommandType='Text', CommandTimeout='30'] SET IMPLICIT_TRANSACTIONS OFF; SET NOCOUNT ON; INSERT INTO [EventosAuditoria] ([Acao], [Detalhe], [OcorridoEm], [TarefaId], [Usuario]) OUTPUT INSERTED.[Id] VALUES (@p6, @p7, @p8, @p9, @p10);
-01:31:47 info RequestLoggingMiddleware     corr=4bccea9044a7 [2-Log] saída POST /api/v2/tarefas -> 201 em 11.4 ms
-01:31:47 dbug CorrelationIdMiddleware      corr=4bccea9044a7 [1-Correlação] saída /api/v2/tarefas
-01:31:47 dbug CorrelationIdMiddleware      corr=bbcf101431f8 [1-Correlação] entrada /api/v2/tarefas/999999
-01:31:47 info RequestLoggingMiddleware     corr=bbcf101431f8 [2-Log] entrada GET /api/v2/tarefas/999999
-01:31:47 info Command                      corr=bbcf101431f8 Executed DbCommand (1ms) [Parameters=[@id='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT TOP(1) [t].[Id], [t].[CriadaEm], [t].[Descricao], [t].[Prazo], [t].[Prioridade], [t].[Situacao], [t].[Titulo], [t].[Versao] FROM [Tarefas] AS [t] WHERE [t].[Id] = @id
-01:31:47 info RequestLoggingMiddleware     corr=bbcf101431f8 [2-Log] saída GET /api/v2/tarefas/999999 -> 404 em 2.5 ms
-01:31:47 dbug CorrelationIdMiddleware      corr=bbcf101431f8 [1-Correlação] saída /api/v2/tarefas/999999
-01:31:47 info Lifetime                     corr=-            Application is shutting down...
+01:36:21 info Command                      corr=-            Executed DbCommand (22ms) [Parameters=[], CommandType='Text', CommandTimeout='30'] SELECT 1
+01:36:21 info Migrations                   corr=-            Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.
+01:36:21 info Command                      corr=-            Executed DbCommand (28ms) [Parameters=[], CommandType='Text', CommandTimeout='30'] DECLARE @result int;
+01:36:21 info Command                      corr=-            Executed DbCommand (5ms) [Parameters=[], CommandType='Text', CommandTimeout='30'] IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL BEGIN     CREATE TABLE [__EFMigrationsHistory] (         [MigrationId] nvarchar(150) NOT NULL,         [ProductVersion] nvarchar(32) NOT NULL,         CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY ([MigrationId])     ); END;
+01:36:21 info Command                      corr=-            Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30'] SELECT 1
+01:36:21 info Command                      corr=-            Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30'] SELECT OBJECT_ID(N'[__EFMigrationsHistory]');
+01:36:21 info Command                      corr=-            Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30'] SELECT [MigrationId], [ProductVersion] FROM [__EFMigrationsHistory] ORDER BY [MigrationId];
+01:36:21 info Migrations                   corr=-            No migrations were applied. The database is already up to date.
+01:36:21 info Command                      corr=-            Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30'] SELECT CASE     WHEN EXISTS (         SELECT 1         FROM [Tarefas] AS [t]) THEN CAST(1 AS bit)     ELSE CAST(0 AS bit) END
+01:36:21 info Command                      corr=-            Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30'] DECLARE @result int;
+01:36:21 warn KestrelServer                corr=-            The ASP.NET Core developer certificate is not trusted. For information about trusting the ASP.NET Core developer certificate, see https://aka.ms/aspnet/https-trust-dev-cert
+01:36:21 info Lifetime                     corr=-            Now listening on: https://localhost:7080
+01:36:21 info Lifetime                     corr=-            Now listening on: http://localhost:5080
+01:36:21 info Lifetime                     corr=-            Application started. Press Ctrl+C to shut down.
+01:36:21 info Lifetime                     corr=-            Hosting environment: Development
+01:36:21 info Lifetime                     corr=-            Content root path: /home/user/projetos/PortalTarefas/src/PortalTarefas.Web
+01:36:21 dbug CorrelationIdMiddleware      corr=e496bd7d55ed [1-Correlação] entrada /ping
+01:36:21 info RequestLoggingMiddleware     corr=e496bd7d55ed [2-Log] entrada GET /ping
+01:36:21 info RequestLoggingMiddleware     corr=e496bd7d55ed [2-Log] saída GET /ping -> 200 em 74.0 ms
+01:36:21 dbug CorrelationIdMiddleware      corr=e496bd7d55ed [1-Correlação] saída /ping
+01:36:21 dbug CorrelationIdMiddleware      corr=142bbb9ff893 [1-Correlação] entrada /api/v2/tarefas
+01:36:21 info RequestLoggingMiddleware     corr=142bbb9ff893 [2-Log] entrada GET /api/v2/tarefas
+01:36:21 info Command                      corr=142bbb9ff893 Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30'] SELECT COUNT(*) FROM [Tarefas] AS [t]
+01:36:22 info Command                      corr=142bbb9ff893 Executed DbCommand (15ms) [Parameters=[@hoje='?' (DbType = Date), @p='?' (DbType = Int32), @p1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT [t].[Id], [t].[Titulo], [t].[Situacao], [t].[Prioridade], [t].[Prazo], CASE     WHEN CASE         WHEN [t].[Prazo] < @hoje THEN CAST(1 AS bit)         ELSE CAST(0 AS bit)     END = CAST(1 AS bit) AND [t].[Situacao] <> N'Concluida' THEN CAST(1 AS bit)     ELSE CAST(0 AS bit) END FROM [Tarefas] AS [t] ORDER BY [t].[Id] OFFSET @p ROWS FETCH NEXT @p1 ROWS ONLY
+01:36:22 info RequestLoggingMiddleware     corr=142bbb9ff893 [2-Log] saída GET /api/v2/tarefas -> 200 em 162.2 ms
+01:36:22 dbug CorrelationIdMiddleware      corr=142bbb9ff893 [1-Correlação] saída /api/v2/tarefas
+01:36:22 dbug CorrelationIdMiddleware      corr=ee725e79726d [1-Correlação] entrada /api/v2/tarefas
+01:36:22 info RequestLoggingMiddleware     corr=ee725e79726d [2-Log] entrada GET /api/v2/tarefas
+01:36:22 info Command                      corr=ee725e79726d Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30'] SELECT COUNT(*) FROM [Tarefas] AS [t]
+01:36:22 info Command                      corr=ee725e79726d Executed DbCommand (1ms) [Parameters=[@hoje='?' (DbType = Date), @p='?' (DbType = Int32), @p1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT [t].[Id], [t].[Titulo], [t].[Situacao], [t].[Prioridade], [t].[Prazo], CASE     WHEN CASE         WHEN [t].[Prazo] < @hoje THEN CAST(1 AS bit)         ELSE CAST(0 AS bit)     END = CAST(1 AS bit) AND [t].[Situacao] <> N'Concluida' THEN CAST(1 AS bit)     ELSE CAST(0 AS bit) END FROM [Tarefas] AS [t] ORDER BY [t].[Id] OFFSET @p ROWS FETCH NEXT @p1 ROWS ONLY
+01:36:22 info RequestLoggingMiddleware     corr=ee725e79726d [2-Log] saída GET /api/v2/tarefas -> 200 em 9.9 ms
+01:36:22 dbug CorrelationIdMiddleware      corr=ee725e79726d [1-Correlação] saída /api/v2/tarefas
+01:36:22 dbug CorrelationIdMiddleware      corr=f4bd9d5e5582 [1-Correlação] entrada /api/v2/tarefas
+01:36:22 info RequestLoggingMiddleware     corr=f4bd9d5e5582 [2-Log] entrada GET /api/v2/tarefas
+01:36:22 info RequestLoggingMiddleware     corr=f4bd9d5e5582 [2-Log] saída GET /api/v2/tarefas -> 400 em 12.3 ms
+01:36:22 dbug CorrelationIdMiddleware      corr=f4bd9d5e5582 [1-Correlação] saída /api/v2/tarefas
+01:36:22 dbug CorrelationIdMiddleware      corr=2993ba90457b [1-Correlação] entrada /api/v2/tarefas
+01:36:22 info RequestLoggingMiddleware     corr=2993ba90457b [2-Log] entrada GET /api/v2/tarefas
+01:36:22 info RequestLoggingMiddleware     corr=2993ba90457b [2-Log] saída GET /api/v2/tarefas -> 400 em 0.5 ms
+01:36:22 dbug CorrelationIdMiddleware      corr=2993ba90457b [1-Correlação] saída /api/v2/tarefas
+01:36:22 dbug CorrelationIdMiddleware      corr=aa7bf9c77907 [1-Correlação] entrada /api/v2/tarefas
+01:36:22 info RequestLoggingMiddleware     corr=aa7bf9c77907 [2-Log] entrada GET /api/v2/tarefas
+01:36:22 info RequestLoggingMiddleware     corr=aa7bf9c77907 [2-Log] saída GET /api/v2/tarefas -> 400 em 0.7 ms
+01:36:22 dbug CorrelationIdMiddleware      corr=aa7bf9c77907 [1-Correlação] saída /api/v2/tarefas
+01:36:22 dbug CorrelationIdMiddleware      corr=044650c714f2 [1-Correlação] entrada /api/v2/tarefas
+01:36:22 info RequestLoggingMiddleware     corr=044650c714f2 [2-Log] entrada GET /api/v2/tarefas
+01:36:22 info Command                      corr=044650c714f2 Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30'] SELECT COUNT(*) FROM [Tarefas] AS [t]
+01:36:22 info Command                      corr=044650c714f2 Executed DbCommand (2ms) [Parameters=[@hoje='?' (DbType = Date), @p='?' (DbType = Int32), @p1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT [t].[Id], [t].[Titulo], [t].[Situacao], [t].[Prioridade], [t].[Prazo], CASE     WHEN CASE         WHEN [t].[Prazo] < @hoje THEN CAST(1 AS bit)         ELSE CAST(0 AS bit)     END = CAST(1 AS bit) AND [t].[Situacao] <> N'Concluida' THEN CAST(1 AS bit)     ELSE CAST(0 AS bit) END FROM [Tarefas] AS [t] ORDER BY [t].[Id] DESC OFFSET @p ROWS FETCH NEXT @p1 ROWS ONLY
+01:36:22 info RequestLoggingMiddleware     corr=044650c714f2 [2-Log] saída GET /api/v2/tarefas -> 200 em 16.5 ms
+01:36:22 dbug CorrelationIdMiddleware      corr=044650c714f2 [1-Correlação] saída /api/v2/tarefas
+01:36:22 dbug CorrelationIdMiddleware      corr=844a5bae7b14 [1-Correlação] entrada /api/v2/tarefas
+01:36:22 info RequestLoggingMiddleware     corr=844a5bae7b14 [2-Log] entrada GET /api/v2/tarefas
+01:36:22 info Command                      corr=844a5bae7b14 Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30'] SELECT COUNT(*) FROM [Tarefas] AS [t]
+01:36:22 info Command                      corr=844a5bae7b14 Executed DbCommand (2ms) [Parameters=[@hoje='?' (DbType = Date), @p='?' (DbType = Int32), @p1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT [t].[Id], [t].[Titulo], [t].[Situacao], [t].[Prioridade], [t].[Prazo], CASE     WHEN CASE         WHEN [t].[Prazo] < @hoje THEN CAST(1 AS bit)         ELSE CAST(0 AS bit)     END = CAST(1 AS bit) AND [t].[Situacao] <> N'Concluida' THEN CAST(1 AS bit)     ELSE CAST(0 AS bit) END FROM [Tarefas] AS [t] ORDER BY [t].[Prazo], [t].[Id] OFFSET @p ROWS FETCH NEXT @p1 ROWS ONLY
+01:36:22 info RequestLoggingMiddleware     corr=844a5bae7b14 [2-Log] saída GET /api/v2/tarefas -> 200 em 15.6 ms
+01:36:22 dbug CorrelationIdMiddleware      corr=844a5bae7b14 [1-Correlação] saída /api/v2/tarefas
+01:36:22 dbug CorrelationIdMiddleware      corr=bfae9d4ee883 [1-Correlação] entrada /api/v2/tarefas
+01:36:22 info RequestLoggingMiddleware     corr=bfae9d4ee883 [2-Log] entrada GET /api/v2/tarefas
+01:36:22 info RequestLoggingMiddleware     corr=bfae9d4ee883 [2-Log] saída GET /api/v2/tarefas -> 400 em 1.0 ms
+01:36:22 dbug CorrelationIdMiddleware      corr=bfae9d4ee883 [1-Correlação] saída /api/v2/tarefas
+01:36:22 dbug CorrelationIdMiddleware      corr=153236103a1d [1-Correlação] entrada /api/v2/tarefas
+01:36:22 info RequestLoggingMiddleware     corr=153236103a1d [2-Log] entrada GET /api/v2/tarefas
+01:36:22 info Command                      corr=153236103a1d Executed DbCommand (7ms) [Parameters=[@situacao='?' (Size = 20), @prioridade='?' (Size = 10)], CommandType='Text', CommandTimeout='30'] SELECT COUNT(*) FROM [Tarefas] AS [t] WHERE [t].[Situacao] = @situacao AND [t].[Prioridade] = @prioridade
+01:36:22 info Command                      corr=153236103a1d Executed DbCommand (2ms) [Parameters=[@hoje='?' (DbType = Date), @situacao='?' (Size = 20), @prioridade='?' (Size = 10), @p='?' (DbType = Int32), @p3='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT [t].[Id], [t].[Titulo], [t].[Situacao], [t].[Prioridade], [t].[Prazo], CASE     WHEN CASE         WHEN [t].[Prazo] < @hoje THEN CAST(1 AS bit)         ELSE CAST(0 AS bit)     END = CAST(1 AS bit) AND [t].[Situacao] <> N'Concluida' THEN CAST(1 AS bit)     ELSE CAST(0 AS bit) END FROM [Tarefas] AS [t] WHERE [t].[Situacao] = @situacao AND [t].[Prioridade] = @prioridade ORDER BY [t].[Id] OFFSET @p ROWS FETCH NEXT @p3 ROWS ONLY
+01:36:22 info RequestLoggingMiddleware     corr=153236103a1d [2-Log] saída GET /api/v2/tarefas -> 200 em 32.1 ms
+01:36:22 dbug CorrelationIdMiddleware      corr=153236103a1d [1-Correlação] saída /api/v2/tarefas
+01:36:22 dbug CorrelationIdMiddleware      corr=b9fa6b21c88c [1-Correlação] entrada /api/v2/tarefas
+01:36:22 info RequestLoggingMiddleware     corr=b9fa6b21c88c [2-Log] entrada GET /api/v2/tarefas
+01:36:22 info Command                      corr=b9fa6b21c88c Executed DbCommand (4ms) [Parameters=[@situacao='?' (Size = 20), @prazoAte='?' (DbType = Date)], CommandType='Text', CommandTimeout='30'] SELECT COUNT(*) FROM [Tarefas] AS [t] WHERE [t].[Situacao] = @situacao AND [t].[Prazo] <= @prazoAte
+01:36:22 info Command                      corr=b9fa6b21c88c Executed DbCommand (2ms) [Parameters=[@hoje='?' (DbType = Date), @situacao='?' (Size = 20), @prazoAte='?' (DbType = Date), @p='?' (DbType = Int32), @p3='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT [t].[Id], [t].[Titulo], [t].[Situacao], [t].[Prioridade], [t].[Prazo], CASE     WHEN CASE         WHEN [t].[Prazo] < @hoje THEN CAST(1 AS bit)         ELSE CAST(0 AS bit)     END = CAST(1 AS bit) AND [t].[Situacao] <> N'Concluida' THEN CAST(1 AS bit)     ELSE CAST(0 AS bit) END FROM [Tarefas] AS [t] WHERE [t].[Situacao] = @situacao AND [t].[Prazo] <= @prazoAte ORDER BY [t].[Id] OFFSET @p ROWS FETCH NEXT @p3 ROWS ONLY
+01:36:22 info RequestLoggingMiddleware     corr=b9fa6b21c88c [2-Log] saída GET /api/v2/tarefas -> 200 em 25.7 ms
+01:36:22 dbug CorrelationIdMiddleware      corr=b9fa6b21c88c [1-Correlação] saída /api/v2/tarefas
+01:36:22 dbug CorrelationIdMiddleware      corr=7e1706cf2f50 [1-Correlação] entrada /api/v2/tarefas
+01:36:22 info RequestLoggingMiddleware     corr=7e1706cf2f50 [2-Log] entrada GET /api/v2/tarefas
+01:36:22 warn TratadorExcecoesGlobal       corr=7e1706cf2f50 Requisição inválida em GET /api/v2/tarefas: Failed to bind parameter "Nullable<SituacaoTarefa> Situacao" from "Arquivada".
+01:36:22 info RequestLoggingMiddleware     corr=7e1706cf2f50 [2-Log] saída GET /api/v2/tarefas -> 400 em 4.2 ms
+01:36:22 dbug CorrelationIdMiddleware      corr=7e1706cf2f50 [1-Correlação] saída /api/v2/tarefas
+01:36:22 dbug CorrelationIdMiddleware      corr=1e3f1dd68120 [1-Correlação] entrada /api/v2/tarefas/5
+01:36:22 info RequestLoggingMiddleware     corr=1e3f1dd68120 [2-Log] entrada GET /api/v2/tarefas/5
+01:36:22 info Command                      corr=1e3f1dd68120 Executed DbCommand (4ms) [Parameters=[@id='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT TOP(1) [t].[Id], [t].[CriadaEm], [t].[Descricao], [t].[Prazo], [t].[Prioridade], [t].[Situacao], [t].[Titulo], [t].[Versao] FROM [Tarefas] AS [t] WHERE [t].[Id] = @id
+01:36:22 info RequestLoggingMiddleware     corr=1e3f1dd68120 [2-Log] saída GET /api/v2/tarefas/5 -> 200 em 48.9 ms
+01:36:22 dbug CorrelationIdMiddleware      corr=1e3f1dd68120 [1-Correlação] saída /api/v2/tarefas/5
+01:36:22 dbug CorrelationIdMiddleware      corr=8148ff526a55 [1-Correlação] entrada /api/v2/tarefas/999
+01:36:22 info RequestLoggingMiddleware     corr=8148ff526a55 [2-Log] entrada GET /api/v2/tarefas/999
+01:36:22 info Command                      corr=8148ff526a55 Executed DbCommand (1ms) [Parameters=[@id='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT TOP(1) [t].[Id], [t].[CriadaEm], [t].[Descricao], [t].[Prazo], [t].[Prioridade], [t].[Situacao], [t].[Titulo], [t].[Versao] FROM [Tarefas] AS [t] WHERE [t].[Id] = @id
+01:36:22 info RequestLoggingMiddleware     corr=8148ff526a55 [2-Log] saída GET /api/v2/tarefas/999 -> 404 em 2.8 ms
+01:36:22 dbug CorrelationIdMiddleware      corr=8148ff526a55 [1-Correlação] saída /api/v2/tarefas/999
+01:36:22 dbug CorrelationIdMiddleware      corr=32fdf99db35b [1-Correlação] entrada /api/v2/tarefas
+01:36:22 info RequestLoggingMiddleware     corr=32fdf99db35b [2-Log] entrada POST /api/v2/tarefas
+01:36:22 info Command                      corr=32fdf99db35b Executed DbCommand (2ms) [Parameters=[@normalizado='?' (Size = 120)], CommandType='Text', CommandTimeout='30'] SELECT CASE     WHEN EXISTS (         SELECT 1         FROM [Tarefas] AS [t]         WHERE [t].[Titulo] = @normalizado) THEN CAST(1 AS bit)     ELSE CAST(0 AS bit) END
+01:36:22 info Command                      corr=32fdf99db35b Executed DbCommand (2ms) [Parameters=[@p0='?' (DbType = DateTimeOffset), @p1='?' (Size = 1000), @p2='?' (DbType = Date), @p3='?' (Size = 10), @p4='?' (Size = 20), @p5='?' (Size = 120)], CommandType='Text', CommandTimeout='30'] SET IMPLICIT_TRANSACTIONS OFF; SET NOCOUNT ON; INSERT INTO [Tarefas] ([CriadaEm], [Descricao], [Prazo], [Prioridade], [Situacao], [Titulo]) OUTPUT INSERTED.[Id], INSERTED.[Versao] VALUES (@p0, @p1, @p2, @p3, @p4, @p5);
+01:36:22 info Command                      corr=32fdf99db35b Executed DbCommand (2ms) [Parameters=[@p6='?' (Size = 50), @p7='?' (Size = 500), @p8='?' (DbType = DateTimeOffset), @p9='?' (DbType = Int32), @p10='?' (Size = 100)], CommandType='Text', CommandTimeout='30'] SET IMPLICIT_TRANSACTIONS OFF; SET NOCOUNT ON; INSERT INTO [EventosAuditoria] ([Acao], [Detalhe], [OcorridoEm], [TarefaId], [Usuario]) OUTPUT INSERTED.[Id] VALUES (@p6, @p7, @p8, @p9, @p10);
+01:36:22 info RequestLoggingMiddleware     corr=32fdf99db35b [2-Log] saída POST /api/v2/tarefas -> 201 em 198.4 ms
+01:36:22 dbug CorrelationIdMiddleware      corr=32fdf99db35b [1-Correlação] saída /api/v2/tarefas
+01:36:22 dbug CorrelationIdMiddleware      corr=6db01e2e734a [1-Correlação] entrada /api/v2/tarefas
+01:36:22 info RequestLoggingMiddleware     corr=6db01e2e734a [2-Log] entrada POST /api/v2/tarefas
+01:36:22 info RequestLoggingMiddleware     corr=6db01e2e734a [2-Log] saída POST /api/v2/tarefas -> 400 em 1.3 ms
+01:36:22 dbug CorrelationIdMiddleware      corr=6db01e2e734a [1-Correlação] saída /api/v2/tarefas
+01:36:22 dbug CorrelationIdMiddleware      corr=b2077e954b1e [1-Correlação] entrada /api/v2/tarefas
+01:36:22 info RequestLoggingMiddleware     corr=b2077e954b1e [2-Log] entrada POST /api/v2/tarefas
+01:36:22 info RequestLoggingMiddleware     corr=b2077e954b1e [2-Log] saída POST /api/v2/tarefas -> 400 em 0.8 ms
+01:36:22 dbug CorrelationIdMiddleware      corr=b2077e954b1e [1-Correlação] saída /api/v2/tarefas
+01:36:23 dbug CorrelationIdMiddleware      corr=4f236ea57088 [1-Correlação] entrada /api/v2/tarefas
+01:36:23 info RequestLoggingMiddleware     corr=4f236ea57088 [2-Log] entrada POST /api/v2/tarefas
+01:36:23 info Command                      corr=4f236ea57088 Executed DbCommand (1ms) [Parameters=[@normalizado='?' (Size = 120)], CommandType='Text', CommandTimeout='30'] SELECT CASE     WHEN EXISTS (         SELECT 1         FROM [Tarefas] AS [t]         WHERE [t].[Titulo] = @normalizado) THEN CAST(1 AS bit)     ELSE CAST(0 AS bit) END
+01:36:23 info RequestLoggingMiddleware     corr=4f236ea57088 [2-Log] saída POST /api/v2/tarefas -> 409 em 2.9 ms
+01:36:23 dbug CorrelationIdMiddleware      corr=4f236ea57088 [1-Correlação] saída /api/v2/tarefas
+01:36:23 dbug CorrelationIdMiddleware      corr=98dc7d81c5b9 [1-Correlação] entrada /api/v2/tarefas/7
+01:36:23 info RequestLoggingMiddleware     corr=98dc7d81c5b9 [2-Log] entrada GET /api/v2/tarefas/7
+01:36:23 info Command                      corr=98dc7d81c5b9 Executed DbCommand (1ms) [Parameters=[@id='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT TOP(1) [t].[Id], [t].[CriadaEm], [t].[Descricao], [t].[Prazo], [t].[Prioridade], [t].[Situacao], [t].[Titulo], [t].[Versao] FROM [Tarefas] AS [t] WHERE [t].[Id] = @id
+01:36:23 info RequestLoggingMiddleware     corr=98dc7d81c5b9 [2-Log] saída GET /api/v2/tarefas/7 -> 200 em 2.6 ms
+01:36:23 dbug CorrelationIdMiddleware      corr=98dc7d81c5b9 [1-Correlação] saída /api/v2/tarefas/7
+01:36:23 dbug CorrelationIdMiddleware      corr=6b0f55edaa7f [1-Correlação] entrada /api/v2/tarefas/7
+01:36:23 info RequestLoggingMiddleware     corr=6b0f55edaa7f [2-Log] entrada PUT /api/v2/tarefas/7
+01:36:23 info Command                      corr=6b0f55edaa7f Executed DbCommand (1ms) [Parameters=[@id='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT TOP(1) [t].[Id], [t].[CriadaEm], [t].[Descricao], [t].[Prazo], [t].[Prioridade], [t].[Situacao], [t].[Titulo], [t].[Versao] FROM [Tarefas] AS [t] WHERE [t].[Id] = @id
+01:36:23 info Command                      corr=6b0f55edaa7f Executed DbCommand (3ms) [Parameters=[@normalizado='?' (Size = 120), @ignorarId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT CASE     WHEN EXISTS (         SELECT 1         FROM [Tarefas] AS [t]         WHERE [t].[Titulo] = @normalizado AND [t].[Id] <> @ignorarId) THEN CAST(1 AS bit)     ELSE CAST(0 AS bit) END
+01:36:23 info Command                      corr=6b0f55edaa7f Executed DbCommand (2ms) [Parameters=[@tarefa_Id='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT TOP(1) [t].[Id], [t].[CriadaEm], [t].[Descricao], [t].[Prazo], [t].[Prioridade], [t].[Situacao], [t].[Titulo], [t].[Versao] FROM [Tarefas] AS [t] WHERE [t].[Id] = @tarefa_Id
+01:36:23 info Command                      corr=6b0f55edaa7f Executed DbCommand (4ms) [Parameters=[@p0='?' (Size = 50), @p1='?' (Size = 500), @p2='?' (DbType = DateTimeOffset), @p3='?' (DbType = Int32), @p4='?' (Size = 100), @p8='?' (DbType = Int32), @p5='?' (DbType = Date), @p6='?' (Size = 20), @p7='?' (Size = 120), @p9='?' (Size = 8) (DbType = Binary)], CommandType='Text', CommandTimeout='30'] SET NOCOUNT ON; INSERT INTO [EventosAuditoria] ([Acao], [Detalhe], [OcorridoEm], [TarefaId], [Usuario]) OUTPUT INSERTED.[Id] VALUES (@p0, @p1, @p2, @p3, @p4); UPDATE [Tarefas] SET [Prazo] = @p5, [Situacao] = @p6, [Titulo] = @p7 OUTPUT INSERTED.[Versao] WHERE [Id] = @p8 AND [Versao] = @p9;
+01:36:23 info Command                      corr=6b0f55edaa7f Executed DbCommand (1ms) [Parameters=[@id='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT TOP(1) [t].[Id], [t].[CriadaEm], [t].[Descricao], [t].[Prazo], [t].[Prioridade], [t].[Situacao], [t].[Titulo], [t].[Versao] FROM [Tarefas] AS [t] WHERE [t].[Id] = @id
+01:36:23 info RequestLoggingMiddleware     corr=6b0f55edaa7f [2-Log] saída PUT /api/v2/tarefas/7 -> 200 em 74.8 ms
+01:36:23 dbug CorrelationIdMiddleware      corr=6b0f55edaa7f [1-Correlação] saída /api/v2/tarefas/7
+01:36:23 dbug CorrelationIdMiddleware      corr=abb335cf156f [1-Correlação] entrada /api/v2/tarefas/7
+01:36:23 info RequestLoggingMiddleware     corr=abb335cf156f [2-Log] entrada PUT /api/v2/tarefas/7
+01:36:23 info Command                      corr=abb335cf156f Executed DbCommand (1ms) [Parameters=[@id='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT TOP(1) [t].[Id], [t].[CriadaEm], [t].[Descricao], [t].[Prazo], [t].[Prioridade], [t].[Situacao], [t].[Titulo], [t].[Versao] FROM [Tarefas] AS [t] WHERE [t].[Id] = @id
+01:36:23 info Command                      corr=abb335cf156f Executed DbCommand (1ms) [Parameters=[@normalizado='?' (Size = 120), @ignorarId='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT CASE     WHEN EXISTS (         SELECT 1         FROM [Tarefas] AS [t]         WHERE [t].[Titulo] = @normalizado AND [t].[Id] <> @ignorarId) THEN CAST(1 AS bit)     ELSE CAST(0 AS bit) END
+01:36:23 info Command                      corr=abb335cf156f Executed DbCommand (1ms) [Parameters=[@tarefa_Id='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT TOP(1) [t].[Id], [t].[CriadaEm], [t].[Descricao], [t].[Prazo], [t].[Prioridade], [t].[Situacao], [t].[Titulo], [t].[Versao] FROM [Tarefas] AS [t] WHERE [t].[Id] = @tarefa_Id
+01:36:23 info Command                      corr=abb335cf156f Executed DbCommand (3ms) [Parameters=[@p0='?' (Size = 50), @p1='?' (Size = 500), @p2='?' (DbType = DateTimeOffset), @p3='?' (DbType = Int32), @p4='?' (Size = 100), @p7='?' (DbType = Int32), @p5='?' (Size = 20), @p6='?' (Size = 120), @p8='?' (Size = 8) (DbType = Binary)], CommandType='Text', CommandTimeout='30'] SET NOCOUNT ON; INSERT INTO [EventosAuditoria] ([Acao], [Detalhe], [OcorridoEm], [TarefaId], [Usuario]) OUTPUT INSERTED.[Id] VALUES (@p0, @p1, @p2, @p3, @p4); UPDATE [Tarefas] SET [Situacao] = @p5, [Titulo] = @p6 OUTPUT INSERTED.[Versao] WHERE [Id] = @p7 AND [Versao] = @p8;
+01:36:23 info Command                      corr=abb335cf156f Executed DbCommand (2ms) [Parameters=[@p='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT TOP(1) [t].[Id], [t].[CriadaEm], [t].[Descricao], [t].[Prazo], [t].[Prioridade], [t].[Situacao], [t].[Titulo], [t].[Versao] FROM [Tarefas] AS [t] WHERE [t].[Id] = @p
+01:36:23 warn TarefaServicoEf              corr=abb335cf156f Conflito de concorrência ao editar a tarefa 7
+01:36:23 info RequestLoggingMiddleware     corr=abb335cf156f [2-Log] saída PUT /api/v2/tarefas/7 -> 409 em 49.6 ms
+01:36:23 dbug CorrelationIdMiddleware      corr=abb335cf156f [1-Correlação] saída /api/v2/tarefas/7
+01:36:23 dbug CorrelationIdMiddleware      corr=2576923bdc5a [1-Correlação] entrada /api/v2/tarefas/999
+01:36:23 info RequestLoggingMiddleware     corr=2576923bdc5a [2-Log] entrada PUT /api/v2/tarefas/999
+01:36:23 info Command                      corr=2576923bdc5a Executed DbCommand (1ms) [Parameters=[@id='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT TOP(1) [t].[Id], [t].[CriadaEm], [t].[Descricao], [t].[Prazo], [t].[Prioridade], [t].[Situacao], [t].[Titulo], [t].[Versao] FROM [Tarefas] AS [t] WHERE [t].[Id] = @id
+01:36:23 info RequestLoggingMiddleware     corr=2576923bdc5a [2-Log] saída PUT /api/v2/tarefas/999 -> 404 em 2.1 ms
+01:36:23 dbug CorrelationIdMiddleware      corr=2576923bdc5a [1-Correlação] saída /api/v2/tarefas/999
+01:36:23 dbug CorrelationIdMiddleware      corr=1f80959084a8 [1-Correlação] entrada /api/v2/tarefas/8
+01:36:23 info RequestLoggingMiddleware     corr=1f80959084a8 [2-Log] entrada DELETE /api/v2/tarefas/8
+01:36:23 info Command                      corr=1f80959084a8 Executed DbCommand (6ms) [Parameters=[@id='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] DELETE FROM [t] FROM [Tarefas] AS [t] WHERE [t].[Id] = @id
+01:36:23 info RequestLoggingMiddleware     corr=1f80959084a8 [2-Log] saída DELETE /api/v2/tarefas/8 -> 204 em 15.9 ms
+01:36:23 dbug CorrelationIdMiddleware      corr=1f80959084a8 [1-Correlação] saída /api/v2/tarefas/8
+01:36:23 dbug CorrelationIdMiddleware      corr=a39442fb49b8 [1-Correlação] entrada /api/v2/tarefas/8
+01:36:23 info RequestLoggingMiddleware     corr=a39442fb49b8 [2-Log] entrada DELETE /api/v2/tarefas/8
+01:36:23 info Command                      corr=a39442fb49b8 Executed DbCommand (1ms) [Parameters=[@id='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] DELETE FROM [t] FROM [Tarefas] AS [t] WHERE [t].[Id] = @id
+01:36:23 info RequestLoggingMiddleware     corr=a39442fb49b8 [2-Log] saída DELETE /api/v2/tarefas/8 -> 404 em 1.6 ms
+01:36:23 dbug CorrelationIdMiddleware      corr=a39442fb49b8 [1-Correlação] saída /api/v2/tarefas/8
+01:36:23 dbug CorrelationIdMiddleware      corr=84e9bae277e7 [1-Correlação] entrada /api/v1/tarefas/1
+01:36:23 info RequestLoggingMiddleware     corr=84e9bae277e7 [2-Log] entrada GET /api/v1/tarefas/1
+01:36:23 info Command                      corr=84e9bae277e7 Executed DbCommand (1ms) [Parameters=[@id='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT TOP(1) [t].[Id], [t].[CriadaEm], [t].[Descricao], [t].[Prazo], [t].[Prioridade], [t].[Situacao], [t].[Titulo], [t].[Versao] FROM [Tarefas] AS [t] WHERE [t].[Id] = @id
+01:36:23 info RequestLoggingMiddleware     corr=84e9bae277e7 [2-Log] saída GET /api/v1/tarefas/1 -> 200 em 5.5 ms
+01:36:23 dbug CorrelationIdMiddleware      corr=84e9bae277e7 [1-Correlação] saída /api/v1/tarefas/1
+01:36:23 dbug CorrelationIdMiddleware      corr=712c10ca2e25 [1-Correlação] entrada /openapi/v2.json
+01:36:23 info RequestLoggingMiddleware     corr=712c10ca2e25 [2-Log] entrada GET /openapi/v2.json
+01:36:23 info RequestLoggingMiddleware     corr=712c10ca2e25 [2-Log] saída GET /openapi/v2.json -> 200 em 120.2 ms
+01:36:23 dbug CorrelationIdMiddleware      corr=712c10ca2e25 [1-Correlação] saída /openapi/v2.json
+01:36:23 dbug CorrelationIdMiddleware      corr=e161c88d8d35 [1-Correlação] entrada /scalar/v2
+01:36:23 info RequestLoggingMiddleware     corr=e161c88d8d35 [2-Log] entrada GET /scalar/v2
+01:36:24 info RequestLoggingMiddleware     corr=e161c88d8d35 [2-Log] saída GET /scalar/v2 -> 200 em 83.7 ms
+01:36:24 dbug CorrelationIdMiddleware      corr=e161c88d8d35 [1-Correlação] saída /scalar/v2
+01:36:24 dbug CorrelationIdMiddleware      corr=7ef1c75aa9c4 [1-Correlação] entrada /scalar/scalar.aspnetcore.js
+01:36:24 info RequestLoggingMiddleware     corr=7ef1c75aa9c4 [2-Log] entrada GET /scalar/scalar.aspnetcore.js
+01:36:24 dbug CorrelationIdMiddleware      corr=78cb8b09b713 [1-Correlação] entrada /scalar/scalar.js
+01:36:24 info RequestLoggingMiddleware     corr=78cb8b09b713 [2-Log] entrada GET /scalar/scalar.js
+01:36:24 info RequestLoggingMiddleware     corr=7ef1c75aa9c4 [2-Log] saída GET /scalar/scalar.aspnetcore.js -> 200 em 6.4 ms
+01:36:24 dbug CorrelationIdMiddleware      corr=7ef1c75aa9c4 [1-Correlação] saída /scalar/scalar.aspnetcore.js
+01:36:24 info RequestLoggingMiddleware     corr=78cb8b09b713 [2-Log] saída GET /scalar/scalar.js -> 200 em 32.9 ms
+01:36:24 dbug CorrelationIdMiddleware      corr=78cb8b09b713 [1-Correlação] saída /scalar/scalar.js
+01:36:24 dbug CorrelationIdMiddleware      corr=cd246a00f08a [1-Correlação] entrada /openapi/v2.json
+01:36:24 info RequestLoggingMiddleware     corr=cd246a00f08a [2-Log] entrada GET /openapi/v2.json
+01:36:24 info RequestLoggingMiddleware     corr=cd246a00f08a [2-Log] saída GET /openapi/v2.json -> 200 em 12.1 ms
+01:36:24 dbug CorrelationIdMiddleware      corr=cd246a00f08a [1-Correlação] saída /openapi/v2.json
+01:36:28 dbug CorrelationIdMiddleware      corr=a252f959262e [1-Correlação] entrada /api/v2/tarefas
+01:36:28 info RequestLoggingMiddleware     corr=a252f959262e [2-Log] entrada GET /api/v2/tarefas
+01:36:28 info Command                      corr=a252f959262e Executed DbCommand (3ms) [Parameters=[@situacao='?' (Size = 20)], CommandType='Text', CommandTimeout='30'] SELECT COUNT(*) FROM [Tarefas] AS [t] WHERE [t].[Situacao] = @situacao
+01:36:28 info Command                      corr=a252f959262e Executed DbCommand (3ms) [Parameters=[@hoje='?' (DbType = Date), @situacao='?' (Size = 20), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT [t].[Id], [t].[Titulo], [t].[Situacao], [t].[Prioridade], [t].[Prazo], CASE     WHEN CASE         WHEN [t].[Prazo] < @hoje THEN CAST(1 AS bit)         ELSE CAST(0 AS bit)     END = CAST(1 AS bit) AND [t].[Situacao] <> N'Concluida' THEN CAST(1 AS bit)     ELSE CAST(0 AS bit) END FROM [Tarefas] AS [t] WHERE [t].[Situacao] = @situacao ORDER BY [t].[Prazo], [t].[Id] OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+01:36:28 info RequestLoggingMiddleware     corr=a252f959262e [2-Log] saída GET /api/v2/tarefas -> 200 em 30.7 ms
+01:36:28 dbug CorrelationIdMiddleware      corr=a252f959262e [1-Correlação] saída /api/v2/tarefas
+01:36:28 dbug CorrelationIdMiddleware      corr=b0feeec66f67 [1-Correlação] entrada /api/v2/tarefas
+01:36:28 info RequestLoggingMiddleware     corr=b0feeec66f67 [2-Log] entrada POST /api/v2/tarefas
+01:36:28 info Command                      corr=b0feeec66f67 Executed DbCommand (1ms) [Parameters=[@normalizado='?' (Size = 120)], CommandType='Text', CommandTimeout='30'] SELECT CASE     WHEN EXISTS (         SELECT 1         FROM [Tarefas] AS [t]         WHERE [t].[Titulo] = @normalizado) THEN CAST(1 AS bit)     ELSE CAST(0 AS bit) END
+01:36:28 info Command                      corr=b0feeec66f67 Executed DbCommand (1ms) [Parameters=[@p0='?' (DbType = DateTimeOffset), @p1='?' (Size = 1000), @p2='?' (DbType = Date), @p3='?' (Size = 10), @p4='?' (Size = 20), @p5='?' (Size = 120)], CommandType='Text', CommandTimeout='30'] SET IMPLICIT_TRANSACTIONS OFF; SET NOCOUNT ON; INSERT INTO [Tarefas] ([CriadaEm], [Descricao], [Prazo], [Prioridade], [Situacao], [Titulo]) OUTPUT INSERTED.[Id], INSERTED.[Versao] VALUES (@p0, @p1, @p2, @p3, @p4, @p5);
+01:36:28 info Command                      corr=b0feeec66f67 Executed DbCommand (1ms) [Parameters=[@p6='?' (Size = 50), @p7='?' (Size = 500), @p8='?' (DbType = DateTimeOffset), @p9='?' (DbType = Int32), @p10='?' (Size = 100)], CommandType='Text', CommandTimeout='30'] SET IMPLICIT_TRANSACTIONS OFF; SET NOCOUNT ON; INSERT INTO [EventosAuditoria] ([Acao], [Detalhe], [OcorridoEm], [TarefaId], [Usuario]) OUTPUT INSERTED.[Id] VALUES (@p6, @p7, @p8, @p9, @p10);
+01:36:28 info RequestLoggingMiddleware     corr=b0feeec66f67 [2-Log] saída POST /api/v2/tarefas -> 201 em 11.5 ms
+01:36:28 dbug CorrelationIdMiddleware      corr=b0feeec66f67 [1-Correlação] saída /api/v2/tarefas
+01:36:28 dbug CorrelationIdMiddleware      corr=5146f1e25a95 [1-Correlação] entrada /api/v2/tarefas/999999
+01:36:28 info RequestLoggingMiddleware     corr=5146f1e25a95 [2-Log] entrada GET /api/v2/tarefas/999999
+01:36:28 info Command                      corr=5146f1e25a95 Executed DbCommand (1ms) [Parameters=[@id='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30'] SELECT TOP(1) [t].[Id], [t].[CriadaEm], [t].[Descricao], [t].[Prazo], [t].[Prioridade], [t].[Situacao], [t].[Titulo], [t].[Versao] FROM [Tarefas] AS [t] WHERE [t].[Id] = @id
+01:36:28 info RequestLoggingMiddleware     corr=5146f1e25a95 [2-Log] saída GET /api/v2/tarefas/999999 -> 404 em 2.2 ms
+01:36:28 dbug CorrelationIdMiddleware      corr=5146f1e25a95 [1-Correlação] saída /api/v2/tarefas/999999
+01:36:28 info Lifetime                     corr=-            Application is shutting down...

@@ -9,19 +9,19 @@ namespace PortalTarefas.Web.Contratos;
 
 /// <summary>Dados para cadastrar uma tarefa.</summary>
 public sealed record CriarTarefaDto(
-    [property: Required, StringLength(120, MinimumLength = 3), Description("Título único da tarefa.")] string Titulo,
-    [property: StringLength(1000)] string? Descricao = null,
+    [property: Required(ErrorMessage = "Informe o título."), StringLength(120, MinimumLength = 3, ErrorMessage = "O título deve ter entre 3 e 120 caracteres."), Description("Título único da tarefa.")] string Titulo,
+    [property: StringLength(1000, ErrorMessage = "A descrição deve ter no máximo 1000 caracteres.")] string? Descricao = null,
     PrioridadeTarefa Prioridade = PrioridadeTarefa.Media,
     [property: Description("Data limite (AAAA-MM-DD). Obrigatória para prioridade Alta.")] DateOnly? Prazo = null);
 
 /// <summary>Dados para substituir uma tarefa existente (PUT). Exige a versão lida anteriormente.</summary>
 public sealed record AtualizarTarefaDto(
-    [property: Required, StringLength(120, MinimumLength = 3)] string Titulo,
-    [property: StringLength(1000)] string? Descricao,
+    [property: Required(ErrorMessage = "Informe o título."), StringLength(120, MinimumLength = 3, ErrorMessage = "O título deve ter entre 3 e 120 caracteres.")] string Titulo,
+    [property: StringLength(1000, ErrorMessage = "A descrição deve ter no máximo 1000 caracteres.")] string? Descricao,
     SituacaoTarefa Situacao,
     PrioridadeTarefa Prioridade,
     DateOnly? Prazo,
-    [property: Required, Description("Token de concorrência devolvido no GET (Base64).")] string Versao);
+    [property: Required(ErrorMessage = "Informe a versão lida no GET."), Description("Token de concorrência devolvido no GET (Base64).")] string Versao);
 
 /// <summary>Representação resumida usada em listagens.</summary>
 public sealed record TarefaResumoDto(int Id, string Titulo, SituacaoTarefa Situacao, PrioridadeTarefa Prioridade, DateOnly? Prazo,

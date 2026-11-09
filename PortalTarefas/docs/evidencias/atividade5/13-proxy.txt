@@ -1,0 +1,4 @@
+$ curl http://localhost:5173/api/v2/tarefas?tamanho=1   # via proxy do Vite (mesma origem para o navegador)
+HTTP/1.1 200 OK
+content-type: application/json; charset=utf-8
+x-total-count: 9

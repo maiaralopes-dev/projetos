@@ -1,0 +1,5 @@
+URL após filtros + próxima página: http://localhost:5173/tarefas?ordenarPor=titulo&pagina=2
+Após recarregar a URL, página exibida: Página 2
+Navegação por link levou a: http://localhost:5173/tarefas/3
+Marcador na janela após cadastrar (sem recarregar a página): marcador
+Voltar no histórico: http://localhost:5173/tarefas/nova

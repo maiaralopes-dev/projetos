@@ -3,5 +3,5 @@ Página 1/1 — 3 tarefas pendentes
   #6 Revisar SQL da migration (prazo 2026-11-08)
   #3 Escrever relatório 1 (prazo 2026-11-16)
   #9 Documentar API REST (prazo 2026-12-01)
-Criada: 10 Criada pelo cliente TS 1794187907714 versão AAAAAAAAB9s=
+Criada: 10 Criada pelo cliente TS 1794188188434 versão AAAAAAAAB9s=
 Erro esperado (Problem Details): 404 Tarefa não encontrada.
