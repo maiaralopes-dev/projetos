@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 using System.Net.Http.Json;
 using HubPedidos.Application.Contratos;
@@ -49,5 +50,22 @@ public class EndpointTests(HubApiFactory factory) : IClassFixture<HubApiFactory>
         var itens = await _client.GetFromJsonAsync<ProcessadorInfoResponse[]>("/processadores");
 
         Assert.Equal(["Padrao", "Atacado", "Expresso", "AltoValor", "Internacional", "RevisaoManual"], itens!.Select(i => i.Categoria));
+    }
+}
+
+public class EscritaSerializadaTests(HubApiFactory factory) : IClassFixture<HubApiFactory>
+{
+    [Fact]
+    public async Task Posts_concorrentes_passam_pelo_limitador_e_nunca_escrevem_em_paralelo()
+    {
+        var client = factory.CreateClient();
+        var limitador = factory.Services.GetRequiredService<HubPedidos.Application.Processamento.LimitadorBanco>();
+
+        var respostas = await Task.WhenAll(Enumerable.Range(0, 40).Select(i =>
+            client.PostAsJsonAsync("/pedidos", new CriarPedidoRequest($"CLI-{i}", "Sul", "Normal", [new("x", 1, 1m)]))));
+
+        Assert.All(respostas, r => Assert.Equal(HttpStatusCode.Created, r.StatusCode));
+        Assert.Equal(1, limitador.MaximoObservado); // SQLite: um escritor por vez
+        Assert.Equal(1, limitador.Disponiveis);
     }
 }

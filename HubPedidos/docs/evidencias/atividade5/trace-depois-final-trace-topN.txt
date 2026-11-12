@@ -1,0 +1,47 @@
+# dotnet-trace report topN — depois-final-trace
+Perfil padrão do dotnet-trace 10 (dotnet-common + dotnet-sampled-thread-time: amostra TODAS as threads, inclusive bloqueadas). Coleta de 10 s no meio da janela de medição.
+
+Top 20 Functions (Exclusive)                                                  Inclusive           Exclusive           
+1.  LowLevelLifoSemaphore.WaitForSignal(int32)                                35.22%              35.19%              
+2.  WaitHandle.WaitOneNoCheck(int32,bool,class System.Object,value class W    21.57%              21.57%              
+3.  Monitor.Wait(class System.Object,int32)                                   16.18%              16.18%              
+4.  Missing Symbol                                                            5.52%               5.49%               
+5.  Watcher!Interop+Sys.Read(class System.Runtime.InteropServices.SafeHand    5.39%               5.39%               
+6.  EventPipeEventProvider.DefineEventHandle(unsigned int32,class System.S    5.39%               5.39%               
+7.  GC.RunFinalizers()                                                        5.17%               4.57%               
+8.  SqliteDataReader.NextResult()                                             2.13%               1.7%                
+9.  Thread.<PollGC>g__PollGCWorker|67_0()                                     1.16%               1.16%               
+10. DynamicResolver+DestroyScout.Finalize()                                   0.6%                0.6%                
+11. Monitor.Enter_Slowpath(class System.Object)                               0.6%                0.6%                
+12. LowLevelLifoSemaphore.Wait(int32,bool)                                    35.83%              0.43%               
+13. SqliteCommand+<PrepareAndEnumerateStatements>d__64.MoveNext()             0.35%               0.33%               
+14. SqliteDataRecord.Read()                                                   0.21%               0.21%               
+15. PortableThreadPool+WorkerThread.MaybeAddWorkingWorker(class System.Thr    0.17%               0.17%               
+16. EventPipeEventProvider.EventWriteTransfer(required_modifier System.Run    0.13%               0.13%               
+17. RuntimeHelpers.<GetHashCode>g__GetHashCodeWorker|15_0(class System.Obj    0.11%               0.11%               
+18. PortableThreadPool+WorkerThread.WorkerThreadStart()                       40.89%              0.08%               
+19. SqliteConnection.Deactivate()                                             0.11%               0.06%               
+20. SqliteConnection.Open()                                                   0.12%               0.06%               
+
+## Inclusivo
+Top 20 Functions (Inclusive)                                                  Inclusive           Exclusive           
+1.  (Non-Activities)                                                          100%                0%                  
+2.  Threads                                                                   100%                0%                  
+3.  Thread.StartCallback()                                                    84.04%              0%                  
+4.  PortableThreadPool+WorkerThread.WorkerThreadStart()                       40.89%              0.08%               
+5.  LowLevelLifoSemaphore.Wait(int32,bool)                                    35.83%              0.43%               
+6.  LowLevelLifoSemaphore.WaitForSignal(int32)                                35.22%              35.19%              
+7.  WaitHandle.WaitOneNoCheck(int32,bool,class System.Object,value class W    21.57%              21.57%              
+8.  Monitor.Wait(class System.Object,int32)                                   16.18%              16.18%              
+9.  ManualResetEventSlim.Wait(int32,value class System.Threading.Cancellat    10.79%              0%                  
+10. AsyncMethodBuilderCore.Start(!!0&)                                        6.71%               0%                  
+11. Missing Symbol                                                            5.52%               5.49%               
+12. EventSource.DoCommand(class System.Diagnostics.Tracing.EventCommandEve    5.39%               0%                  
+13. EventProviderImpl.ProviderCallback(class System.Diagnostics.Tracing.Ev    5.39%               0%                  
+14. EventPipeEventProvider.Callback(unsigned int8*,int32,unsigned int8,int    5.39%               0%                  
+15. EventSource.SendCommand(class System.Diagnostics.Tracing.EventListener    5.39%               0%                  
+16. EventPipeEventProvider.HandleEnableNotification(class System.Diagnosti    5.39%               0%                  
+17. EventSource+OverrideEventProvider.OnControllerCommand(value class Syst    5.39%               0%                  
+18. EventSource.EnsureDescriptorsInitialized()                                5.39%               0%                  
+19. SocketAsyncEngine.EventLoop()                                             5.39%               0%                  
+20. TimerQueue.TimerThread()                                                  5.39%               0%                  

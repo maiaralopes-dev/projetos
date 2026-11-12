@@ -1,0 +1,9 @@
+Data: 2026-11-12T00:43Z
+SO: Ubuntu 24.04.5 LTS x86_64
+CPU: Intel(R) Xeon(R) Processor @ 2.10GHz (4 núcleos lógicos)
+SDK: 10.0.114
+Microsoft.AspNetCore.App 10.0.14 [/usr/lib/dotnet/shared/Microsoft.AspNetCore.App]
+Microsoft.NETCore.App 10.0.14 [/usr/lib/dotnet/shared/Microsoft.NETCore.App]
+Ferramentas: dotnet-ef 10.0.14; dotnet-counters 10.0.750501; dotnet-trace 10.0.750501; 
+SQLite (aplicação): 3.53.3; EF Core 10.0.14; BenchmarkDotNet 0.15.8
+Gerador e API na mesma VM.

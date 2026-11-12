@@ -1,0 +1,47 @@
+# dotnet-trace report topN — antes
+Perfil padrão do dotnet-trace 10 (dotnet-common + dotnet-sampled-thread-time: amostra TODAS as threads, inclusive bloqueadas). Coleta de 10 s no meio da janela de medição.
+
+Top 20 Functions (Exclusive)                                                  Inclusive           Exclusive           
+1.  Thread.Sleep(int32)                                                       42.98%              42.98%              
+2.  LowLevelLifoSemaphore.WaitForSignal(int32)                                19.29%              19.28%              
+3.  WaitHandle.WaitOneNoCheck(int32,bool,class System.Object,value class W    12.78%              12.78%              
+4.  Monitor.Wait(class System.Object,int32)                                   9.59%               9.59%               
+5.  Missing Symbol                                                            3.27%               3.25%               
+6.  Watcher!Interop+Sys.Read(class System.Runtime.InteropServices.SafeHand    3.2%                3.2%                
+7.  UInt64].IntroSort(value class System.Span`1<!0>,int32)                    3.19%               3.19%               
+8.  GC.RunFinalizers()                                                        2.52%               2.34%               
+9.  SqliteDataReader.NextResult()                                             44.35%              1.1%                
+10. Thread.<PollGC>g__PollGCWorker|67_0()                                     0.69%               0.69%               
+11. Monitor.Enter_Slowpath(class System.Object)                               0.35%               0.35%               
+12. SqliteCommand+<PrepareAndEnumerateStatements>d__64.MoveNext()             0.25%               0.23%               
+13. DynamicResolver+DestroyScout.Finalize()                                   0.18%               0.18%               
+14. SqliteDataRecord.Read()                                                   0.15%               0.15%               
+15. LowLevelSpinWaiter.Wait(int32,int32,bool)                                 0.18%               0.12%               
+16. EventPipeEventProvider.EventWriteTransfer(required_modifier System.Run    0.08%               0.08%               
+17. PortableThreadPool+WorkerThread.MaybeAddWorkingWorker(class System.Thr    0.06%               0.06%               
+18. RuntimeHelpers.<GetHashCode>g__GetHashCodeWorker|15_0(class System.Obj    0.06%               0.06%               
+19. .ctor(class Microsoft.EntityFrameworkCore.DbContextOptions)               0.08%               0.04%               
+20. SqliteConnection.Open()                                                   0.06%               0.03%               
+
+## Inclusivo
+Top 20 Functions (Inclusive)                                                  Inclusive           Exclusive           
+1.  (Non-Activities)                                                          100%                0%                  
+2.  Threads                                                                   100%                0%                  
+3.  Thread.StartCallback()                                                    91.08%              0%                  
+4.  PortableThreadPool+WorkerThread.WorkerThreadStart()                       65.51%              0.01%               
+5.  AsyncMethodBuilderCore.Start(!!0&)                                        48.53%              0%                  
+6.  ThreadPoolWorkQueue.Dispatch()                                            46.02%              0%                  
+7.  ExecutionContext.RunFromThreadPoolDispatchLoop(class System.Threading.    45.91%              0%                  
+8.  EndpointMiddleware.Invoke(class Microsoft.AspNetCore.Http.HttpContext)    45.73%              0%                  
+9.  RequestDelegateFactory+<>c__DisplayClass102_2+<<HandleRequestBodyAndCo    44.68%              0%                  
+10. Anonymously Hosted DynamicMethods Assembly!dynamicClass.lambda_method2    44.63%              0%                  
+11. Api!Program+<<<Main>$>g__CriarPedidoAsync|0_3>d.MoveNext()                44.5%               0%                  
+12. RepositorioPedidos+<AdicionarAsync>d__2.MoveNext()                        44.48%              0%                  
+13. SqliteDataReader.NextResult()                                             44.35%              1.1%                
+14. DbContext+<SaveChangesAsync>d__63.MoveNext()                              44.32%              0%                  
+15. StateManager+<SaveChangesAsync>d__117.MoveNext()                          44.31%              0%                  
+16. StateManager.SaveChangesAsync(class Microsoft.EntityFrameworkCore.Chan    44.31%              0%                  
+17. StateManager+<SaveChangesAsync>d__113.MoveNext()                          44.29%              0%                  
+18. StateManager.SaveChangesAsync(class System.Collections.Generic.IList`1    44.29%              0%                  
+19. RelationalDatabase+<SaveChangesAsync>d__8.MoveNext()                      44.29%              0%                  
+20. BatchExecutor+<ExecuteAsync>d__9.MoveNext()                               44.29%              0%                  

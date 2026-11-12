@@ -24,7 +24,7 @@ Pré-requisito: SDK .NET 10 (ver `global.json`).
 
 ```bash
 dotnet build          # warnings são tratados como erro
-dotnet test           # 158 testes (atividades 1 a 4)
+dotnet test           # 159 testes (atividades 1 a 5)
 dotnet run --project src/HubPedidos.Api --launch-profile http   # http://localhost:5080
 ```
 
@@ -43,6 +43,17 @@ Benchmarks (sempre em Release, fora do depurador):
 
 ```bash
 dotnet run -c Release --project benchmarks/HubPedidos.Benchmarks -- --filter "*"
+```
+
+Diagnóstico sob carga (atividade 5) — gerador em modo aberto, API em Release, counters e trace:
+
+```bash
+dotnet tool restore
+carga/medir.sh depois 300 300 saida/            # carga + dotnet-counters
+carga/medir.sh depois 300 300 saida/ --trace    # + dotnet-trace de 10 s
+Banco__SerializarEscritasHttp=false carga/medir.sh antes 300 300 saida/   # comportamento anterior
+python3 carga/resumir_counters.py saida/counters-depois.csv 2
+dotnet dotnet-trace report saida/trace-depois.nettrace topN -n 20
 ```
 
 Requisições de exemplo em `src/HubPedidos.Api/HubPedidos.Api.http` (Visual Studio / VS Code).

@@ -41,6 +41,19 @@ public static class DependencyInjection
             await db.Database.MigrateAsync();
         }
 
+        // Atividade 5: no modo de journal padrão (rollback/"delete"), quem grava bloqueia
+        // leitores e outros escritores; o Microsoft.Data.Sqlite responde a SQLITE_BUSY
+        // dormindo (Thread.Sleep) e tentando de novo — o trace mostrou 43% do tempo das
+        // threads nesse Sleep. Em WAL, leitores não bloqueiam o escritor e o commit é um
+        // append sequencial. A configuração fica gravada no arquivo do banco.
+        // synchronous continua FULL: a durabilidade não muda, só o modelo de concorrência.
+        // DESLIGADO por padrão: medido na atividade 5, não trouxe ganho nem sozinho nem
+        // junto com a serialização das escritas (o gargalo era escritor × escritor).
+        if (configuration.GetValue("Banco:ModoWal", false) && db.Database.GetDbConnection().DataSource is not (null or "" or ":memory:"))
+        {
+            await db.Database.ExecuteSqlRawAsync("PRAGMA journal_mode=WAL;");
+        }
+
         var semear = configuration.GetValue("Banco:SemearPedidos", 0);
         if (semear > 0 && !await db.Pedidos.AnyAsync())
         {

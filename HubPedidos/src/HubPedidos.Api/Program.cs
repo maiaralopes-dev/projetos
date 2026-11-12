@@ -72,6 +72,8 @@ static async Task<Results<Created<PedidoResponse>, ValidationProblem, ProblemHtt
     CriarPedidoRequest? request,
     CatalogoProcessadores catalogo,
     IRepositorioPedidos repositorio,
+    LimitadorBanco limitador,
+    IConfiguration configuracao,
     IServiceProvider services,
     CancellationToken cancellationToken)
 {
@@ -102,7 +104,17 @@ static async Task<Results<Created<PedidoResponse>, ValidationProblem, ProblemHtt
     var processamento = await processador.ProcessarAsync(pedido, cancellationToken);
 
     // 4) Persistência (atividade 3) e resposta tipada, sem expor tipos do domínio
-    await repositorio.AdicionarAsync(pedido, categoria, cancellationToken);
+    // Atividade 5: o SQLite aceita UM escritor por vez. Sem coordenação, POSTs simultâneos
+    // colidem (SQLITE_BUSY) e o Microsoft.Data.Sqlite dorme ~150 ms bloqueando a thread.
+    // Passando pelo mesmo LimitadorBanco da fila, os escritores esperam de forma ASSÍNCRONA.
+    if (configuracao.GetValue("Banco:SerializarEscritasHttp", true))
+    {
+        await limitador.ExecutarAsync(ct => repositorio.AdicionarAsync(pedido, categoria, ct), cancellationToken);
+    }
+    else
+    {
+        await repositorio.AdicionarAsync(pedido, categoria, cancellationToken);
+    }
     return TypedResults.Created($"/pedidos/{pedido.Id}", MapeadorPedidos.ParaResposta(pedido, categoria, processamento));
 }
 
