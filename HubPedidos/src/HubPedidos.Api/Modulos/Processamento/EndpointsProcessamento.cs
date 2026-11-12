@@ -1,22 +1,25 @@
+using HubPedidos.Processamento;
 using HubPedidos.Application.Classificacao;
 using HubPedidos.Application.Contratos;
 using HubPedidos.Application.Mapeamento;
-using HubPedidos.Application.Processadores;
-using HubPedidos.Application.Processamento;
+using HubPedidos.Processamento.Processadores;
+using HubPedidos.Processamento.Fila;
 using Microsoft.AspNetCore.Http.HttpResults;
 
-namespace HubPedidos.Api;
+namespace HubPedidos.Api.Modulos.Processamento;
 
 /// <summary>Produtor HTTP da fila e métricas (atividade 4).</summary>
-public static class EndpointsFila
+public static class EndpointsProcessamento
 {
-    public static IEndpointRouteBuilder MapFila(this IEndpointRouteBuilder app)
+    public static IEndpointRouteBuilder MapModuloProcessamento(this IEndpointRouteBuilder app)
     {
         app.MapPost("/pedidos/fila", EnfileirarAsync).WithName("EnfileirarPedido");
         app.MapGet("/fila/metricas", (FilaPedidos fila, MetricasFila m, LimitadorBanco l) => new MetricasFilaResponse(
             fila.Profundidade, fila.Capacidade, fila.ModoCheio.ToString(),
             m.Aceitos, m.RejeitadosFilaCheia, m.RejeitadosEncerrando, m.Descartados, m.Processados, m.Falhas, m.Abandonados,
             m.EmAndamento, l.Limite, l.EmUso, l.MaximoObservado, m.ProcessadosPorCategoria)).WithName("MetricasFila");
+        app.MapGet("/processadores", (CatalogoProcessadores c) =>
+            c.Registros.Select(r => new ProcessadorInfoResponse(r.Categoria.ToString(), r.Versao, r.Tipo.Name))).WithName("ListarProcessadores");
         return app;
     }
 
@@ -27,7 +30,7 @@ public static class EndpointsFila
     /// </summary>
     private static async Task<Results<Accepted<PedidoEnfileiradoResponse>, ValidationProblem, ProblemHttpResult>> EnfileirarAsync(
         CriarPedidoRequest? request,
-        CatalogoProcessadores catalogo,
+        ISeletorProcessador seletor,
         FilaPedidos fila,
         HttpResponse resposta,
         CancellationToken cancellationToken)
@@ -42,7 +45,7 @@ public static class EndpointsFila
 
         var pedido = resultado.Valor!;
         var categoria = ClassificadorPedidos.Classificar(pedido);
-        if (categoria is CategoriaProcessamento.Invalido || !catalogo.TentarObter(categoria, out _))
+        if (!seletor.Suporta(categoria))
         {
             return TypedResults.Problem(title: "Pedido não processável", statusCode: StatusCodes.Status422UnprocessableEntity);
         }

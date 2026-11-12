@@ -3,20 +3,25 @@
 Solução cumulativa das aulas práticas de **Programação Aplicada em .NET** (.NET 10 / C# 14).
 Cada atividade é entregue em um commit próprio (recomenda-se criar a tag `atividade-N` ao concluir).
 
-## Estrutura
+## Estrutura (módulos = assemblies, atividade 6)
 
 ```
 HubPedidos.slnx
 ├── src/
-│   ├── HubPedidos.Domain        → entidade Pedido, value objects (PedidoId, ItemPedido), invariantes
-│   ├── HubPedidos.Application   → DTOs (Contratos), mapeador, classificador, processadores, interfaces de persistência
-│   ├── HubPedidos.Infrastructure → EF Core 10 + SQLite: DbContext, migrations, repositório e consultas
-│   └── HubPedidos.Api           → composition root e endpoints (Minimal API)
-├── tests/HubPedidos.Tests       → unidade, reflexão, arquitetura e integração HTTP
-└── benchmarks/HubPedidos.Benchmarks → BenchmarkDotNet (parsing de lote e escrita NDJSON)
+│   ├── HubPedidos.Domain          → Pedido, ItemPedido, PedidoId… (sem dependências)
+│   ├── HubPedidos.Application     → módulo PEDIDOS: contratos v1/v2, mapeador, classificação, importação, portas de persistência
+│   ├── HubPedidos.Processamento   → módulo PROCESSAMENTO: processadores, catálogo, fila, consumidor, porta INotificadorPedidos
+│   ├── HubPedidos.Notificacoes    → módulo NOTIFICAÇÕES: implementa INotificadorPedidos
+│   ├── HubPedidos.Infrastructure  → EF Core 10 + SQLite: implementa as portas de Pedidos
+│   └── HubPedidos.Api             → composition root + endpoints por módulo (Modulos/…)
+├── tests/HubPedidos.Tests         → unidade, arquitetura, composição de DI, integração HTTP, versões
+├── benchmarks/HubPedidos.Benchmarks
+└── carga/                         → gerador de carga e scripts de diagnóstico (atividade 5)
 ```
 
-Direção das dependências: `Api → Infrastructure → Application → Domain`. O domínio não referencia ninguém; Application não referencia EF Core.
+Direção das dependências (verificada por `ArquiteturaTests`): Notificações → Processamento → Pedidos → Domain;
+Infrastructure → Pedidos; Api → todos. Diagrama em `docs/arquitetura/modulos.svg`, decisões em `docs/adr/`,
+política de versão em `docs/api/versionamento.md`.
 
 ## Como executar
 
@@ -24,7 +29,7 @@ Pré-requisito: SDK .NET 10 (ver `global.json`).
 
 ```bash
 dotnet build          # warnings são tratados como erro
-dotnet test           # 159 testes (atividades 1 a 5)
+dotnet test           # 185 testes (atividades 1 a 6)
 dotnet run --project src/HubPedidos.Api --launch-profile http   # http://localhost:5080
 ```
 
@@ -73,6 +78,11 @@ Requisições de exemplo em `src/HubPedidos.Api/HubPedidos.Api.http` (Visual Stu
 | 3     | GET    | `/painel/regioes` | Agregações por região calculadas no banco                        |
 | 4     | POST   | `/pedidos/fila`  | Valida, classifica e enfileira → 202 (ou 503 + `Retry-After` com fila cheia) |
 | 4     | GET    | `/fila/metricas` | Profundidade, aceitos, rejeitados, descartados, processados, uso do banco |
+| 6     | GET    | `/api/v1/pedidos/{id}` | Detalhe v1 (depreciada; = rota legada `/pedidos/{id}`) |
+| 6     | GET    | `/api/v2/pedidos/{id}` | Detalhe v2 (dinheiro como objeto string+moeda, data com fuso) |
+| 6     | GET    | `/api/versoes`   | Versões suportadas, depreciação e uso observado por versão |
+| 6     | GET    | `/openapi/v1.json`, `/openapi/v2.json` | Documentação separada por versão |
+| 6     | GET    | `/notificacoes/recentes` | Últimas notificações de mudança de status |
 
 A partir da atividade 4, `POST /pedidos/lote` também enfileira cada linha aceita. A fila
 (`Channel` limitado) é configurada na seção `Fila` do `appsettings.json` e consumida por

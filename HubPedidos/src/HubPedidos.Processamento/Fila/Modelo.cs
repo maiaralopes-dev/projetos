@@ -2,7 +2,7 @@ using System.Threading.Channels;
 using HubPedidos.Application.Classificacao;
 using HubPedidos.Domain.Pedidos;
 
-namespace HubPedidos.Application.Processamento;
+namespace HubPedidos.Processamento.Fila;
 
 /// <summary>
 /// Item da fila. Imutável e sem nada do EF Core: o <see cref="Pedido"/> do domínio já é

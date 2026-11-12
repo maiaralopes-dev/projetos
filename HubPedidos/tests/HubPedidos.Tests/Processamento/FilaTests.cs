@@ -1,6 +1,6 @@
 using System.Threading.Channels;
 using HubPedidos.Application.Classificacao;
-using HubPedidos.Application.Processamento;
+using HubPedidos.Processamento.Fila;
 
 namespace HubPedidos.Tests.Processamento;
 

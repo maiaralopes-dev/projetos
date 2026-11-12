@@ -3,7 +3,7 @@ using System.Collections.Immutable;
 using System.Reflection;
 using HubPedidos.Application.Classificacao;
 
-namespace HubPedidos.Application.Processadores;
+namespace HubPedidos.Processamento.Processadores;
 
 public sealed record RegistroProcessador(CategoriaProcessamento Categoria, int Versao, Type Tipo);
 

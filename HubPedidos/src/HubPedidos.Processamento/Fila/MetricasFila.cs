@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using HubPedidos.Application.Classificacao;
 
-namespace HubPedidos.Application.Processamento;
+namespace HubPedidos.Processamento.Fila;
 
 /// <summary>
 /// Contadores da fila. Escalares usam Interlocked; contagem por categoria usa

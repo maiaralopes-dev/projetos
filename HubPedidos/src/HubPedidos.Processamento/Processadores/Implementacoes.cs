@@ -1,7 +1,7 @@
 using HubPedidos.Application.Classificacao;
 using HubPedidos.Domain.Pedidos;
 
-namespace HubPedidos.Application.Processadores.Implementacoes;
+namespace HubPedidos.Processamento.Processadores.Implementacoes;
 
 // Estratégias de processamento. Nesta unidade o "processamento" apenas decide o
 // destino; persistência e fila entram nas unidades 3 e 4.

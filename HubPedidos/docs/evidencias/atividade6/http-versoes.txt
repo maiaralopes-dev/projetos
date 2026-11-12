@@ -1,0 +1,50 @@
+################ Criação
+{"id":"01a1cd44-0749-78fd-80b9-8ca10d11b6e5","clienteId":"CLI-V","regiao":"Sul","prioridade":"Normal","total":3000000.07,"categoria":"AltoValor","processador":"ProcessadorAntifraude","versaoProcessador":1,"mensagem":"Total 3,000,000.07 retido para análise antifraude antes da separação.","itens":[{"sku":"CANETA","quantidade":3,"precoUnitario":999999.99,"subtotal":2999999.97},{"sku":"LAPIS","quantidade":1,"precoUnitario":0.10,"subtotal":0.10}]}
+
+################ GET /api/v1/pedidos/01a1cd44-0749-78fd-80b9-8ca10d11b6e5
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+api-supported-versions: 1, 2
+Deprecation: @1794441600
+Sunset: Mon, 31 May 2027 00:00:00 GMT
+Link: </api/v2/pedidos>; rel="successor-version"
+
+{"id":"01a1cd44-0749-78fd-80b9-8ca10d11b6e5","clienteId":"CLI-V","regiao":"Sul","prioridade":"Normal","status":"Recebido","categoria":"AltoValor","total":3000000.07,"criadoEmUtc":"2026-11-12T00:59:10.0278782","entrega":null,"metadados":{"canal":"api","origem":null,"campanha":null},"itens":[{"sku":"CANETA","quantidade":3,"precoUnitario":999999.99,"subtotal":2999999.97},{"sku":"LAPIS","quantidade":1,"precoUnitario":0.1,"subtotal":0.1}]}
+
+
+################ GET /pedidos/01a1cd44-0749-78fd-80b9-8ca10d11b6e5
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+api-supported-versions: 1, 2
+Deprecation: @1794441600
+Sunset: Mon, 31 May 2027 00:00:00 GMT
+Link: </api/v2/pedidos>; rel="successor-version"
+
+{"id":"01a1cd44-0749-78fd-80b9-8ca10d11b6e5","clienteId":"CLI-V","regiao":"Sul","prioridade":"Normal","status":"Recebido","categoria":"AltoValor","total":3000000.07,"criadoEmUtc":"2026-11-12T00:59:10.0278782","entrega":null,"metadados":{"canal":"api","origem":null,"campanha":null},"itens":[{"sku":"CANETA","quantidade":3,"precoUnitario":999999.99,"subtotal":2999999.97},{"sku":"LAPIS","quantidade":1,"precoUnitario":0.1,"subtotal":0.1}]}
+
+
+################ GET /api/v2/pedidos/01a1cd44-0749-78fd-80b9-8ca10d11b6e5
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+api-supported-versions: 1, 2
+
+{"id":"01a1cd44-0749-78fd-80b9-8ca10d11b6e5","clienteId":"CLI-V","regiao":"Sul","prioridade":"Normal","status":"Recebido","categoria":"AltoValor","total":{"valor":"3000000.07","moeda":"BRL"},"criadoEm":"2026-11-12T00:59:10.0278782+00:00","entrega":null,"metadados":{"canal":"api","origem":null,"campanha":null},"itens":[{"sku":"CANETA","quantidade":3,"precoUnitario":{"valor":"999999.99","moeda":"BRL"},"subtotal":{"valor":"2999999.97","moeda":"BRL"}},{"sku":"LAPIS","quantidade":1,"precoUnitario":{"valor":"0.10","moeda":"BRL"},"subtotal":{"valor":"0.10","moeda":"BRL"}}]}
+
+
+################ GET /api/v3/pedidos/01a1cd44-0749-78fd-80b9-8ca10d11b6e5
+HTTP/1.1 400 Bad Request
+Content-Type: application/problem+json
+api-supported-versions: 1, 2
+
+{"type":"https://tools.ietf.org/html/rfc9110#section-15.5.1","title":"Versão de API não suportada","status":400,"detail":"A versão 3 não existe. Versões suportadas: 1, 2.","versoesSuportadas":[1,2],"traceId":"00-a4ffcf459dfd79516b65f5299ca5a566-8d33496ca1363ea2-00"}
+
+
+################ GET /api/versoes (uso observado)
+{"suportadas":[1,2],"padraoSemVersao":1,"depreciadas":[{"versao":1,"depreciadaEm":"2026-11-12T00:00:00+00:00","sunset":"2027-05-31T00:00:00+00:00","sucessora":2}],"uso":{"v1":2,"v2":1}}
+
+################ /openapi/v1.json e /openapi/v2.json — caminhos de cada documento
+v1: ['/api/v1/pedidos/{id}'] | schemas: ['EnderecoDto', 'ItemPedidoResponse', 'MetadadosDto', 'PedidoDetalheResponse']
+v2: ['/api/v2/pedidos/{id}'] | schemas: ['DinheiroV2', 'EnderecoDto', 'ItemPedidoV2', 'MetadadosDto', 'PedidoDetalheV2Response']
+
+################ GET /notificacoes/recentes
+[{"pedidoId":"01a1cd44-0749-78fd-80b9-8ca10d11b6e5","status":"Recebido","categoria":"AltoValor","em":"2026-11-12T00:59:10.0278782+00:00"}]

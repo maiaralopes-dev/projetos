@@ -5,8 +5,9 @@ using System.Text;
 using System.Threading.Channels;
 using HubPedidos.Application.Classificacao;
 using HubPedidos.Application.Persistencia;
-using HubPedidos.Application.Processadores;
-using HubPedidos.Application.Processamento;
+using HubPedidos.Processamento.Processadores;
+using HubPedidos.Processamento;
+using HubPedidos.Processamento.Fila;
 using HubPedidos.Domain.Pedidos;
 using HubPedidos.Infrastructure.Persistencia;
 using Microsoft.EntityFrameworkCore;
@@ -83,17 +84,14 @@ public static class ExperimentoFila
         var servicos = new ServiceCollection();
         servicos.AddDbContext<HubDbContext>(o => o.UseSqlite(connectionString));
         servicos.AddScoped<IRepositorioPedidos>(sp => new RepositorioCronometrado(new RepositorioPedidos(sp.GetRequiredService<HubDbContext>()), tempoBanco));
-        foreach (var cat in Enum.GetValues<CategoriaProcessamento>())
-        {
-            servicos.AddKeyedScoped<IProcessadorPedido, ProcessadorComTrabalhoExterno>(cat);
-        }
+        servicos.AddScoped<ISeletorProcessador, SeletorExperimento>();
 
         await using var provedor = servicos.BuildServiceProvider();
         var opcoes = new OpcoesFila { Capacidade = c.Capacidade, Consumidores = c.Consumidores, LimiteBanco = c.LimiteBanco, ModoCheio = c.Modo, TempoMaximoEsperaMs = c.EsperaMs, TamanhoLote = c.Lote }.Validar();
         var metricas = new MetricasFila();
         var fila = new FilaPedidos(opcoes, metricas);
         var limitador = new LimitadorBanco(opcoes.LimiteBanco);
-        var consumidor = new ConsumidorPedidos(fila, limitador, metricas, provedor.GetRequiredService<IServiceScopeFactory>(), opcoes, NullLogger<ConsumidorPedidos>.Instance);
+        var consumidor = new ConsumidorPedidos(fila, limitador, metricas, provedor.GetRequiredService<IServiceScopeFactory>(), new NotificadorNulo(), opcoes, NullLogger<ConsumidorPedidos>.Instance);
         var esperas = new ConcurrentBag<double>();
         metricas.Observador = r => esperas.Add(r.Espera.TotalMilliseconds);
 
@@ -187,6 +185,13 @@ public static class ExperimentoFila
         Console.WriteLine($"## Check-then-act com {Environment.ProcessorCount} threads, {total} incrementos");
         Console.WriteLine($"ingênuo={ingenuo.Values.Sum()} (perdidos {total - ingenuo.Values.Sum()})  AddOrUpdate={atomico.Values.Sum()}");
         Console.WriteLine();
+    }
+
+    private sealed class SeletorExperimento : ISeletorProcessador
+    {
+        public bool Suporta(CategoriaProcessamento categoria) => true;
+
+        public IProcessadorPedido Obter(CategoriaProcessamento categoria) => new ProcessadorComTrabalhoExterno();
     }
 
     private sealed class ProcessadorComTrabalhoExterno : IProcessadorPedido

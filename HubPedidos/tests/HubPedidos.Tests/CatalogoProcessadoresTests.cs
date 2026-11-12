@@ -1,6 +1,6 @@
 using HubPedidos.Application.Classificacao;
-using HubPedidos.Application.Processadores;
-using HubPedidos.Application.Processadores.Implementacoes;
+using HubPedidos.Processamento.Processadores;
+using HubPedidos.Processamento.Processadores.Implementacoes;
 using HubPedidos.Tests.Fixtures.Versionados;
 
 namespace HubPedidos.Tests;

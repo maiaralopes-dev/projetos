@@ -1,3 +1,4 @@
+using HubPedidos.Processamento;
 using System.Net;
 using System.Net.Http.Json;
 using HubPedidos.Application.Contratos;
@@ -50,5 +51,20 @@ public class FilaEndpointTests(HubApiFactory factory) : IClassFixture<HubApiFact
 
         var metricas = await client.GetFromJsonAsync<MetricasFilaResponse>("/fila/metricas");
         Assert.Equal((1, 1, 1L, 1L, 0L), (metricas!.Profundidade, metricas.Capacidade, metricas.Aceitos, metricas.RejeitadosFilaCheia, metricas.Descartados));
+    }
+}
+
+public class NotificacoesEndpointTests(HubApiFactory factory) : IClassFixture<HubApiFactory>
+{
+    [Fact]
+    public async Task Conclusao_pela_fila_aparece_nas_notificacoes_recentes()
+    {
+        var client = factory.CreateClient();
+        var aceito = await (await client.PostAsJsonAsync("/pedidos/fila", new CriarPedidoRequest("CLI-N", "Norte", "Normal", [new("x", 1, 1m)])))
+            .Content.ReadFromJsonAsync<PedidoEnfileiradoResponse>();
+
+        await Bancada.AguardarAsync(async () =>
+            (await client.GetFromJsonAsync<Notificacoes.NotificacaoResponse[]>("/notificacoes/recentes"))!
+                .Any(n => n.PedidoId == aceito!.Id && n.Status == "Concluido"), "notificação de conclusão");
     }
 }

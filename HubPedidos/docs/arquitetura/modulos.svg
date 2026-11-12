@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="540" viewBox="0 0 820 540" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <marker id="seta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#52514e"/>
+    </marker>
+  </defs>
+  <rect width="820" height="540" fill="#fcfcfb"/>
+  <text x="24" y="32" font-size="17" font-weight="600" fill="#0b0b0b">Hub de Pedidos — módulos (assemblies) e direção das dependências</text>
+  <text x="24" y="52" font-size="12" fill="#52514e">Seta = "depende de / referencia". Verificado pelo compilador (assemblies) e por ArquiteturaTests (matriz + referências compiladas).</text>
+
+  <!-- Api -->
+  <rect x="280" y="76" width="260" height="64" rx="8" fill="#e8f0fb" stroke="#2a78d6" stroke-width="2"/>
+  <text x="410" y="102" font-size="14" font-weight="600" text-anchor="middle" fill="#0b0b0b">HubPedidos.Api</text>
+  <text x="410" y="122" font-size="11" text-anchor="middle" fill="#52514e">composition root · endpoints por módulo · v1/v2</text>
+
+  <!-- Notificacoes -->
+  <rect x="20" y="200" width="240" height="64" rx="8" fill="#ffffff" stroke="#52514e" stroke-width="1.5"/>
+  <text x="140" y="226" font-size="14" font-weight="600" text-anchor="middle" fill="#0b0b0b">Notificações</text>
+  <text x="140" y="246" font-size="11" text-anchor="middle" fill="#52514e">RegistroNotificacoes (adaptador)</text>
+
+  <!-- Processamento -->
+  <rect x="280" y="200" width="260" height="64" rx="8" fill="#ffffff" stroke="#52514e" stroke-width="1.5"/>
+  <text x="410" y="226" font-size="14" font-weight="600" text-anchor="middle" fill="#0b0b0b">Processamento</text>
+  <text x="410" y="246" font-size="11" text-anchor="middle" fill="#52514e">processadores · catálogo · fila · consumidor</text>
+
+  <!-- Infra -->
+  <rect x="580" y="200" width="220" height="64" rx="8" fill="#ffffff" stroke="#52514e" stroke-width="1.5"/>
+  <text x="690" y="226" font-size="14" font-weight="600" text-anchor="middle" fill="#0b0b0b">Infrastructure</text>
+  <text x="690" y="246" font-size="11" text-anchor="middle" fill="#52514e">EF Core · SQLite · migrations</text>
+
+  <!-- Pedidos -->
+  <rect x="280" y="330" width="260" height="64" rx="8" fill="#ffffff" stroke="#52514e" stroke-width="1.5"/>
+  <text x="410" y="356" font-size="14" font-weight="600" text-anchor="middle" fill="#0b0b0b">Pedidos (Application)</text>
+  <text x="410" y="376" font-size="11" text-anchor="middle" fill="#52514e">contratos v1/v2 · mapeador · classificação</text>
+
+  <!-- Domain -->
+  <rect x="280" y="450" width="260" height="56" rx="8" fill="#f0efec" stroke="#52514e" stroke-width="1.5"/>
+  <text x="410" y="474" font-size="14" font-weight="600" text-anchor="middle" fill="#0b0b0b">Domain</text>
+  <text x="410" y="492" font-size="11" text-anchor="middle" fill="#52514e">Pedido · ItemPedido · sem dependências</text>
+
+  <g stroke="#52514e" stroke-width="1.5" fill="none" marker-end="url(#seta)">
+    <!-- Api -> módulos -->
+    <path d="M320,140 L180,198"/>
+    <path d="M410,140 L410,198"/>
+    <path d="M500,140 L650,198"/>
+    <!-- Notificacoes -> Processamento -->
+    <path d="M260,232 L278,232"/>
+    <!-- Processamento -> Pedidos -->
+    <path d="M410,264 L410,328"/>
+    <!-- Infra -> Pedidos -->
+    <path d="M610,264 L530,328"/>
+    <!-- Pedidos -> Domain -->
+    <path d="M410,394 L410,448"/>
+  </g>
+
+  <!-- Portas -->
+  <g font-size="11" fill="#1c5cab">
+    <text x="615" y="292">implementa</text><text x="615" y="306">IRepositorioPedidos e</text>
+    <text x="615" y="320">IConsultasPedidos</text><text x="615" y="334">(declaradas em Pedidos)</text>
+    <text x="20" y="288">implementa INotificadorPedidos</text>
+    <text x="20" y="302">(declarada em Processamento)</text>
+  </g>
+  <g font-size="11" fill="#52514e">
+    <text x="20" y="420" font-weight="600">Proibido (testado):</text>
+    <text x="20" y="436">Domain → qualquer módulo</text>
+    <text x="20" y="452">Pedidos → Processamento, Notificações, Infra</text>
+    <text x="20" y="468">Processamento → Notificações, Infra</text>
+    <text x="20" y="484">Infra → Processamento, Notificações</text>
+    <text x="20" y="500">EF Core / ASP.NET fora de Infra e Api</text>
+  </g>
+</svg>

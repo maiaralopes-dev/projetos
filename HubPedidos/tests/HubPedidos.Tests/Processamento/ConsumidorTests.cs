@@ -1,4 +1,4 @@
-using HubPedidos.Application.Processamento;
+using HubPedidos.Processamento.Fila;
 
 namespace HubPedidos.Tests.Processamento;
 
@@ -154,5 +154,26 @@ public class ProcessamentoEmLoteTests
         Assert.DoesNotContain(ids[3], repositorio.Gravacoes.Keys);
         Assert.All(repositorio.Gravacoes.Values, n => Assert.Equal(1, n)); // lote desfeito: ninguém gravado duas vezes
         b.AssertBalanco();
+    }
+}
+
+public class NotificacaoTests
+{
+    [Fact]
+    public async Task Cada_pedido_concluido_gera_uma_notificacao_e_falha_no_notificador_nao_desfaz_o_processamento()
+    {
+        await using var b = new Bancada(new OpcoesFila { Capacidade = 100, Consumidores = 2, TamanhoLote = 8 });
+        var ids = await b.EnfileirarAsync(20);
+        await b.IniciarAsync();
+        await Bancada.AguardarAsync(() => b.Metricas.Processados == 20, "20 processados");
+
+        Assert.Equal(ids.Order(), b.Notificador.Eventos.Select(e => e.PedidoId).Order());
+        Assert.All(b.Notificador.Eventos, e => Assert.Equal(Domain.Pedidos.StatusPedido.Concluido, e.Status));
+
+        b.Notificador.Falhar = true;
+        await b.EnfileirarAsync(5);
+        await Bancada.AguardarAsync(() => b.Metricas.Processados == 25, "processados mesmo com notificador falhando");
+        Assert.Equal(0, b.Metricas.Falhas);
+        await b.PararAsync();
     }
 }

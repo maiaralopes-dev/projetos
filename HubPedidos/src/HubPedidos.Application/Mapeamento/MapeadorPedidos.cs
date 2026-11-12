@@ -1,6 +1,4 @@
-using HubPedidos.Application.Classificacao;
 using HubPedidos.Application.Contratos;
-using HubPedidos.Application.Processadores;
 using HubPedidos.Domain.Pedidos;
 
 namespace HubPedidos.Application.Mapeamento;
@@ -67,18 +65,6 @@ public static class MapeadorPedidos
         return Resultado<Pedido>.Ok(Pedido.Criar(request.ClienteId!, regiao, prioridade, itens, entrega, metadados));
     }
 
-    public static PedidoResponse ParaResposta(Pedido pedido, CategoriaProcessamento categoria, ResultadoProcessamento processamento) =>
-        new(
-            Id: pedido.Id.ToString(),
-            ClienteId: pedido.ClienteId,
-            Regiao: pedido.Regiao.ToString(),
-            Prioridade: pedido.Prioridade.ToString(),
-            Total: pedido.Total,
-            Categoria: categoria.ToString(),
-            Processador: processamento.Processador,
-            VersaoProcessador: processamento.Versao,
-            Mensagem: processamento.Mensagem,
-            Itens: [.. pedido.Itens.Select(i => new ItemPedidoResponse(i.Sku, i.Quantidade, i.PrecoUnitario, i.Subtotal))]);
 
     private static void ValidarItens(IReadOnlyList<ItemPedidoRequest> itens, List<ErroValidacao> erros)
     {

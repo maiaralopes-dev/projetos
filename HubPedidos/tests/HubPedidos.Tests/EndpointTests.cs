@@ -59,7 +59,7 @@ public class EscritaSerializadaTests(HubApiFactory factory) : IClassFixture<HubA
     public async Task Posts_concorrentes_passam_pelo_limitador_e_nunca_escrevem_em_paralelo()
     {
         var client = factory.CreateClient();
-        var limitador = factory.Services.GetRequiredService<HubPedidos.Application.Processamento.LimitadorBanco>();
+        var limitador = factory.Services.GetRequiredService<HubPedidos.Processamento.Fila.LimitadorBanco>();
 
         var respostas = await Task.WhenAll(Enumerable.Range(0, 40).Select(i =>
             client.PostAsJsonAsync("/pedidos", new CriarPedidoRequest($"CLI-{i}", "Sul", "Normal", [new("x", 1, 1m)]))));

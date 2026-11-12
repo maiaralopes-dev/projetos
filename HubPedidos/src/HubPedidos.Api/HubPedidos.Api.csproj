@@ -4,6 +4,12 @@
     <ProjectReference Include="..\HubPedidos.Application\HubPedidos.Application.csproj" />
     <ProjectReference Include="..\HubPedidos.Domain\HubPedidos.Domain.csproj" />
     <ProjectReference Include="..\HubPedidos.Infrastructure\HubPedidos.Infrastructure.csproj" />
+    <ProjectReference Include="..\HubPedidos.Processamento\HubPedidos.Processamento.csproj" />
+    <ProjectReference Include="..\HubPedidos.Notificacoes\HubPedidos.Notificacoes.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.14" />
   </ItemGroup>
 
   <PropertyGroup>

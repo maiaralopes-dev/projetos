@@ -1,11 +1,11 @@
 using HubPedidos.Application.Persistencia;
-using HubPedidos.Application.Processadores;
+using HubPedidos.Processamento.Processadores;
 using HubPedidos.Domain.Pedidos;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace HubPedidos.Application.Processamento;
+namespace HubPedidos.Processamento.Fila;
 
 /// <summary>
 /// N consumidores lendo o mesmo canal. Cada item ganha um escopo de DI próprio (DbContext
@@ -17,6 +17,7 @@ public sealed partial class ConsumidorPedidos(
     LimitadorBanco limitador,
     MetricasFila metricas,
     IServiceScopeFactory escopos,
+    INotificadorPedidos notificador,
     OpcoesFila opcoes,
     ILogger<ConsumidorPedidos> log) : BackgroundService
 {
@@ -125,7 +126,7 @@ public sealed partial class ConsumidorPedidos(
         {
             await using var escopo = escopos.CreateAsyncScope();
             var repositorio = escopo.ServiceProvider.GetRequiredService<IRepositorioPedidos>();
-            var processador = escopo.ServiceProvider.GetRequiredKeyedService<IProcessadorPedido>(job.Categoria);
+            var processador = escopo.ServiceProvider.GetRequiredService<ISeletorProcessador>().Obter(job.Categoria);
             var pedido = job.Pedido with { Status = StatusPedido.EmProcessamento };
 
             await limitador.ExecutarAsync(ct => repositorio.AdicionarAsync(pedido, job.Categoria, ct), cancellationToken);
@@ -133,6 +134,7 @@ public sealed partial class ConsumidorPedidos(
             await limitador.ExecutarAsync(ct => repositorio.AlterarStatusAsync(job.PedidoId, StatusPedido.Concluido, ct), cancellationToken);
 
             sucesso = true;
+            await NotificarAsync(job, cancellationToken);
             LogProcessado(job.PedidoId, resultado.Processador, MetricasFila.Decorrido(inicio).TotalMilliseconds, espera.TotalMilliseconds);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -203,7 +205,7 @@ public sealed partial class ConsumidorPedidos(
             {
                 try
                 {
-                    var processador = escopo.ServiceProvider.GetRequiredKeyedService<IProcessadorPedido>(lote[i].Categoria);
+                    var processador = escopo.ServiceProvider.GetRequiredService<ISeletorProcessador>().Obter(lote[i].Categoria);
                     await processador.ProcessarAsync(lote[i].Pedido, cancellationToken); // fora do semáforo
                     concluidos.Add(i);
                 }
@@ -215,6 +217,10 @@ public sealed partial class ConsumidorPedidos(
 
             var ids = concluidos.Select(i => lote[i].PedidoId).ToArray();
             await limitador.ExecutarAsync(ct => repositorio.ConcluirLoteAsync(ids, ct), cancellationToken);
+            foreach (var i in concluidos)
+            {
+                await NotificarAsync(lote[i], cancellationToken);
+            }
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -237,6 +243,22 @@ public sealed partial class ConsumidorPedidos(
             }
         }
     }
+
+    /// <summary>Notificação é efeito secundário: se falhar, o pedido continua concluído.</summary>
+    private async Task NotificarAsync(ProcessarPedidoJob job, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await notificador.PublicarAsync(new PedidoAtualizado(job.PedidoId, StatusPedido.Concluido, job.Categoria, DateTimeOffset.UtcNow), cancellationToken);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            LogNotificacaoFalhou(ex, job.PedidoId);
+        }
+    }
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Falha ao notificar a conclusão do pedido {PedidoId}")]
+    private partial void LogNotificacaoFalhou(Exception ex, Guid pedidoId);
 
     [LoggerMessage(Level = LogLevel.Warning, Message = "Lote de {Quantidade} pedidos falhou ao gravar; reprocessando item a item")]
     private partial void LogLoteFalhou(Exception ex, int quantidade);

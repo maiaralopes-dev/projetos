@@ -10,6 +10,8 @@
     <Project Path="src/HubPedidos.Application/HubPedidos.Application.csproj" />
     <Project Path="src/HubPedidos.Domain/HubPedidos.Domain.csproj" />
     <Project Path="src/HubPedidos.Infrastructure/HubPedidos.Infrastructure.csproj" />
+    <Project Path="src/HubPedidos.Notificacoes/HubPedidos.Notificacoes.csproj" />
+    <Project Path="src/HubPedidos.Processamento/HubPedidos.Processamento.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/HubPedidos.Tests/HubPedidos.Tests.csproj" />

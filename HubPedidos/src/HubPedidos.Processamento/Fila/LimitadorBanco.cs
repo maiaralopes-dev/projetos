@@ -1,4 +1,4 @@
-namespace HubPedidos.Application.Processamento;
+namespace HubPedidos.Processamento.Fila;
 
 /// <summary>
 /// Limita quantas operações usam o banco ao mesmo tempo. O slot é liberado em

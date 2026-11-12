@@ -40,22 +40,3 @@ public sealed record PedidoComItensResponse(Guid Id, string ClienteId, decimal T
 public sealed record ResumoRegiaoResponse(string Regiao, int Pedidos, int Unidades, decimal Total, decimal TicketMedio);
 
 public sealed record AlterarStatusRequest(string? Status);
-
-public sealed record PedidoEnfileiradoResponse(Guid Id, string Categoria, string Status);
-
-public sealed record MetricasFilaResponse(
-    int Profundidade,
-    int Capacidade,
-    string ModoCheio,
-    long Aceitos,
-    long RejeitadosFilaCheia,
-    long RejeitadosEncerrando,
-    long Descartados,
-    long Processados,
-    long Falhas,
-    long Abandonados,
-    int EmAndamento,
-    int LimiteBanco,
-    int BancoEmUso,
-    int MaximoBancoObservado,
-    IReadOnlyDictionary<string, long> ProcessadosPorCategoria);

@@ -3,7 +3,7 @@ using System.Threading.Channels;
 using HubPedidos.Application.Classificacao;
 using HubPedidos.Domain.Pedidos;
 
-namespace HubPedidos.Application.Processamento;
+namespace HubPedidos.Processamento.Fila;
 
 /// <summary>
 /// Canal limitado (bounded) compartilhado entre produtores (endpoints) e consumidores

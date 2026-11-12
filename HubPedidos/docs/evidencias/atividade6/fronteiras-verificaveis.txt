@@ -1,0 +1,10 @@
+# 1) Módulo Pedidos (HubPedidos.Application) tentando usar um tipo do módulo Processamento
+$ dotnet build src/HubPedidos.Application
+src/HubPedidos.Application/Violacao.cs(2,77): error CS0234: The type or namespace name 'Processamento' does not exist in the namespace 'HubPedidos' (are you missing an assembly reference?)
+
+# 2) Alguém adiciona ao .csproj da infraestrutura uma referência proibida pela matriz (compila, mas o teste barra)
+$ dotnet add src/HubPedidos.Infrastructure reference src/HubPedidos.Processamento && dotnet test --filter ArquiteturaTests
+Failed HubPedidos.Tests.ArquiteturaTests.Referencias_de_projeto_respeitam_a_matriz(modulo: "HubPedidos.Infrastructure") [3 ms]
+Error Message:
+HubPedidos.Infrastructure.csproj referencia HubPedidos.Processamento (proibido pela matriz).
+Failed!  - Failed:     1, Passed:    15, Skipped:     0, Total:    16, Duration: 112 ms - HubPedidos.Tests.dll (net10.0)

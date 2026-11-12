@@ -1,8 +1,9 @@
 using System.Collections.Concurrent;
 using HubPedidos.Application.Classificacao;
 using HubPedidos.Application.Persistencia;
-using HubPedidos.Application.Processadores;
-using HubPedidos.Application.Processamento;
+using HubPedidos.Processamento.Processadores;
+using HubPedidos.Processamento;
+using HubPedidos.Processamento.Fila;
 using HubPedidos.Domain.Pedidos;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -105,6 +106,31 @@ internal sealed class ProcessadorFalso : IProcessadorPedido
         ValueTask.FromResult(new ResultadoProcessamento("Falso", 1, "ok"));
 }
 
+internal sealed class SeletorFalso : ISeletorProcessador
+{
+    public bool Suporta(CategoriaProcessamento categoria) => categoria != CategoriaProcessamento.Invalido;
+
+    public IProcessadorPedido Obter(CategoriaProcessamento categoria) => new ProcessadorFalso();
+}
+
+internal sealed class NotificadorFalso : INotificadorPedidos
+{
+    public ConcurrentQueue<PedidoAtualizado> Eventos { get; } = new();
+
+    public bool Falhar { get; set; }
+
+    public ValueTask PublicarAsync(PedidoAtualizado evento, CancellationToken cancellationToken)
+    {
+        if (Falhar)
+        {
+            throw new InvalidOperationException("notificação indisponível");
+        }
+
+        Eventos.Enqueue(evento);
+        return ValueTask.CompletedTask;
+    }
+}
+
 /// <summary>Monta fila + consumidor reais com dependências falsas, sem host HTTP.</summary>
 internal sealed class Bancada : IAsyncDisposable
 {
@@ -119,16 +145,15 @@ internal sealed class Bancada : IAsyncDisposable
 
         var servicos = new ServiceCollection();
         servicos.AddScoped<IRepositorioPedidos>(_ => Repositorio);
-        foreach (var categoria in Enum.GetValues<CategoriaProcessamento>())
-        {
-            servicos.AddKeyedScoped<IProcessadorPedido, ProcessadorFalso>(categoria);
-        }
+        servicos.AddScoped<ISeletorProcessador, SeletorFalso>();
 
         _provedor = servicos.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
-        Consumidor = new ConsumidorPedidos(Fila, Limitador, Metricas, _provedor.GetRequiredService<IServiceScopeFactory>(), Opcoes, NullLogger<ConsumidorPedidos>.Instance);
+        Consumidor = new ConsumidorPedidos(Fila, Limitador, Metricas, _provedor.GetRequiredService<IServiceScopeFactory>(), Notificador, Opcoes, NullLogger<ConsumidorPedidos>.Instance);
     }
 
     public OpcoesFila Opcoes { get; }
+
+    public NotificadorFalso Notificador { get; } = new();
 
     public MetricasFila Metricas { get; } = new();
 

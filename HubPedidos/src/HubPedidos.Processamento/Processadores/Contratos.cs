@@ -1,7 +1,7 @@
 using HubPedidos.Application.Classificacao;
 using HubPedidos.Domain.Pedidos;
 
-namespace HubPedidos.Application.Processadores;
+namespace HubPedidos.Processamento.Processadores;
 
 public interface IProcessadorPedido
 {

@@ -1,9 +1,10 @@
+using HubPedidos.Processamento;
 using BenchmarkDotNet.Attributes;
 using HubPedidos.Application.Classificacao;
 using HubPedidos.Application.Contratos;
 using HubPedidos.Application.Mapeamento;
-using HubPedidos.Application.Processadores;
-using HubPedidos.Application.Processamento;
+using HubPedidos.Processamento.Processadores;
+using HubPedidos.Processamento.Fila;
 
 namespace HubPedidos.Benchmarks;
 
@@ -26,7 +27,7 @@ public class CriacaoBenchmarks
     {
         var pedido = MapeadorPedidos.ParaDominio(Request).Valor!;
         var categoria = ClassificadorPedidos.Classificar(pedido);
-        return MapeadorPedidos.ParaResposta(pedido, categoria, Processamento);
+        return MapeadorResultado.ParaResposta(pedido, categoria, Processamento);
     }
 
     [Benchmark(Baseline = true)]
