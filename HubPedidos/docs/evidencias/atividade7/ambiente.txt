@@ -1,0 +1,6 @@
+Data: 2026-11-13T16:53Z
+SO: Ubuntu 24.04.5 LTS x86_64
+SDK: 10.0.114
+Microsoft.AspNetCore.App 10.0.14 [/usr/lib/dotnet/shared/Microsoft.AspNetCore.App]
+Microsoft.NETCore.App 10.0.14 [/usr/lib/dotnet/shared/Microsoft.NETCore.App]
+Pacotes: Microsoft.AspNetCore.Authentication.JwtBearer 10.0.14; Microsoft.AspNetCore.SignalR.Client 10.0.14; SignalR servidor e OutputCaching do framework ASP.NET Core 10.0.14

@@ -249,7 +249,7 @@ public sealed partial class ConsumidorPedidos(
     {
         try
         {
-            await notificador.PublicarAsync(new PedidoAtualizado(job.PedidoId, StatusPedido.Concluido, job.Categoria, DateTimeOffset.UtcNow), cancellationToken);
+            await notificador.PublicarAsync(new PedidoAtualizado(job.PedidoId, job.Pedido.ClienteId, StatusPedido.Concluido, job.Categoria, DateTimeOffset.UtcNow), cancellationToken);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {

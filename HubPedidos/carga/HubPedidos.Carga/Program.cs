@@ -27,6 +27,7 @@ var amostras = new ConcurrentBag<Amostra>();
 var emVoo = 0;
 var maxEmVoo = 0;
 var naoEnviados = 0;
+var acertosCache = 0;
 const int LimiteEmVoo = 4_000; // proteção do próprio gerador
 var total = TimeSpan.FromSeconds(cfg.Aquecimento + cfg.Duracao);
 var relogio = Stopwatch.StartNew();
@@ -35,7 +36,7 @@ Console.WriteLine($"Carga: criação {cfg.TaxaCriacao}/s + consulta {cfg.TaxaCon
 
 var rotas = new List<Task>();
 if (cfg.TaxaCriacao > 0) rotas.Add(AgendarAsync("POST /pedidos", cfg.TaxaCriacao, CriarAsync, semente: 1));
-if (cfg.TaxaConsulta > 0) rotas.Add(AgendarAsync("GET /pedidos?clienteId", cfg.TaxaConsulta, ConsultarAsync, semente: 2));
+if (cfg.TaxaConsulta > 0) rotas.Add(AgendarAsync("GET " + cfg.UrlConsulta.Split('?')[0], cfg.TaxaConsulta, ConsultarAsync, semente: 2));
 await Task.WhenAll(rotas);
 await AguardarEmVooAsync();
 
@@ -116,8 +117,9 @@ async Task<int> CriarAsync(Random rnd, CancellationToken ct)
 
 async Task<int> ConsultarAsync(Random rnd, CancellationToken ct)
 {
-    using var resposta = await http.GetAsync($"/pedidos?clienteId=CLI-{rnd.Next(1, 2_000):D5}&tamanho=20", ct);
+    using var resposta = await http.GetAsync(cfg.UrlConsulta.Replace("{cliente}", $"CLI-{rnd.Next(1, 2_000):D5}"), ct);
     await resposta.Content.LoadIntoBufferAsync(ct);
+    if (resposta.Headers.Age.HasValue) Interlocked.Increment(ref acertosCache); // resposta servida pelo output cache
     return (int)resposta.StatusCode;
 }
 
@@ -134,6 +136,7 @@ string Resumir()
     sb.AppendLine($"## Carga '{cfg.Rotulo}' — {DateTime.UtcNow:yyyy-MM-dd HH:mm} UTC");
     sb.AppendLine();
     sb.AppendLine($"Modelo aberto; criação {cfg.TaxaCriacao}/s + consulta {cfg.TaxaConsulta}/s; aquecimento {cfg.Aquecimento}s (descartado); medição {cfg.Duracao}s; timeout {cfg.TimeoutMs} ms; máx. em voo {maxEmVoo}; não enviados (gerador saturado) {naoEnviados}.");
+    sb.AppendLine($"Consulta: {cfg.UrlConsulta}; respostas com cabeçalho Age (vindas do output cache): {acertosCache}.");
     sb.AppendLine("Latência medida desde o instante agendado (corrige omissão coordenada). Percentis por posição (nearest-rank) sobre TODAS as requisições da janela de medição, inclusive erros e timeouts (timeout conta como o valor do timeout).");
     sb.AppendLine();
     sb.AppendLine("| Rota | Ofertadas | OK (2xx) | Erros HTTP | Timeouts | Outros | Vazão OK/s | p50 ms | p95 ms | p99 ms | máx ms |");
@@ -158,13 +161,14 @@ static double P(double[] ordenado, double p) =>
 
 record Amostra(string Rota, string Fase, double AgendadoMs, double LatenciaMs, int Status, string Erro);
 
-record Config(string Url, int Aquecimento, int Duracao, double TaxaCriacao, double TaxaConsulta, int TimeoutMs, string Rotulo, string? Saida)
+record Config(string Url, int Aquecimento, int Duracao, double TaxaCriacao, double TaxaConsulta, int TimeoutMs, string Rotulo, string? Saida, string UrlConsulta)
 {
     public static Config Ler(string[] a)
     {
         string V(string nome, string padrao) { var i = Array.IndexOf(a, "--" + nome); return i >= 0 && i + 1 < a.Length ? a[i + 1] : padrao; }
         return new(V("url", "http://localhost:5080"), int.Parse(V("aquecimento", "10")), int.Parse(V("duracao", "30")),
             double.Parse(V("taxa-criacao", "100"), CultureInfo.InvariantCulture), double.Parse(V("taxa-consulta", "200"), CultureInfo.InvariantCulture),
-            int.Parse(V("timeout", "5000")), V("rotulo", "execucao"), a.Contains("--saida") ? V("saida", "") : null);
+            int.Parse(V("timeout", "5000")), V("rotulo", "execucao"), a.Contains("--saida") ? V("saida", "") : null,
+            V("url-consulta", "/pedidos?clienteId={cliente}&tamanho=20"));
     }
 }

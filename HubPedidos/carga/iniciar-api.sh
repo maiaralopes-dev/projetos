@@ -13,4 +13,6 @@ export ASPNETCORE_URLS=http://localhost:5080
 export ConnectionStrings__Hub="Data Source=$DB"
 export Banco__SemearPedidos=20000
 export Logging__LogLevel__Default=Warning
+# Chave de assinatura JWT aleatória por execução (Production exige uma; nunca fica no repositório).
+export Autenticacao__ChaveAssinatura="${Autenticacao__ChaveAssinatura:-$(head -c 32 /dev/urandom | base64)}"
 exec dotnet bin/Release/net10.0/HubPedidos.Api.dll

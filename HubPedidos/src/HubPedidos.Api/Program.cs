@@ -1,6 +1,8 @@
 using HubPedidos.Api.Modulos.Notificacoes;
 using HubPedidos.Api.Modulos.Pedidos;
+using HubPedidos.Api.Http;
 using HubPedidos.Api.Modulos.Processamento;
+using HubPedidos.Api.Seguranca;
 using HubPedidos.Application;
 using HubPedidos.Infrastructure;
 using HubPedidos.Notificacoes;
@@ -27,6 +29,8 @@ builder.Services
     .AddProblemDetails();
 
 builder.Services.AddVersionamentoApi();
+builder.Services.AddAutenticacaoHub(builder.Configuration, builder.Environment);
+builder.Services.AddCachePublico(builder.Configuration);
 builder.Services.Configure<HostOptions>(o =>
     o.ShutdownTimeout = TimeSpan.FromSeconds((builder.Configuration.GetSection("Fila").Get<OpcoesFila>() ?? new()).PrazoDrenagemSegundos));
 
@@ -34,10 +38,16 @@ var app = builder.Build();
 
 await app.Services.PrepararBancoAsync(app.Configuration);
 
+// Ordem importa: o cache só entra DEPOIS de autenticar/autorizar, para nunca servir a
+// alguém uma resposta que ele não poderia ver.
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseOutputCache();
+
 app.UseVersionamentoApi();
 app.MapModuloPedidos();
 app.MapModuloProcessamento();
-app.MapModuloNotificacoes();
+app.MapModuloNotificacoes(app.Environment);
 
 app.Run();
 

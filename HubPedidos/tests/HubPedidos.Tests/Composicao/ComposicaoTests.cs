@@ -80,8 +80,11 @@ public class ComposicaoTests(HubApiFactory factory) : IClassFixture<HubApiFactor
         Assert.IsType<RepositorioPedidos>(sp.GetRequiredService<IRepositorioPedidos>());
         Assert.IsType<ConsultasPedidos>(sp.GetRequiredService<IConsultasPedidos>());
 
-        // O módulo de notificações substitui o padrão nulo, e é o mesmo singleton consultável.
-        Assert.Same(factory.Services.GetRequiredService<RegistroNotificacoes>(), sp.GetRequiredService<INotificadorPedidos>());
+        // O módulo de notificações substitui o padrão nulo por um composto de canais
+        // (memória, SignalR e invalidação de cache da API).
+        Assert.IsType<NotificadorComposto>(sp.GetRequiredService<INotificadorPedidos>());
+        Assert.Equal(["CanalInvalidacaoCache", "CanalSignalR", "RegistroNotificacoes"],
+            sp.GetServices<ICanalNotificacao>().Select(c => c.GetType().Name).Order());
 
         // Scoped: mesmo escopo => mesma instância; escopos diferentes => instâncias diferentes.
         using var outro = factory.Services.CreateScope();

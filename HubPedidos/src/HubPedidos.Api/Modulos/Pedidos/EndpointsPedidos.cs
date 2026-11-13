@@ -70,7 +70,7 @@ public static class EndpointsPedidos
             await repositorio.AdicionarAsync(pedido, categoria, cancellationToken);
         }
 
-        await notificador.PublicarAsync(new PedidoAtualizado(pedido.Id.Valor, StatusPedido.Recebido, categoria, pedido.CriadoEm), cancellationToken);
+        await notificador.PublicarAsync(new PedidoAtualizado(pedido.Id.Valor, pedido.ClienteId, StatusPedido.Recebido, categoria, pedido.CriadoEm), cancellationToken);
         return TypedResults.Created($"/pedidos/{pedido.Id}", MapeadorResultado.ParaResposta(pedido, categoria, processamento));
     }
 

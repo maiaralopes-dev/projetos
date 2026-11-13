@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace HubPedidos.Processamento;
 
 /// <summary>Evento publicado quando o status de um pedido muda (dados mínimos, sem entidade).</summary>
-public sealed record PedidoAtualizado(Guid PedidoId, StatusPedido Status, CategoriaProcessamento Categoria, DateTimeOffset Em);
+public sealed record PedidoAtualizado(Guid PedidoId, string ClienteId, StatusPedido Status, CategoriaProcessamento Categoria, DateTimeOffset Em);
 
 /// <summary>
 /// PORTA declarada por quem CONSOME (o processamento precisa avisar que algo mudou).

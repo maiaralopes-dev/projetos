@@ -1,0 +1,62 @@
+Pedido 01a1d5d3-b0e0-7e08-8b9d-b69325b95659 do cliente CLI-A. Tokens obtidos em POST /dev/token (rota existente SÓ em Development).
+
+################ Hub sem token: negociação recusada
+$ curl -i -X POST localhost:5080/hubs/pedidos/negotiate?negotiateVersion=1
+HTTP/1.1 401 Unauthorized
+Content-Length: 0
+WWW-Authenticate: Bearer
+
+
+################ v2 sem token / token de outro cliente / dono
+token=: 401
+token=eyJhbGciOiJI…: 404
+token=eyJhbGciOiJI…: 200
+
+################ ETag: GET normal
+HTTP/1.1 200 OK
+Content-Length: 430
+Content-Type: application/json; charset=utf-8
+Cache-Control: private, no-cache
+ETag: "r20c1NDQoVfg4YmexkfQ8w"
+api-supported-versions: 1, 2
+
+{"id":"01a1d5d3-b0e0-7e08-8b9d-b69325b95659","clienteId":"CLI-A","regiao":"Sul","prioridade":"Normal","status":"Recebido","categoria":"Padrao","total":{"valor":"10.00","moeda":"BRL"},"criadoEm":"2026-11-13T16:53:02.8190591+00:00","entrega":null,"metadados":{"canal":"api","origem":null,"campanha":null},"itens":[{"sku":"X","quantidade":2,"precoUnitario":{"valor":"5.00","moeda":"BRL"},"subtotal":{"valor":"10.00","moeda":"BRL"}}]}
+
+
+################ GET com If-None-Match: "r20c1NDQoVfg4YmexkfQ8w"  (nada mudou)
+HTTP/1.1 304 Not Modified
+Cache-Control: private, no-cache
+ETag: "r20c1NDQoVfg4YmexkfQ8w"
+api-supported-versions: 1, 2
+
+(corpo vazio)
+
+################ PUT status com If-Match atual
+HTTP/1.1 204 No Content
+
+
+################ GET com If-None-Match obsoleto → 200 com a representação nova
+HTTP/1.1 200 OK
+ETag: "U1ogeS8gpLMQgqMCoxoo9w"
+{"id":"01a1d5d3-b0e0-7e08-8b9d-b69325b95659","clienteId":"CLI-A","regiao":"Sul","prioridade":"Normal","status":"EmProcessamento","categoria":"Padrao","total":{"valor":"10.00","moeda":"BRL"},"criadoEm":"2026-11-13T16:53:02.8190591+00:00","entrega":null,"metadados":{"canal":"api","origem":null,"campanha":null},"itens":[{"sku":"X","quantidade":2,"precoUnitario":{"valor":"5.00","moeda":"BRL"},"subtotal":{"valor":"10.00","moeda":"BRL"}}]}
+
+################ PUT com If-Match obsoleto → 412
+HTTP/1.1 412 Precondition Failed
+Content-Type: application/problem+json
+
+{"type":"https://tools.ietf.org/html/rfc9110#section-15.5.13","title":"Pré-condição falhou","status":412,"detail":"O pedido mudou desde a sua última leitura. Consulte de novo e repita a operação.","traceId":"00-9dba5cf8e949bddb723e78a004b29545-87b074008b3cb037-00"}
+
+
+################ Output cache do painel (anônimo): 1ª e 2ª leitura
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+Age: 0
+
+################ Mesma rota com Authorization: não usa o cache (sem Age)
+HTTP/1.1 200 OK
+
+################ Notificações registradas (mesmos eventos enviados pelo SignalR)
+[{"pedidoId":"01a1d5d3-b0e0-7e08-8b9d-b69325b95659","status":"EmProcessamento","categoria":"Padrao","em":"2026-11-13T16:53:03.8966879+00:00"},{"pedidoId":"01a1d5d3-b0e0-7e08-8b9d-b69325b95659","status":"Recebido","categoria":"Padrao","em":"2026-11-13T16:53:02.8190591+00:00"}]

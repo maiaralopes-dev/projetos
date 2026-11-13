@@ -31,6 +31,13 @@ public class ArquiteturaTests
     private static readonly string[] Infra = ["Microsoft.EntityFrameworkCore", "Microsoft.Data.Sqlite", "Microsoft.AspNetCore", "SQLitePCLRaw"];
     private static readonly string[] SemInfra = ["HubPedidos.Domain", "HubPedidos.Application", "HubPedidos.Processamento", "HubPedidos.Notificacoes"];
 
+    // Exceção DELIBERADA (atividade 7): Notificações é o adaptador de transporte em tempo
+    // real e usa ASP.NET Core SignalR/Authorization. Persistência continua proibida nele.
+    private static readonly Dictionary<string, string[]> ExcecoesTecnologia = new()
+    {
+        ["HubPedidos.Notificacoes"] = ["Microsoft.AspNetCore"],
+    };
+
     public static TheoryData<string> Modulos => [.. Permitidas.Keys];
 
     [Theory]
@@ -54,7 +61,9 @@ public class ArquiteturaTests
 
         if (SemInfra.Contains(modulo))
         {
-            var tecnologia = usadas.Where(n => Infra.Any(p => n.StartsWith(p, StringComparison.Ordinal))).ToArray();
+            var permitidas = ExcecoesTecnologia.GetValueOrDefault(modulo, []);
+            var tecnologia = usadas.Where(n => Infra.Any(p => n.StartsWith(p, StringComparison.Ordinal)))
+                .Where(n => !permitidas.Any(p => n.StartsWith(p, StringComparison.Ordinal))).ToArray();
             Assert.True(tecnologia.Length == 0, $"{modulo} depende de infraestrutura: {string.Join(", ", tecnologia)}.");
         }
     }
@@ -82,7 +91,15 @@ public class ArquiteturaTests
             Assert.Equal([implementa], implementacoes);
         }
 
-        Assert.True(typeof(INotificadorPedidos).IsAssignableFrom(typeof(RegistroNotificacoes)));
+        Assert.True(typeof(INotificadorPedidos).IsAssignableFrom(typeof(NotificadorComposto)));
+
+        // Porta do próprio módulo de notificações (canais): declarada lá, implementada
+        // por ele (memória, SignalR) e pela API (invalidação de cache).
+        Assert.Equal("HubPedidos.Notificacoes", typeof(ICanalNotificacao).Assembly.GetName().Name);
+        var canais = Permitidas.Keys.Select(Assembly.Load).SelectMany(a => a.GetTypes())
+            .Where(t => t is { IsClass: true, IsAbstract: false } && typeof(ICanalNotificacao).IsAssignableFrom(t))
+            .Select(t => t.Assembly.GetName().Name).Distinct().Order();
+        Assert.Equal(["HubPedidos.Api", "HubPedidos.Notificacoes"], canais);
     }
 
     [Fact]

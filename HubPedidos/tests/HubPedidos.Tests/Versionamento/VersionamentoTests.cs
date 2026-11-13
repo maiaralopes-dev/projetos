@@ -10,6 +10,9 @@ public class VersionamentoTests(HubApiFactory factory) : IClassFixture<HubApiFac
 {
     private readonly HttpClient _http = factory.CreateClient();
 
+    // A v2 exige identidade: os pedidos destes testes são do cliente "CLI-V".
+    private HttpClient V2 => factory.ClienteAutenticado("CLI-V");
+
     private async Task<Guid> CriarAsync()
     {
         var r = await _http.PostAsJsonAsync("/pedidos", new CriarPedidoRequest("CLI-V", "Sul", "Normal",
@@ -56,13 +59,13 @@ public class VersionamentoTests(HubApiFactory factory) : IClassFixture<HubApiFac
     {
         var id = await CriarAsync();
 
-        var v2 = await _http.GetFromJsonAsync<PedidoDetalheV2Response>($"/api/v2/pedidos/{id}");
+        var v2 = await V2.GetFromJsonAsync<PedidoDetalheV2Response>($"/api/v2/pedidos/{id}");
         Assert.Equal(new DinheiroV2("3000000.07", "BRL"), v2!.Total);
         Assert.Equal(TimeSpan.Zero, v2.CriadoEm.Offset);
-        Assert.Contains("+00:00", await _http.GetStringAsync($"/api/v2/pedidos/{id}"));
+        Assert.Contains("+00:00", await V2.GetStringAsync($"/api/v2/pedidos/{id}"));
 
         // O cliente v1 NÃO entende a v2: é por isso que a v1 continua existindo.
-        await Assert.ThrowsAsync<JsonException>(() => new ClientePainelV1(_http).ObterAsync(id, "/api/v2/pedidos"));
+        await Assert.ThrowsAsync<JsonException>(() => new ClientePainelV1(V2).ObterAsync(id, "/api/v2/pedidos"));
     }
 
     [Fact]
@@ -71,7 +74,7 @@ public class VersionamentoTests(HubApiFactory factory) : IClassFixture<HubApiFac
         var id = await CriarAsync();
 
         var v1 = await _http.GetAsync($"/api/v1/pedidos/{id}");
-        var v2 = await _http.GetAsync($"/api/v2/pedidos/{id}");
+        var v2 = await V2.GetAsync($"/api/v2/pedidos/{id}");
 
         Assert.Equal("1, 2", v1.Headers.GetValues("api-supported-versions").Single());
         Assert.Equal("@1794441600", v1.Headers.GetValues("Deprecation").Single());
@@ -114,7 +117,7 @@ public class VersionamentoTests(HubApiFactory factory) : IClassFixture<HubApiFac
 
         await _http.GetAsync($"/api/v1/pedidos/{id}");
         await _http.GetAsync($"/pedidos/{id}");
-        await _http.GetAsync($"/api/v2/pedidos/{id}");
+        await V2.GetAsync($"/api/v2/pedidos/{id}");
         var depois = await _http.GetFromJsonAsync<JsonElement>("/api/versoes");
 
         long Uso(JsonElement e, string v) => e.GetProperty("uso").TryGetProperty(v, out var n) ? n.GetInt64() : 0;

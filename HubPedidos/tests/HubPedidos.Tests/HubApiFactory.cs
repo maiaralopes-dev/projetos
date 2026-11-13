@@ -25,6 +25,17 @@ public sealed class HubApiFactory : WebApplicationFactory<Program>
 
     public ContadorComandos Contador { get; } = new();
 
+    /// <summary>Emite tokens com a chave desta instância (gerada por execução no ambiente Testing).</summary>
+    public string Token(string? clienteId, bool operador = false) =>
+        Services.GetRequiredService<HubPedidos.Api.Seguranca.EmissorTokens>().Emitir(clienteId, operador);
+
+    public HttpClient ClienteAutenticado(string? clienteId, bool operador = false)
+    {
+        var client = CreateClient();
+        client.DefaultRequestHeaders.Authorization = new("Bearer", Token(clienteId, operador));
+        return client;
+    }
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");

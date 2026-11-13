@@ -16,6 +16,7 @@ HubPedidos.slnx
 │   └── HubPedidos.Api             → composition root + endpoints por módulo (Modulos/…)
 ├── tests/HubPedidos.Tests         → unidade, arquitetura, composição de DI, integração HTTP, versões
 ├── benchmarks/HubPedidos.Benchmarks
+├── clientes/HubPedidos.ClienteTempoReal → cliente SignalR com reconexão e reconciliação HTTP (atividade 7)
 └── carga/                         → gerador de carga e scripts de diagnóstico (atividade 5)
 ```
 
@@ -29,7 +30,7 @@ Pré-requisito: SDK .NET 10 (ver `global.json`).
 
 ```bash
 dotnet build          # warnings são tratados como erro
-dotnet test           # 185 testes (atividades 1 a 6)
+dotnet test           # 208 testes (atividades 1 a 7)
 dotnet run --project src/HubPedidos.Api --launch-profile http   # http://localhost:5080
 ```
 
@@ -83,6 +84,14 @@ Requisições de exemplo em `src/HubPedidos.Api/HubPedidos.Api.http` (Visual Stu
 | 6     | GET    | `/api/versoes`   | Versões suportadas, depreciação e uso observado por versão |
 | 6     | GET    | `/openapi/v1.json`, `/openapi/v2.json` | Documentação separada por versão |
 | 6     | GET    | `/notificacoes/recentes` | Últimas notificações de mudança de status |
+| 7     | WS     | `/hubs/pedidos`  | SignalR (JWT): `AssinarPedido(id)` autorizado no servidor; evento `PedidoAtualizado` |
+| 7     | POST   | `/admin/clientes/{id}/revogar` · `/restaurar` | Operador revoga/restaura acesso em tempo real |
+| 7     | —      | ETag / If-None-Match / If-Match | Detalhe v1/v2 com ETag forte, 304; `PUT …/status` com If-Match → 412 |
+| 7     | —      | Output cache | `/processadores` (5 min) e `/painel/regioes` (30 s, tag `painel` invalidada a cada mudança) |
+
+Autenticação (atividade 7): JWT com chave em `Autenticacao:ChaveAssinatura` (base64, ≥ 32 bytes) vinda de variável de
+ambiente/cofre — nunca do repositório. Em Development, sem chave, gera-se uma por execução e `POST /dev/token?cliente=CLI-1`
+emite tokens de teste (rota inexistente fora de Development). A v2 da consulta exige token; a v1 segue anônima até o sunset.
 
 A partir da atividade 4, `POST /pedidos/lote` também enfileira cada linha aceita. A fila
 (`Channel` limitado) é configurada na seção `Fila` do `appsettings.json` e consumida por

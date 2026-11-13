@@ -5,6 +5,9 @@
   <Folder Name="/carga/">
     <Project Path="carga/HubPedidos.Carga/HubPedidos.Carga.csproj" />
   </Folder>
+  <Folder Name="/clientes/">
+    <Project Path="clientes/HubPedidos.ClienteTempoReal/HubPedidos.ClienteTempoReal.csproj" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="src/HubPedidos.Api/HubPedidos.Api.csproj" />
     <Project Path="src/HubPedidos.Application/HubPedidos.Application.csproj" />

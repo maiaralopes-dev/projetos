@@ -19,7 +19,8 @@ public static class EndpointsProcessamento
             m.Aceitos, m.RejeitadosFilaCheia, m.RejeitadosEncerrando, m.Descartados, m.Processados, m.Falhas, m.Abandonados,
             m.EmAndamento, l.Limite, l.EmUso, l.MaximoObservado, m.ProcessadosPorCategoria)).WithName("MetricasFila");
         app.MapGet("/processadores", (CatalogoProcessadores c) =>
-            c.Registros.Select(r => new ProcessadorInfoResponse(r.Categoria.ToString(), r.Versao, r.Tipo.Name))).WithName("ListarProcessadores");
+            c.Registros.Select(r => new ProcessadorInfoResponse(r.Categoria.ToString(), r.Versao, r.Tipo.Name)))
+            .WithName("ListarProcessadores").CacheOutput(HubPedidos.Api.Http.CachePolitica.Catalogo); // muda só com novo deploy
         return app;
     }
 

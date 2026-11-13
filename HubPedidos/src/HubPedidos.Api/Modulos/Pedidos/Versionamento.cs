@@ -3,6 +3,8 @@ using System.Diagnostics.Metrics;
 using HubPedidos.Application.Contratos;
 using HubPedidos.Application.Contratos.V2;
 using HubPedidos.Application.Persistencia;
+using HubPedidos.Api.Http;
+using HubPedidos.Notificacoes.TempoReal;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace HubPedidos.Api.Modulos.Pedidos;
@@ -50,10 +52,14 @@ public static class Versionamento
     public static IEndpointRouteBuilder MapPedidosVersionados(this IEndpointRouteBuilder app)
     {
         var v1 = app.MapGroup("/api/v1").WithGroupName("v1").AddEndpointFilter(FiltroVersao(1));
-        v1.MapGet("/pedidos/{id:guid}", ObterV1Async).WithName("ObterPedidoV1");
+        v1.MapGet("/pedidos/{id:guid}", ObterV1Async).WithName("ObterPedidoV1")
+            .Produces<PedidoDetalheResponse>().Produces(StatusCodes.Status304NotModified).Produces(StatusCodes.Status404NotFound);
 
         var v2 = app.MapGroup("/api/v2").WithGroupName("v2").AddEndpointFilter(FiltroVersao(2));
-        v2.MapGet("/pedidos/{id:guid}", ObterV2Async).WithName("ObterPedidoV2");
+        // v2 exige identidade: cliente vê só os próprios pedidos; operador vê todos.
+        // (v1 segue anônima por compatibilidade até o sunset — risco registrado no relatório.)
+        v2.MapGet("/pedidos/{id:guid}", ObterV2Async).WithName("ObterPedidoV2").RequireAuthorization()
+            .Produces<PedidoDetalheV2Response>().Produces(StatusCodes.Status304NotModified).Produces(StatusCodes.Status404NotFound);
 
         // Segmentos literais ("v1", "v2") têm precedência sobre este padrão: só versões
         // desconhecidas chegam aqui.
@@ -87,11 +93,19 @@ public static class Versionamento
             return await proximo(contexto);
         };
 
-    private static async Task<Results<Ok<PedidoDetalheResponse>, NotFound>> ObterV1Async(Guid id, IConsultasPedidos consultas, CancellationToken ct) =>
-        await consultas.ObterDetalheAsync(id, ct) is { } detalhe ? TypedResults.Ok(detalhe) : TypedResults.NotFound();
+    private static async Task<IResult> ObterV1Async(Guid id, IConsultasPedidos consultas, HttpContext http, CancellationToken ct) =>
+        await consultas.ObterDetalheAsync(id, ct) is { } detalhe ? Etag.ResponderComEtag(http, detalhe) : TypedResults.NotFound();
 
-    private static async Task<Results<Ok<PedidoDetalheV2Response>, NotFound>> ObterV2Async(Guid id, IConsultasPedidos consultas, CancellationToken ct) =>
-        await consultas.ObterDetalheAsync(id, ct) is { } detalhe ? TypedResults.Ok(AdaptadorPedidoV2.De(detalhe)) : TypedResults.NotFound();
+    private static async Task<IResult> ObterV2Async(Guid id, IConsultasPedidos consultas, AutorizadorPedidos autorizador, HttpContext http, CancellationToken ct)
+    {
+        // Pedido alheio e inexistente dão a mesma resposta: não revela quais ids existem.
+        if (!await autorizador.PodeVerAsync(http.User, id, ct) || await consultas.ObterDetalheAsync(id, ct) is not { } detalhe)
+        {
+            return TypedResults.NotFound();
+        }
+
+        return Etag.ResponderComEtag(http, AdaptadorPedidoV2.De(detalhe));
+    }
 }
 
 /// <summary>Contagem de uso por versão (memória + métrica para dotnet-counters/OpenTelemetry).</summary>

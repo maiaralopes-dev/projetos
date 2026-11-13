@@ -2,6 +2,7 @@
 # Experimento reproduzível: API nova + banco novo, dotnet-counters gravando durante a carga.
 # Uso: [Banco__ModoWal=false] carga/medir.sh <rotulo> <taxa-criacao/s> <taxa-consulta/s> <dir-saida> [--trace]
 #   Variáveis de ambiente (ex.: Banco__ModoWal) são repassadas para a API.
+#   URL_CONSULTA=/painel/regioes troca a rota de leitura (padrão: listagem por cliente).
 #   --trace: coleta também um trace curto (10 s) no meio da janela de medição.
 set -euo pipefail
 RAIZ=$(cd "$(dirname "$0")/.." && pwd)
@@ -25,7 +26,7 @@ if [ "$TRACE" = "--trace" ]; then
 fi
 
 dotnet run -c Release --no-build --project carga/HubPedidos.Carga -- --aquecimento 10 --duracao 30 \
-  --taxa-criacao "$TC" --taxa-consulta "$TQ" --rotulo "$ROTULO" --saida "$SAIDA"
+  --taxa-criacao "$TC" --taxa-consulta "$TQ" --rotulo "$ROTULO" --saida "$SAIDA" ${URL_CONSULTA:+--url-consulta "$URL_CONSULTA"}
 
 sleep 15  # garante que o trace (se houver) terminou de ser gravado
 pkill -f "dotnet-counters collect --process-id $PID" 2> /dev/null || true
