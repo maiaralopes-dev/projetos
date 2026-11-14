@@ -284,7 +284,7 @@
     const parts = [];
 
     const apt = raw.match(
-      /\b(?:apt|apto|apartamento)\.?\s*[:=-]?\s*([A-Za-z0-9/-]+)/i
+      /\b(?:apartamento|apto|apt|ap)\b\.?\s*[:=-]?\s*([A-Za-z0-9/-]+)/i
     )?.[1];
 
     const tower = raw.match(
@@ -839,7 +839,23 @@
     if (n.includes("cpf")) score += 1;
     if (n.includes("e-mail") || n.includes("email")) score += 1;
 
-    return score >= 4;
+    if (score < 4) return false;
+
+    // V16.24: um pedido de dados é um modelo em branco. Se a mensagem
+    // do atendente já traz CPF ou CEP preenchidos (print do cadastro,
+    // confirmação, card), ela NÃO é um novo pedido de dados.
+    const raw = String(text || "");
+
+    if (
+      /\b\d{3}[.\s]?\d{3}[.\s]?\d{3}\s*[-.\s]\s*\d{2}\b/.test(raw) ||
+      /\b\d{5}\s*[-.\s]\s*\d{3}\b/.test(raw) ||
+      /\b\d{11}\b/.test(raw) ||
+      /\b\d{8}\b/.test(raw)
+    ) {
+      return false;
+    }
+
+    return true;
   }
 
   function allConversationMessages() {
@@ -867,23 +883,43 @@
 
     // Usa somente respostas recebidas depois do ÚLTIMO pedido de dados.
     // Isso evita que "ok correto", conversas antigas, preços etc. contaminem a ficha.
-    let boundaryIndex = -1;
+    const boundaries = [];
 
     for (let i = 0; i < all.length; i++) {
       const m = all[i];
-      if (m.received === false && isOrderDataRequest(m.text)) {
-        boundaryIndex = i;
+
+      // V16.24: mensagem com anexo (print, card, imagem) não é pedido
+      // de dados, mesmo que o CRM descreva a imagem com esses rótulos.
+      const hasAttachment =
+        Array.isArray(m.attachments) && m.attachments.length > 0;
+
+      if (
+        m.received === false &&
+        !hasAttachment &&
+        isOrderDataRequest(m.text)
+      ) {
+        boundaries.push(i);
       }
     }
 
-    return all
-      .slice(boundaryIndex + 1)
-      .filter(m => m.received === true)
-      .filter(
-        m =>
-          compact(m.text) ||
-          (Array.isArray(m.attachments) && m.attachments.length)
-      );
+    const receivedAfter = index =>
+      all
+        .slice(index + 1)
+        .filter(m => m.received === true)
+        .filter(
+          m =>
+            compact(m.text) ||
+            (Array.isArray(m.attachments) && m.attachments.length)
+        );
+
+    // V16.24: se o cliente ainda não respondeu depois do último pedido,
+    // usa as respostas do pedido anterior em vez de mostrar tudo vazio.
+    for (let b = boundaries.length - 1; b >= 0; b--) {
+      const list = receivedAfter(boundaries[b]);
+      if (list.length) return list;
+    }
+
+    return receivedAfter(-1);
   }
 
   function isImageAttachment(att) {
@@ -1997,13 +2033,44 @@
           if (idx >= 0) lastEnd = Math.max(lastEnd, idx + word.length);
         }
 
-        const tail = lastEnd >= 0 ? line.slice(lastEnd).trim() : line;
-        const numberMatch = tail.match(/(?:^|\s)(\d{1,6}[A-Za-z]?)(?=\s|$)/);
-        if (!numberMatch?.[1]) continue;
+        // V16.24: "N.305", "Nº 305", "numero 305" → tira o rótulo e
+        // deixa só o número, para não pular para o número do apartamento.
+        const tail = (lastEnd >= 0 ? line.slice(lastEnd).trim() : line)
+          .replace(
+            /(^|\s)(?:n[uú]mero|num|n)\s*[º°o]?\s*[.:]?\s*(?=\d)/gi,
+            "$1"
+          )
+          .replace(/\s+/g, " ")
+          .trim();
+
+        // V16.24: número logo depois de apt/casa/bloco/sala etc. é
+        // complemento, não o número do endereço.
+        const complementLabel =
+          /(?:apt|apto|ap|apartamento|casa|bloco|bl|sala|torre|lote|lt|quadra|qd|fundos|andar)\.?\s*[:=-]?\s*$/i;
+
+        const numberRe = /(?:^|\s)(\d{1,6}[A-Za-z]?)(?=\s|$)/g;
+        let numberMatch = null;
+        let candidate;
+
+        while ((candidate = numberRe.exec(tail))) {
+          if (!complementLabel.test(tail.slice(0, candidate.index))) {
+            numberMatch = candidate;
+            break;
+          }
+        }
+
+        if (!numberMatch?.[1]) {
+          // Só existe número de complemento (ex.: "Apt 104").
+          const onlyComplement = normalizeComplement(tail);
+          if (onlyComplement) return { complement: onlyComplement };
+          continue;
+        }
 
         const result = { number: numberMatch[1] };
         const afterNumber = tail.slice((numberMatch.index || 0) + numberMatch[0].length).trim();
-        const complement = afterNumber.match(/^([A-Za-z]{1,3}|\d{1,4})$/)?.[1];
+        const complement =
+          normalizeComplement(afterNumber) ||
+          afterNumber.match(/^([A-Za-z]{1,3}|\d{1,4})$/)?.[1];
         if (complement) result.complement = complement;
         return result;
       }

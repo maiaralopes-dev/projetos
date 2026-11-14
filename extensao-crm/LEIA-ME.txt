@@ -64,3 +64,11 @@ V16.23 — resumo da conversa, nova tentativa na Groq e limpeza do cache
 - Groq com limite atingido (429) ou instável (502/503): a extensão espera e tenta de novo sozinha, até 3 vezes. Se a espera pedida passar de 20 s, mostra o erro na hora.
 - Limpeza automática do cache: transcrições, resumos e leituras de imagem com mais de 90 dias são apagados, no máximo uma vez por dia. Itens já salvos por versões anteriores contam 90 dias a partir desta versão. Caches antigos da VPS, que não são mais usados, são apagados.
 - Identidade fixa mantida: substitua os arquivos na mesma pasta e clique em Recarregar.
+
+
+V16.24 — leitura dos dados do pedido
+- Corrigido: quando o atendente enviava um print/imagem com dados preenchidos (ex.: tela Novo Perfil da Skale) depois da resposta do cliente, a ficha e o card ficavam todos como "Não informado". A extensão tratava o print como um novo pedido de dados e descartava a resposta do cliente.
+- Mensagem do atendente com anexo, ou que já traz CPF/CEP preenchidos, não conta mais como pedido de dados.
+- Se o cliente ainda não respondeu ao último pedido de dados, a ficha usa as respostas do pedido anterior em vez de ficar vazia.
+- Corrigido: "N.305 .APT 104" era lido como número 104 e sem complemento. Agora sai número 305 e complemento Apt 104. Vale para "N.", "Nº", "numero" e para apt/casa/bloco/sala/torre.
+- Corrigido: "apto 12" virava complemento "Apt o".
