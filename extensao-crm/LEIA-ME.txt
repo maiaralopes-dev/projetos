@@ -1,111 +1,44 @@
-V16.7 — BASE LIMPA SEM AGENT CORE
+V16.19 — GROQ SOMENTE
 
-Mantido:
-- filtro de conversas não lidas;
-- drawer com encaixe na coluna do CRM;
-- drawer persistente ao navegar entre conversas;
-- transcrição de áudio pela VPS;
-- extração/validação dos dados do pedido;
-- ViaCEP com prioridade de endereço;
-- card de confirmação;
-- funções rápidas;
-- Five Delivery;
-- leitura manual de imagem via OCR da VPS.
+- Sem dependência da VPS.
+- Transcrição de áudio: Groq Speech-to-Text.
+- Modelo padrão: whisper-large-v3-turbo.
+- Opção de maior precisão: whisper-large-v3.
+- Leitura de imagens: Groq Vision com qwen/qwen3.8-27b.
+- A mesma GROQ_API_KEY é usada para áudio e imagem.
+- ViaCEP continua como fonte principal de rua, bairro, cidade e estado quando houver CEP válido.
+- Mantidos: não lidas, drawer responsivo, dados do pedido, card e Skale.
+- Identidade fixa preservada.
 
-Removido completamente da extensão:
-- Agent Core;
-- botão 🤖;
-- painel de decisão do agente;
-- URL/token do Agent Core nas configurações;
-- chamadas /agent-core e /v1/decide;
-- respostas comerciais do assistente;
-- fallback de IA do assistente;
-- chaves antigas agent_core_* e assistant_commercial_responses_* do chrome.storage.
+CONFIGURAÇÃO
+1. Abra ⚙ na extensão.
+2. Informe a GROQ_API_KEY uma única vez.
+3. Escolha o modelo de transcrição.
+4. Clique em Testar Groq e depois Salvar.
 
-O botão 📷 usa o OCR já instalado na VPS em https://trascricao.masterautomacoes.com.br/ocr, com a mesma chave usada pela transcrição. A chave OpenAI não é mais usada nem armazenada pela extensão.
+PRIVACIDADE/USO
+- Áudio só é enviado à Groq quando você clicar em Transcrever.
+- Imagem só é enviada à Groq quando você clicar em 📷.
+- A chave fica no chrome.storage.local; não está escrita no código.
+- A antiga chave da VPS é removida do armazenamento ao iniciar esta versão.
 
 
-V16.7 — OCR da VPS para imagens
-- O botão 📷 baixa a imagem recebida do cliente e envia manualmente para POST /ocr na VPS.
-- Usa multipart/form-data no campo file e Authorization: Bearer com a mesma chave da transcrição.
-- O OCR retorna texto bruto; o parser local da extensão extrai nome, CPF, CEP, número, complemento, e-mail e demais dados.
-- Quando existe CEP, ViaCEP continua com prioridade para rua, bairro, cidade e estado.
-- O resultado bruto do OCR fica em cache local por imagem para evitar reprocessamento.
-- A permissão para api.openai.com foi removida e a chave OpenAI antiga é apagada do chrome.storage.
+V16.19 - INTEGRAÇÃO SKALE
+- Botão 🚚 abre https://skaletracking.com.br/pedidos.
+- Busca cliente pelo CPF; se não existir, preenche Nome, WhatsApp, e-mail (ou “Não possui e-mail”), CEP e endereço.
+- Usa ViaCEP já consolidado pelo CRM como fonte principal de endereço.
+- Tenta selecionar Azzure 2/4/6 meses somente quando a conversa indicar um único plano sem ambiguidade.
+- Seleciona a logística Five Delivery quando disponível dentro da Skale.
+- Tenta escolher After Pay/Antecipada somente quando a negociação estiver clara.
+- Nunca clica em “Lançar pedido”; a revisão final é sempre humana.
 
 
-V16.8 — OCR de documentos brasileiros
-- Prioriza CEP/endereço em contas, faturas e comprovantes.
-- Interpreta Q./Quadra, L./Lote e S/N.
-- Extrai cidade/UF da mesma linha do CEP.
-- Bloqueia cabeçalhos como “Comprovante de Transferência” como nome.
-- Uma imagem não substitui automaticamente um nome já encontrado na conversa.
+V16.19: corrige a abertura automática do modal Novo Pedido na Skale, aguardando a renderização da SPA e usando detecção robusta do botão.
 
 
-V16.9 — OCR manuscrito assistido
-- Se a primeira leitura OCR vier fraca, a extensão faz uma segunda tentativa com escala, tons de cinza e contraste.
-- Continua usando somente a VPS; nenhuma imagem é enviada à OpenAI.
-- Perguntas como “Quantos dia leva para chegar” não podem mais ser interpretadas como nome do cliente.
-- O cache OCR mudou de versão para que imagens antigas sejam relidas com o novo processamento.
-
-
-V16.10 — OCR de contas e faturas
-- Modo específico para contas de água/energia e documentos de consumo.
-- Prioriza Usuário/Titular/Cliente em vez do nome da concessionária.
-- CEP mais tolerante a erros de OCR próximos ao rótulo.
-- Extrai número da linha de endereço e deixa ViaCEP completar endereço oficial.
-- Não usa Código do Imóvel/Localização/Convênio como bairro/cidade/estado.
-- CPF vindo de imagem só é aceito quando passa na validação real.
-
-
-V16.11 — CEP como fonte principal do endereço
-- Junta primeiro dados da conversa e do OCR.
-- Se houver CEP válido, consulta ViaCEP depois de todas as fontes automáticas.
-- ViaCEP tem prioridade para Rua, Bairro, Cidade e Estado quando esses campos existirem na resposta.
-- Se ViaCEP não trouxer algum campo, preserva o valor encontrado na conversa; OCR fica como fallback.
-- CEP digitado pelo cliente tem prioridade sobre CEP lido por OCR.
-- Número e complemento continuam vindo da conversa/imagem, nunca do ViaCEP.
-- Divergências entre endereço informado e endereço do CEP continuam marcadas para revisão.
-
-
-V16.12 — identidade fixa e persistência de configurações
-- A extensão agora possui uma identidade fixa no manifest.
-- A chave da VPS continua salva em chrome.storage.local; ela não fica escrita no código.
-- Na primeira instalação desta versão, configure a chave da VPS uma última vez.
-- Nas próximas versões, mantenha a mesma pasta da extensão, substitua os arquivos e clique em Recarregar em chrome://extensions.
-- Não remova/desinstale a extensão entre versões, pois a desinstalação pode apagar o storage local.
-- A mesma chave salva continua atendendo transcrição e OCR.
-
-
-V16.13 — não lidas por última direção
-- Mantém isPending como sinal de pendência do CRM, mas exclui conversas quando lastSendedMessageDate >= lastReceivedMessageDate.
-- Se o cliente responder depois, lastReceivedMessageDate passa a ser mais recente e a conversa reaparece automaticamente.
-- O contador passa a refletir exatamente a lista filtrada localmente.
-- Mantém a identidade fixa da V16.12, preservando configurações salvas.
-
-
-V16.14 — NÃO LIDAS POR ÚLTIMA MENSAGEM REAL
-- Mantém todas as alterações da V16.13 e anteriores.
-- Resposta por texto, áudio, imagem ou anexo remove a conversa das não lidas.
-- A remoção também fica registrada localmente por até 30 dias para cobrir atraso da API do CRM.
-- Se o cliente enviar uma nova mensagem depois, a conversa volta automaticamente.
-- O botão Marcar como lida também remove imediatamente da lista.
-- A identidade fixa da extensão foi preservada, mantendo as configurações locais.
-
-
-V16.15 — abertura móvel corrigida
-- Desktop/tablet: drawer de não lidas continua persistente entre os cliques.
-- Celular: ao tocar em uma conversa, o drawer fecha para revelar o chat recém-aberto.
-- O botão compacto de não lidas permanece disponível para reabrir a lista.
-- Nenhuma alteração nas regras de não lidas, OCR, ViaCEP, Five Delivery ou transcrição.
-
-
-V16.16 — estabilidade e correções
-- Tempo limite em todas as chamadas de rede: download de áudio/imagem (60 s), transcrição/OCR na VPS (4 min), ViaCEP e teste da VPS (15 s). Antes, uma VPS travada deixava o botão "carregando" para sempre.
-- Permissão unlimitedStorage: o cache de transcrições e OCR não esbarra mais no limite de 10 MB do Chrome. Se gravar o cache falhar, o resultado continua sendo mostrado.
-- Lista de não lidas: se a API do CRM falhar no meio da paginação, as conversas das páginas não carregadas não somem mais da lista.
-- O CRM não espera mais a extensão ler as respostas da API; as conversas abrem sem atraso extra.
-- "Respondida" agora compara datas do servidor, não o relógio do computador. Com o relógio do PC adiantado, a resposta do cliente podia não trazer a conversa de volta.
-- O botão da Five Delivery só abre páginas de app.fivedelivery.com.br.
-- O aviso da Five Delivery mostra texto puro (sem HTML).
-- A identidade fixa foi mantida: basta substituir os arquivos na mesma pasta e clicar em Recarregar. As configurações salvas continuam.
+V16.21
+- Skale: preenchimento do Novo Perfil refeito para localizar campos pelo rótulo visual e relocalizá-los após rerenders do React.
+- Skale: diagnóstico informa quantos dados chegaram do CRM.
+- Transcrição: fonte aumentada para 15px no desktop e 16px no celular.
+- Transcrição: novo botão Resumo por áudio, usando Groq openai/gpt-oss-20b e cache local.
+- Mantidos Groq Whisper, Groq Vision, ViaCEP, não lidas, card e identidade fixa.

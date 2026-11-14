@@ -1,49 +1,25 @@
 
-const VPS_BASE_URL =
-  "https://trascricao.masterautomacoes.com.br";
+const GROQ_BASE_URL =
+  "https://api.groq.com/openai/v1";
 
-const OCR_IMAGE_CACHE_VERSION =
-  "vps-ocr-v2";
+const DEFAULT_GROQ_MODEL =
+  "whisper-large-v3-turbo";
 
-const LEGACY_OPENAI_TRANSCRIPTION_MODELS =
-  [
-    "gpt-transcribe",
-    "gpt-4o-mini-transcribe"
-  ];
+const GROQ_VISION_MODEL =
+  "qwen/qwen3.8-27b";
 
-// V16.16: nenhuma chamada de rede pode ficar pendurada para sempre.
-const TIMEOUT_DOWNLOAD_MS = 60 * 1000;
-const TIMEOUT_VPS_MS = 4 * 60 * 1000;
-const TIMEOUT_SHORT_MS = 15 * 1000;
+const GROQ_SUMMARY_MODEL =
+  "openai/gpt-oss-20b";
 
-async function fetchWithTimeout(url, options = {}, timeoutMs = TIMEOUT_SHORT_MS) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    return await fetch(url, { ...options, signal: controller.signal });
-  } catch (err) {
-    if (err?.name === "AbortError") {
-      const e = new Error(
-        `Tempo esgotado (${Math.round(timeoutMs / 1000)}s) ao acessar ${new URL(url).hostname}.`
-      );
-      e.isTimeout = true;
-      throw e;
-    }
-    throw err;
-  } finally {
-    clearTimeout(timer);
-  }
-}
+const GROQ_TRANSCRIPTION_MODELS =
+  new Set([
+    "whisper-large-v3-turbo",
+    "whisper-large-v3"
+  ]);
 
-// V16.16: falha ao gravar cache (ex.: armazenamento cheio) não pode
-// descartar uma transcrição/OCR que já foi feita com sucesso.
-async function cacheSet(values) {
-  try {
-    await storageSet(values);
-  } catch (err) {
-    console.warn("[CRM ext] Não consegui salvar no cache:", err?.message || err);
-  }
-}
+const GROQ_IMAGE_CACHE_VERSION =
+  "groq-vision-v1";
+
 
 function storageGet(keys) {
   return new Promise(resolve => {
@@ -81,7 +57,9 @@ chrome.storage.local.remove(
     "agent_core_url",
     "agent_core_token",
     "assistant_commercial_responses_v15_51",
-    "openai_api_key"
+    "openai_api_key",
+    "vps_transcription_api_key",
+    "transcricao_api_key"
   ],
   () => { void chrome.runtime.lastError; }
 );
@@ -159,24 +137,11 @@ function safeFileName(
   return name;
 }
 
-function vpsCacheStorageKey(
-  cacheKey
+function groqCacheStorageKey(
+  cacheKey,
+  model = DEFAULT_GROQ_MODEL
 ) {
-  return (
-    "audio_transcript_vps__" +
-    String(cacheKey || "")
-      .replace(
-        /[^a-zA-Z0-9_-]/g,
-        "_"
-      )
-      .slice(0, 180)
-  );
-}
-
-function legacyCacheStorageKeys(
-  cacheKey
-) {
-  const safe =
+  const safeKey =
     String(cacheKey || "")
       .replace(
         /[^a-zA-Z0-9_-]/g,
@@ -184,55 +149,207 @@ function legacyCacheStorageKeys(
       )
       .slice(0, 180);
 
+  const safeModel =
+    String(model || DEFAULT_GROQ_MODEL)
+      .replace(
+        /[^a-zA-Z0-9_-]/g,
+        "_"
+      );
+
   return (
-    LEGACY_OPENAI_TRANSCRIPTION_MODELS
-      .map(
-        model =>
-          "audio_transcript__" +
-          safe +
-          "__" +
-          model
-      )
+    "audio_transcript_groq__" +
+    safeKey +
+    "__" +
+    safeModel
   );
 }
 
-async function getVpsSettings() {
+async function getGroqSettings() {
   const stored =
     await storageGet([
-      "vps_transcription_api_key",
-      "transcricao_api_key"
+      "groq_api_key",
+      "groq_transcription_model"
     ]);
+
+  const requestedModel =
+    String(
+      stored.groq_transcription_model ||
+      DEFAULT_GROQ_MODEL
+    ).trim();
+
+  const model =
+    GROQ_TRANSCRIPTION_MODELS.has(
+      requestedModel
+    )
+      ? requestedModel
+      : DEFAULT_GROQ_MODEL;
 
   return {
     apiKey:
       String(
-        stored.vps_transcription_api_key ||
-        stored.transcricao_api_key ||
+        stored.groq_api_key ||
         ""
       ).trim(),
+    model,
     baseUrl:
-      VPS_BASE_URL
+      GROQ_BASE_URL
+  };
+}
+
+function transcriptSummaryStorageKey(cacheKey) {
+  const safeKey =
+    String(cacheKey || "")
+      .replace(/[^a-zA-Z0-9_-]/g, "_")
+      .slice(0, 180);
+
+  return (
+    "audio_summary_groq__" +
+    safeKey +
+    "__v1"
+  );
+}
+
+async function summarizeTranscript(payload) {
+  const { apiKey } = await getGroqSettings();
+
+  if (!apiKey) {
+    throw new Error(
+      "Configure sua chave da Groq nas configurações ⚙."
+    );
+  }
+
+  const text =
+    String(payload?.text || "").trim();
+
+  if (!text) {
+    throw new Error(
+      "Não há transcrição para resumir."
+    );
+  }
+
+  const cacheKey =
+    String(payload?.cacheKey || "").trim();
+
+  const storageKey =
+    cacheKey
+      ? transcriptSummaryStorageKey(cacheKey)
+      : "";
+
+  if (storageKey) {
+    const existing =
+      await storageGet([storageKey]);
+
+    if (
+      typeof existing[storageKey] === "string" &&
+      existing[storageKey].trim()
+    ) {
+      return {
+        summary: existing[storageKey],
+        cached: true,
+        model: GROQ_SUMMARY_MODEL
+      };
+    }
+  }
+
+  let response;
+  try {
+    response = await fetch(
+      `${GROQ_BASE_URL}/chat/completions`,
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: GROQ_SUMMARY_MODEL,
+          temperature: 0.2,
+          max_completion_tokens: 260,
+          reasoning_effort: "low",
+          messages: [
+            {
+              role: "system",
+              content:
+                "Você resume áudios de clientes em português do Brasil para atendimento comercial. Seja curto e fiel. Não invente informações. Preserve valores, datas, quantidades, condições de pagamento, objeções, dúvidas e pedidos do cliente. Se houver mais de um ponto importante, use bullets curtos."
+            },
+            {
+              role: "user",
+              content:
+                `Resuma esta transcrição de cliente de forma prática para o atendente:
+
+${text}`
+            }
+          ]
+        }),
+        cache: "no-store"
+      }
+    );
+  } catch {
+    throw new Error(
+      "Não consegui conectar à Groq para gerar o resumo."
+    );
+  }
+
+  let body = null;
+  try { body = await response.json(); } catch {}
+
+  if (!response.ok) {
+    if (response.status === 401) {
+      throw new Error(
+        "Chave da Groq inválida ou não autorizada."
+      );
+    }
+    if (response.status === 429) {
+      throw new Error(
+        "Limite de uso da Groq atingido. Tente novamente em instantes."
+      );
+    }
+    throw new Error(
+      String(
+        body?.error?.message ||
+        body?.error ||
+        body?.message ||
+        `Erro da Groq ao resumir (HTTP ${response.status}).`
+      )
+    );
+  }
+
+  const summary =
+    String(
+      body?.choices?.[0]?.message?.content || ""
+    ).trim();
+
+  if (!summary) {
+    throw new Error(
+      "A Groq não retornou um resumo."
+    );
+  }
+
+  if (storageKey) {
+    await storageSet({
+      [storageKey]: summary
+    });
+  }
+
+  return {
+    summary,
+    cached: false,
+    model: GROQ_SUMMARY_MODEL
   };
 }
 
 async function cachedTranscript(
-  cacheKey
+  cacheKey,
+  model = DEFAULT_GROQ_MODEL
 ) {
   const primaryKey =
-    vpsCacheStorageKey(
-      cacheKey
-    );
-
-  const legacyKeys =
-    legacyCacheStorageKeys(
-      cacheKey
+    groqCacheStorageKey(
+      cacheKey,
+      model
     );
 
   const stored =
-    await storageGet([
-      primaryKey,
-      ...legacyKeys
-    ]);
+    await storageGet([primaryKey]);
 
   if (
     typeof stored[primaryKey] ===
@@ -240,44 +357,23 @@ async function cachedTranscript(
     stored[primaryKey].trim()
   ) {
     return {
-      provider: "vps",
-      text:
-        stored[primaryKey]
+      provider: "groq",
+      text: stored[primaryKey]
     };
   }
 
-  // Reaproveita transcrições já salvas por versões antigas,
-  // evitando retranscrever áudios que já foram processados.
-  for (const key of legacyKeys) {
-    if (
-      typeof stored[key] ===
-        "string" &&
-      stored[key].trim()
-    ) {
-      await cacheSet({
-        [primaryKey]:
-          stored[key]
-      });
-
-      return {
-        provider: "cache-legado",
-        text:
-          stored[key]
-      };
-    }
-  }
-
   return {
-    provider: "vps",
+    provider: "groq",
     text: ""
   };
 }
 
-async function testVpsConnection(
-  providedApiKey = ""
+async function testGroqConnection(
+  providedApiKey = "",
+  providedModel = ""
 ) {
   const current =
-    await getVpsSettings();
+    await getGroqSettings();
 
   const apiKey =
     String(
@@ -286,83 +382,109 @@ async function testVpsConnection(
       ""
     ).trim();
 
-  const headers = {};
-
-  if (apiKey) {
-    headers.Authorization =
-      `Bearer ${apiKey}`;
+  if (!apiKey) {
+    throw new Error(
+      "Informe sua GROQ_API_KEY."
+    );
   }
+
+  const requestedModel =
+    String(
+      providedModel ||
+      current.model ||
+      DEFAULT_GROQ_MODEL
+    ).trim();
+
+  const model =
+    GROQ_TRANSCRIPTION_MODELS.has(
+      requestedModel
+    )
+      ? requestedModel
+      : DEFAULT_GROQ_MODEL;
 
   let response;
 
   try {
-    response =
-      await fetchWithTimeout(
-        `${VPS_BASE_URL}/health`,
-        {
-          method: "GET",
-          headers,
-          cache: "no-store"
+    response = await fetch(
+      `${GROQ_BASE_URL}/models`,
+      {
+        method: "GET",
+        headers: {
+          "Authorization":
+            `Bearer ${apiKey}`,
+          "Content-Type":
+            "application/json"
         },
-        TIMEOUT_SHORT_MS
-      );
-  } catch (err) {
-    if (err?.isTimeout) throw err;
+        cache: "no-store"
+      }
+    );
+  } catch {
     throw new Error(
-      "Não consegui conectar à VPS. Verifique a internet e o domínio."
+      "Não consegui conectar à Groq. Verifique sua internet."
     );
   }
 
   let body = null;
-
   try {
-    body =
-      await response.json();
+    body = await response.json();
   } catch {}
 
   if (!response.ok) {
+    if (response.status === 401) {
+      throw new Error(
+        "Chave da Groq inválida ou não autorizada."
+      );
+    }
+
     throw new Error(
-      body?.detail ||
-      body?.error ||
-      `VPS respondeu HTTP ${response.status}.`
+      String(
+        body?.error?.message ||
+        body?.error ||
+        body?.message ||
+        `Groq respondeu HTTP ${response.status}.`
+      )
     );
   }
 
+  const models =
+    Array.isArray(body?.data)
+      ? body.data.map(
+          item =>
+            String(item?.id || "")
+        )
+      : [];
+
   return {
     ok: true,
-    status:
-      String(
-        body?.status ||
-        "ok"
-      ),
-    model:
-      String(
-        body?.model ||
-        ""
-      ),
-    transcribing:
-      Boolean(
-        body?.transcribing
-      ),
-    queueWaiting:
-      Number(
-        body?.queue_waiting ||
-        0
+    model,
+    modelAvailable:
+      models.includes(model),
+    visionModel:
+      GROQ_VISION_MODEL,
+    visionAvailable:
+      models.includes(GROQ_VISION_MODEL),
+    availableModels:
+      models.filter(
+        id =>
+          GROQ_TRANSCRIPTION_MODELS.has(id) ||
+          id === GROQ_VISION_MODEL
       )
   };
 }
+
 
 
 async function transcribeAudio(
   payload
 ) {
   const {
-    apiKey
-  } = await getVpsSettings();
+    apiKey,
+    model
+  } = await getGroqSettings();
 
   if (!apiKey) {
     throw new Error(
-      "Configure a chave da sua VPS nas configurações."
+      "Configure sua chave da Groq nas configurações ⚙."
     );
   }
 
@@ -378,13 +500,15 @@ async function transcribeAudio(
   }
 
   const cacheKeyStorage =
-    vpsCacheStorageKey(
-      cacheKey
+    groqCacheStorageKey(
+      cacheKey,
+      model
     );
 
   const existing =
     await cachedTranscript(
-      cacheKey
+      cacheKey,
+      model
     );
 
   if (
@@ -396,7 +520,8 @@ async function transcribeAudio(
         existing.text,
       cached: true,
       provider:
-        existing.provider
+        existing.provider,
+      model
     };
   }
 
@@ -413,14 +538,13 @@ async function transcribeAudio(
   }
 
   const audioResponse =
-    await fetchWithTimeout(
+    await fetch(
       audioUrl,
       {
         method: "GET",
         credentials: "include",
         cache: "no-store"
-      },
-      TIMEOUT_DOWNLOAD_MS
+      }
     );
 
   if (!audioResponse.ok) {
@@ -435,6 +559,13 @@ async function transcribeAudio(
   if (!blob.size) {
     throw new Error(
       "O arquivo de áudio veio vazio."
+    );
+  }
+
+  // O limite mais conservador atende inclusive o free tier da Groq.
+  if (blob.size > 25 * 1024 * 1024) {
+    throw new Error(
+      "O áudio excede 25 MB, limite usado nesta integração com a Groq."
     );
   }
 
@@ -465,50 +596,61 @@ async function transcribeAudio(
       mimeType
     )
   );
+  form.append("model", model);
+  form.append("language", "pt");
+  form.append("response_format", "json");
+  form.append("temperature", "0");
 
   let response;
 
   try {
-    response =
-      await fetchWithTimeout(
-        `${VPS_BASE_URL}/transcribe`,
-        {
-          method: "POST",
-          headers: {
-            "Authorization":
-              `Bearer ${apiKey}`
-          },
-          body: form,
-          cache: "no-store"
+    response = await fetch(
+      `${GROQ_BASE_URL}/audio/transcriptions`,
+      {
+        method: "POST",
+        headers: {
+          "Authorization":
+            `Bearer ${apiKey}`
         },
-        TIMEOUT_VPS_MS
-      );
-  } catch (err) {
-    if (err?.isTimeout) throw err;
+        body: form,
+        cache: "no-store"
+      }
+    );
+  } catch {
     throw new Error(
-      "Não consegui conectar à API de transcrição da VPS."
+      "Não consegui conectar à API de transcrição da Groq."
     );
   }
 
   let body = null;
-
   try {
-    body =
-      await response.json();
+    body = await response.json();
   } catch {}
 
   if (!response.ok) {
     if (response.status === 401) {
       throw new Error(
-        "Chave da VPS inválida ou não autorizada."
+        "Chave da Groq inválida ou não autorizada."
+      );
+    }
+
+    if (response.status === 413) {
+      throw new Error(
+        "O áudio é grande demais para a Groq."
+      );
+    }
+
+    if (response.status === 429) {
+      throw new Error(
+        "Limite de uso da Groq atingido. Tente novamente em instantes."
       );
     }
 
     const message =
-      body?.detail ||
+      body?.error?.message ||
       body?.error ||
       body?.message ||
-      `Erro da VPS (HTTP ${response.status}).`;
+      `Erro da Groq (HTTP ${response.status}).`;
 
     throw new Error(
       String(message)
@@ -523,54 +665,28 @@ async function transcribeAudio(
 
   if (!text) {
     throw new Error(
-      "A VPS não retornou texto para esse áudio."
+      "A Groq não retornou texto para esse áudio."
     );
   }
 
-  await cacheSet({
+  await storageSet({
     [cacheKeyStorage]:
       text
   });
 
   return {
     text,
-    cached:
-      Boolean(
-        body?.cached
-      ),
-    provider: "vps",
-    model:
-      String(
-        body?.model ||
-        ""
-      ),
-    language:
-      String(
-        body?.language ||
-        ""
-      ),
-    duration:
-      Number(
-        body?.duration ||
-        0
-      ),
-    processingTime:
-      Number(
-        body?.processing_time ||
-        0
-      ),
-    queueWaitTime:
-      Number(
-        body?.queue_wait_time ||
-        0
-      )
+    cached: false,
+    provider: "groq",
+    model,
+    language: "pt"
   };
 }
 
 
 function imageCacheStorageKey(cacheKey) {
   return (
-    "image_ocr_vps__" +
+    "image_groq_vision__" +
     String(cacheKey || "")
       .replace(
         /[^a-zA-Z0-9_-]/g,
@@ -578,7 +694,7 @@ function imageCacheStorageKey(cacheKey) {
       )
       .slice(0, 180) +
     "__" +
-    OCR_IMAGE_CACHE_VERSION
+    GROQ_IMAGE_CACHE_VERSION
   );
 }
 
@@ -601,142 +717,104 @@ function imageMimeType(payloadMime, blobType, url) {
 
   if (/\.png$/.test(cleanUrl)) return "image/png";
   if (/\.webp$/.test(cleanUrl)) return "image/webp";
-  if (/\.bmp$/.test(cleanUrl)) return "image/bmp";
-
   return "image/jpeg";
 }
 
-function safeImageFileName(fileName, mimeType) {
-  let name =
-    String(fileName || "")
-      .trim()
-      .replace(/[\\/:*?"<>|]+/g, "_");
-
-  const mime = String(mimeType || "").toLowerCase();
-  let ext = ".jpg";
-  if (mime.includes("png")) ext = ".png";
-  else if (mime.includes("webp")) ext = ".webp";
-  else if (mime.includes("bmp")) ext = ".bmp";
-  else if (mime.includes("jpeg") || mime.includes("jpg")) ext = ".jpg";
-
-  if (!name) name = "imagem-cliente" + ext;
-  if (!/\.(?:jpe?g|png|webp|bmp)$/i.test(name)) name += ext;
-  return name;
+function bytesToBase64(bytes) {
+  let binary = "";
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+  }
+  return btoa(binary);
 }
 
+async function blobToDataUrl(blob, mimeType) {
+  const buffer = await blob.arrayBuffer();
+  const base64 = bytesToBase64(new Uint8Array(buffer));
+  return `data:${mimeType};base64,${base64}`;
+}
 
-function scoreOcrText(text) {
-  const raw = String(text || "").trim();
-  if (!raw) return 0;
-
-  let score = Math.min(4, Math.floor(raw.length / 45));
-  const normalized = raw
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
-
-  const signals = [
-    /\b(?:cep|cepo)\b/,
-    /\bcpf\b/,
-    /\b(?:nome|cliente|titular)\b/,
-    /\b(?:rua|r\.?|avenida|av\.?|logradouro)\b/,
-    /\b(?:numero|número|nº|n°|s\/?n)\b/,
-    /\b(?:bairro|cidade|estado|uf)\b/,
-    /@/,
-    /\b\d{5}[-.\s]?\d{3}\b/,
-    /\b\d{3}[.\s]?\d{3}[.\s]?\d{3}[-.\s]?\d{2}\b/
+function normalizeGroqVisionJson(value) {
+  const src = value && typeof value === "object" ? value : {};
+  const out = {};
+  const fields = [
+    "name", "street", "number", "complement", "neighborhood",
+    "city", "state", "zip", "cpf", "email"
   ];
 
-  for (const re of signals) {
-    if (re.test(normalized)) score += 2;
+  for (const key of fields) {
+    const v = String(src[key] ?? "").trim();
+    if (v && !/^(null|undefined|nao informado|não informado|n\/a)$/i.test(v)) {
+      out[key] = v;
+    }
   }
-
-  return score;
+  return out;
 }
 
-async function enhanceImageForOcr(blob) {
-  try {
-    if (
-      typeof createImageBitmap !== "function" ||
-      typeof OffscreenCanvas === "undefined"
-    ) {
-      return null;
-    }
-
-    const bitmap = await createImageBitmap(blob);
-    try {
-      const longest = Math.max(bitmap.width, bitmap.height);
-      const targetLongest = Math.min(
-        2800,
-        Math.max(longest, Math.round(longest * 1.45))
-      );
-      const scale = targetLongest / longest;
-      const width = Math.max(1, Math.round(bitmap.width * scale));
-      const height = Math.max(1, Math.round(bitmap.height * scale));
-
-      const canvas = new OffscreenCanvas(width, height);
-      const ctx = canvas.getContext("2d", { willReadFrequently: true });
-      if (!ctx) return null;
-
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = "high";
-      ctx.drawImage(bitmap, 0, 0, width, height);
-
-      const img = ctx.getImageData(0, 0, width, height);
-      const d = img.data;
-      const contrast = 1.85;
-      const midpoint = 138;
-
-      for (let i = 0; i < d.length; i += 4) {
-        const gray =
-          0.299 * d[i] +
-          0.587 * d[i + 1] +
-          0.114 * d[i + 2];
-
-        let value =
-          (gray - midpoint) * contrast + midpoint + 8;
-
-        value = Math.max(0, Math.min(255, value));
-        d[i] = value;
-        d[i + 1] = value;
-        d[i + 2] = value;
-      }
-
-      ctx.putImageData(img, 0, 0);
-      return await canvas.convertToBlob({
-        type: "image/png",
-        quality: 1
-      });
-    } finally {
-      bitmap.close?.();
-    }
-  } catch {
-    return null;
-  }
+function groqVisionTextFromFields(fields) {
+  const f = normalizeGroqVisionJson(fields);
+  return [
+    ["NOME", f.name],
+    ["RUA", f.street],
+    ["NUMERO", f.number],
+    ["COMPLEMENTO", f.complement],
+    ["BAIRRO", f.neighborhood],
+    ["CIDADE", f.city],
+    ["ESTADO", f.state],
+    ["CEP", f.zip],
+    ["CPF", f.cpf],
+    ["EMAIL", f.email]
+  ]
+    .filter(([, v]) => v)
+    .map(([k, v]) => `${k}: ${v}`)
+    .join("\n");
 }
 
-async function callVpsOcr(blob, fileName, apiKey) {
-  const form = new FormData();
-  form.append("file", blob, fileName);
-
+async function callGroqVision(dataUrl, apiKey) {
   let response;
   try {
-    response = await fetchWithTimeout(
-      `${VPS_BASE_URL}/ocr`,
+    response = await fetch(
+      `${GROQ_BASE_URL}/chat/completions`,
       {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${apiKey}`
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json"
         },
-        body: form,
+        body: JSON.stringify({
+          model: GROQ_VISION_MODEL,
+          temperature: 0,
+          max_completion_tokens: 900,
+          response_format: { type: "json_object" },
+          messages: [
+            {
+              role: "system",
+              content:
+                "Você extrai dados cadastrais brasileiros de imagens. Nunca invente dados. Use apenas o que estiver claramente visível. Se um campo não estiver visível, retorne string vazia. Não confunda nome de empresa, concessionária, cabeçalho, rótulo de tabela ou título de documento com nome do cliente. Para contas/faturas, priorize Usuário, Cliente ou Titular. Para endereço, extraia rua, número, complemento, bairro, cidade, estado e CEP quando visíveis. CPF só deve ser retornado se os 11 dígitos estiverem visíveis; CPF mascarado deve ficar vazio. Retorne somente JSON válido com as chaves: name, street, number, complement, neighborhood, city, state, zip, cpf, email."
+            },
+            {
+              role: "user",
+              content: [
+                {
+                  type: "text",
+                  text:
+                    "Leia esta imagem enviada pelo cliente e extraia somente os dados cadastrais explicitamente visíveis. Preserve grafia útil, mas normalize UF para 2 letras quando clara. Não deduza CEP, CPF, nome ou endereço que não estejam visíveis."
+                },
+                {
+                  type: "image_url",
+                  image_url: { url: dataUrl }
+                }
+              ]
+            }
+          ]
+        }),
         cache: "no-store"
-      },
-      TIMEOUT_VPS_MS
+      }
     );
-  } catch (err) {
-    if (err?.isTimeout) throw err;
+  } catch {
     throw new Error(
-      "Não consegui conectar ao OCR da sua VPS."
+      "Não consegui conectar à Groq para ler a imagem."
     );
   }
 
@@ -748,34 +826,60 @@ async function callVpsOcr(blob, fileName, apiKey) {
   if (!response.ok) {
     if (response.status === 401) {
       throw new Error(
-        "Chave da VPS inválida ou não autorizada para o OCR."
+        "Chave da Groq inválida ou não autorizada."
       );
     }
-
+    if (response.status === 429) {
+      throw new Error(
+        "Limite de uso da Groq atingido. Tente novamente em instantes."
+      );
+    }
     throw new Error(
       String(
+        body?.error?.message ||
         body?.detail ||
-        body?.error ||
-        body?.message ||
-        `Erro do OCR da VPS (HTTP ${response.status}).`
+        `Erro da Groq ao ler imagem (HTTP ${response.status}).`
       )
     );
   }
 
-  return {
-    text: String(body?.text || "").trim(),
-    items: Array.isArray(body?.items) ? body.items : [],
-    lines: Number(body?.lines || 0),
-    processingTime: Number(body?.processing_time || 0)
-  };
+  const content =
+    String(
+      body?.choices?.[0]?.message?.content ||
+      ""
+    ).trim();
+
+  if (!content) {
+    throw new Error(
+      "A Groq não retornou dados para essa imagem."
+    );
+  }
+
+  let parsed = null;
+  try {
+    parsed = JSON.parse(content);
+  } catch {
+    const match = content.match(/\{[\s\S]*\}/);
+    if (match) {
+      try { parsed = JSON.parse(match[0]); } catch {}
+    }
+  }
+
+  if (!parsed || typeof parsed !== "object") {
+    throw new Error(
+      "A Groq respondeu a imagem em um formato inesperado."
+    );
+  }
+
+  return normalizeGroqVisionJson(parsed);
 }
 
 async function readOrderDataFromImage(payload) {
-  const { apiKey } = await getVpsSettings();
+  const { apiKey } = await getGroqSettings();
 
   if (!apiKey) {
     throw new Error(
-      "Configure a chave da sua VPS nas configurações ⚙. A mesma chave é usada para transcrição e OCR."
+      "Configure sua chave da Groq nas configurações ⚙."
     );
   }
 
@@ -798,31 +902,26 @@ async function readOrderDataFromImage(payload) {
   if (
     existing[storageKey] &&
     typeof existing[storageKey] === "object" &&
-    String(existing[storageKey].text || "").trim()
+    existing[storageKey].fields
   ) {
+    const fields = normalizeGroqVisionJson(existing[storageKey].fields);
     return {
-      text: String(existing[storageKey].text).trim(),
+      text: groqVisionTextFromFields(fields),
+      fields,
       cached: true,
-      provider: "vps-ocr",
-      items: Array.isArray(existing[storageKey].items)
-        ? existing[storageKey].items
-        : [],
-      lines: Number(existing[storageKey].lines || 0),
-      processingTime: Number(existing[storageKey].processingTime || 0),
-      enhancedPass: Boolean(existing[storageKey].enhancedPass),
-      score: Number(existing[storageKey].score || 0)
+      provider: "groq-vision",
+      model: GROQ_VISION_MODEL
     };
   }
 
   const imageResponse =
-    await fetchWithTimeout(
+    await fetch(
       imageUrl,
       {
         method: "GET",
         credentials: "include",
         cache: "no-store"
-      },
-      TIMEOUT_DOWNLOAD_MS
+      }
     );
 
   if (!imageResponse.ok) {
@@ -837,9 +936,10 @@ async function readOrderDataFromImage(payload) {
     throw new Error("A imagem veio vazia.");
   }
 
-  if (blob.size > 20 * 1024 * 1024) {
+  // Groq Vision aceita imagens de até 20 MB. Mantemos uma margem para base64/JSON.
+  if (blob.size > 14 * 1024 * 1024) {
     throw new Error(
-      "A imagem é grande demais para o OCR (máximo 20 MB)."
+      "A imagem é grande demais para leitura direta pela Groq (limite seguro desta integração: 14 MB)."
     );
   }
 
@@ -850,86 +950,44 @@ async function readOrderDataFromImage(payload) {
       imageUrl
     );
 
-  if (!/^image\/(?:jpeg|jpg|png|webp|bmp)$/i.test(mimeType)) {
+  if (!/^image\/(?:jpeg|jpg|png|webp)$/i.test(mimeType)) {
     throw new Error(
-      `Formato de imagem não suportado pelo OCR: ${mimeType || "desconhecido"}.`
+      `Formato de imagem não suportado pela Groq: ${mimeType || "desconhecido"}.`
     );
   }
 
-  const finalBlob =
-    blob.type
-      ? blob
-      : blob.slice(0, blob.size, mimeType);
+  const dataUrl =
+    await blobToDataUrl(blob, mimeType);
 
-  const originalName =
-    safeImageFileName(
-      payload.fileName,
-      mimeType
-    );
-
-  let best =
-    await callVpsOcr(
-      finalBlob,
-      originalName,
+  const fields =
+    await callGroqVision(
+      dataUrl,
       apiKey
     );
 
-  let bestScore =
-    scoreOcrText(best.text);
-
-  let usedEnhancedPass = false;
-
-  // Fotos manuscritas ou com iluminação ruim: se a primeira leitura
-  // vier fraca, tenta novamente com escala, cinza e contraste.
-  if (bestScore < 12) {
-    const enhancedBlob =
-      await enhanceImageForOcr(finalBlob);
-
-    if (enhancedBlob?.size) {
-      const enhanced =
-        await callVpsOcr(
-          enhancedBlob,
-          "imagem-cliente-contraste.png",
-          apiKey
-        );
-
-      const enhancedScore =
-        scoreOcrText(enhanced.text);
-
-      if (enhancedScore > bestScore) {
-        best = enhanced;
-        bestScore = enhancedScore;
-        usedEnhancedPass = true;
-      }
-    }
-  }
-
   const text =
-    String(best.text || "").trim();
+    groqVisionTextFromFields(fields);
 
   if (!text) {
     throw new Error(
-      "O OCR terminou, mas não encontrou texto na imagem. Fotos manuscritas podem exigir uma imagem mais próxima e nítida."
+      "A imagem foi analisada pela Groq, mas nenhum dado cadastral confiável foi encontrado."
     );
   }
 
-  const cachedValue = {
-    text,
-    items: best.items,
-    lines: best.lines,
-    processingTime: best.processingTime,
-    enhancedPass: usedEnhancedPass,
-    score: bestScore
-  };
-
-  await cacheSet({
-    [storageKey]: cachedValue
+  await storageSet({
+    [storageKey]: {
+      fields,
+      model: GROQ_VISION_MODEL,
+      savedAt: Date.now()
+    }
   });
 
   return {
-    ...cachedValue,
+    text,
+    fields,
     cached: false,
-    provider: "vps-ocr"
+    provider: "groq-vision",
+    model: GROQ_VISION_MODEL
   };
 }
 
@@ -946,13 +1004,12 @@ async function lookupCep(zip) {
   }
 
   const response =
-    await fetchWithTimeout(
+    await fetch(
       `https://viacep.com.br/ws/${d}/json/`,
       {
         method: "GET",
         cache: "no-store"
-      },
-      TIMEOUT_SHORT_MS
+      }
     );
 
   if (!response.ok) {
@@ -1012,18 +1069,17 @@ chrome.runtime.onMessage.addListener(
           message?.type ===
           "get-settings"
         ) {
-          const vps =
-            await getVpsSettings();
+          const groq =
+            await getGroqSettings();
 
           sendResponse({
             ok: true,
-            provider: "vps",
-            vpsBaseUrl:
-              vps.baseUrl,
-            hasVpsApiKey:
-              Boolean(
-                vps.apiKey
-              )
+            provider: "groq",
+            groqModel: groq.model,
+            groqVisionModel: GROQ_VISION_MODEL,
+            groqSummaryModel: GROQ_SUMMARY_MODEL,
+            hasGroqApiKey:
+              Boolean(groq.apiKey)
           });
 
           return;
@@ -1034,33 +1090,43 @@ chrome.runtime.onMessage.addListener(
           message?.type ===
           "save-settings"
         ) {
-          const currentVps =
-            await getVpsSettings();
+          const currentGroq =
+            await getGroqSettings();
 
-          const vpsApiKey =
+          const groqApiKey =
             String(
-              message.vpsApiKey ||
+              message.groqApiKey ||
               ""
             ).trim();
 
-          const values = {};
+          const requestedModel =
+            String(
+              message.groqModel ||
+              currentGroq.model ||
+              DEFAULT_GROQ_MODEL
+            ).trim();
 
-          // Campo vazio mantém o valor atual.
-          if (vpsApiKey) {
-            values.vps_transcription_api_key =
-              vpsApiKey;
-          } else if (
-            !currentVps.apiKey
-          ) {
-            throw new Error(
-              "Informe a chave da API da VPS."
-            );
+          const groqModel =
+            GROQ_TRANSCRIPTION_MODELS.has(
+              requestedModel
+            )
+              ? requestedModel
+              : DEFAULT_GROQ_MODEL;
+
+
+          const values = {
+            groq_transcription_model:
+              groqModel
+          };
+
+          // Campos de chave vazios mantêm o valor já salvo.
+          if (groqApiKey) {
+            values.groq_api_key =
+              groqApiKey;
           }
 
 
-          await storageSet(
-            values
-          );
+          await storageSet(values);
 
           sendResponse({
             ok: true
@@ -1071,11 +1137,12 @@ chrome.runtime.onMessage.addListener(
 
         if (
           message?.type ===
-          "test-vps"
+          "test-groq"
         ) {
           const result =
-            await testVpsConnection(
-              message.vpsApiKey
+            await testGroqConnection(
+              message.groqApiKey,
+              message.groqModel
             );
 
           sendResponse({
@@ -1088,13 +1155,18 @@ chrome.runtime.onMessage.addListener(
 
 
 
+
         if (
           message?.type ===
           "get-cached-transcript"
         ) {
+          const groq =
+            await getGroqSettings();
+
           const cached =
             await cachedTranscript(
-              message.cacheKey
+              message.cacheKey,
+              groq.model
             );
 
           sendResponse({
@@ -1128,6 +1200,24 @@ chrome.runtime.onMessage.addListener(
 
         if (
           message?.type ===
+          "summarize-transcript"
+        ) {
+          const result =
+            await summarizeTranscript(
+              message
+            );
+
+          sendResponse({
+            ok: true,
+            ...result
+          });
+
+          return;
+        }
+
+
+        if (
+          message?.type ===
           "read-order-image"
         ) {
           const result =
@@ -1145,23 +1235,13 @@ chrome.runtime.onMessage.addListener(
 
         if (
           message?.type ===
-          "open-five-delivery"
+          "open-skale"
         ) {
-          const fallbackUrl =
-            "https://app.fivedelivery.com.br/pedido/cadastrar";
-
-          let url = fallbackUrl;
-
-          // V16.16: só abre páginas da própria Five Delivery.
-          try {
-            const parsed = new URL(String(message.url || fallbackUrl));
-            if (
-              parsed.protocol === "https:" &&
-              parsed.hostname === "app.fivedelivery.com.br"
-            ) {
-              url = parsed.toString();
-            }
-          } catch {}
+          const url =
+            String(
+              message.url ||
+              "https://skaletracking.com.br/pedidos"
+            );
 
           await chrome.tabs.create({
             url,

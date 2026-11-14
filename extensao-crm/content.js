@@ -341,7 +341,7 @@
     #lnl-api-settings,
     #lnl-order-data,
     #lnl-image-data,
-    #lnl-five-delivery,
+    #lnl-skale,
     #lnl-confirm-card,
     #lnl-copy-missing,
     #lnl-review-data,
@@ -351,18 +351,18 @@
       border: 1px solid var(--lnl-border2);
     }
 
-    #lnl-five-delivery {
+    #lnl-skale {
       background: var(--lnl-blue-soft);
       border-color: var(--lnl-blue);
     }
 
-    #lnl-five-delivery.order-ready {
+    #lnl-skale.order-ready {
       background: rgba(75, 188, 118, .20);
       border-color: #5fca87;
       color: #9ee5b8;
     }
 
-    #lnl-five-delivery.order-review {
+    #lnl-skale.order-review {
       background: rgba(227, 184, 100, .13);
       border-color: rgba(227, 184, 100, .55);
     }
@@ -794,7 +794,7 @@
     const box = panelQuery("#lnl-order-summary");
     const score = panelQuery("#lnl-order-score");
     const missing = panelQuery("#lnl-order-missing");
-    const five = panelQuery("#lnl-five-delivery");
+    const skale = panelQuery("#lnl-skale");
     const card = panelQuery("#lnl-confirm-card");
     const ask = panelQuery("#lnl-copy-missing");
     const review = panelQuery("#lnl-review-data");
@@ -802,7 +802,7 @@
     if (!box || !score || !missing) return;
 
     box.classList.remove("ready", "review");
-    five?.classList.remove("order-ready", "order-review");
+    skale?.classList.remove("order-ready", "order-review");
     card?.classList.remove("order-ready", "order-review");
     ask?.classList.remove("order-ready", "order-attention");
     review?.classList.remove("order-ready", "order-attention");
@@ -810,7 +810,7 @@
     if (!summary) {
       score.textContent = "Dados: —/9 essenciais";
       missing.textContent = "Toque em ⋯ para verificar a conversa.";
-      if (five) five.title = "Enviar dados atuais para Five Delivery";
+      if (skale) skale.title = "Enviar dados atuais para Skale";
       if (card) card.title = "Gerar card de confirmação";
       if (ask) ask.title = "Copiar mensagem pedindo somente o que falta";
       if (review) review.title = "Abrir e corrigir pendências";
@@ -837,13 +837,13 @@
       }
       if (optionalMissing.length) details.push(`Opcionais faltando: ${optionalMissing.join(", ")}`);
       if (optionalIssues.length) details.push(`Opcional revisar: ${optionalIssues.join(", ")}`);
-      missing.textContent = details.join(" • ") || "Cadastro essencial validado para Five Delivery.";
+      missing.textContent = details.join(" • ") || "Cadastro essencial validado para Skale.";
       box.classList.add("ready");
-      five?.classList.add("order-ready");
+      skale?.classList.add("order-ready");
       card?.classList.add("order-ready");
       ask?.classList.add("order-ready");
       review?.classList.add("order-ready");
-      if (five) five.title = "Cadastro pronto • abrir Five Delivery";
+      if (skale) skale.title = "Cadastro pronto • abrir Skale";
       if (card) card.title = "Cadastro pronto • gerar card de confirmação";
       if (ask) ask.title = "Dados completos • copiar mensagem de confirmação";
       if (review) review.title = summary.cepDivergences?.length ? "Conferir divergência do CEP" : "Cadastro sem pendências essenciais";
@@ -855,11 +855,11 @@
       if (Array.isArray(summary.cepDivergences) && summary.cepDivergences.length) parts.push(`CEP diverge: ${summary.cepDivergences.join(", ")}`);
       missing.textContent = parts.join(" • ") || "Confira os dados antes de enviar.";
       box.classList.add("review");
-      five?.classList.add("order-review");
+      skale?.classList.add("order-review");
       card?.classList.add("order-review");
       ask?.classList.add("order-attention");
       review?.classList.add("order-attention");
-      if (five) five.title = "Há dados pendentes • abrir Five Delivery mesmo assim";
+      if (skale) skale.title = "Há dados pendentes • abrir Skale mesmo assim";
       if (card) card.title = "Gerar card com os dados encontrados";
       if (ask) ask.title = "Pedir somente os dados que faltam";
       if (review) review.title = "Abrir direto no primeiro campo pendente";
@@ -925,15 +925,15 @@
               <button
                 id="lnl-image-data"
                 type="button"
-                title="Ler imagem do cliente com OCR da VPS"
+                title="Ler imagem do cliente com Groq"
                 aria-label="Ler imagem do cliente"
               >📷</button>
 
               <button
-                id="lnl-five-delivery"
+                id="lnl-skale"
                 type="button"
-                title="Enviar dados atuais para Five Delivery"
-                aria-label="Enviar para Five Delivery"
+                title="Enviar dados atuais para Skale"
+                aria-label="Enviar para Skale"
               >🚚</button>
 
               <button
@@ -954,8 +954,8 @@
               <button
                 id="lnl-api-settings"
                 type="button"
-                title="Configurar VPS"
-                aria-label="Configurar VPS"
+                title="Configurar Groq"
+                aria-label="Configurar Groq"
               >⚙</button>
 
               <button
@@ -1026,7 +1026,7 @@
         .getElementById("lnl-image-data")
         .addEventListener("click", () => {
           closeMobileMenu();
-          status("Lendo imagem com OCR da VPS…");
+          status("Lendo imagem com Groq…");
 
           window.postMessage({
             source: "CRM_ORDER_DATA_BRIDGE_V15_34",
@@ -1037,15 +1037,15 @@
         });
 
       shadow
-        .getElementById("lnl-five-delivery")
+        .getElementById("lnl-skale")
         .addEventListener("click", () => {
           closeMobileMenu();
-          status("Preparando dados para a Five Delivery…");
+          status("Preparando dados para a Skale…");
 
           window.postMessage({
             source: "CRM_ORDER_DATA_BRIDGE_V15_34",
             payload: {
-              type: "send-five-direct"
+              type: "send-skale-direct"
             }
           }, "*");
         });
@@ -1482,8 +1482,8 @@
               <button
                 id="lnl-overlay-settings"
                 type="button"
-                title="Configurar transcrição e OCR"
-                aria-label="Configurar transcrição e OCR"
+                title="Configurar Groq"
+                aria-label="Configurar Groq"
               >⚙</button>
 
               <button
@@ -2119,18 +2119,7 @@
           const [id, value]
           of Object.entries(raw)
         ) {
-          // V16.16: formato novo { ts, recv }; aceita o número antigo.
-          const ts = Number(
-            (value && typeof value === "object")
-              ? value.ts
-              : value
-          ) || 0;
-
-          const recv = Number(
-            (value && typeof value === "object")
-              ? value.recv
-              : 0
-          ) || 0;
+          const ts = Number(value || 0);
 
           if (
             id &&
@@ -2139,7 +2128,7 @@
           ) {
             state.answeredAt.set(
               String(id),
-              { ts, recv }
+              ts
             );
           }
         }
@@ -2198,54 +2187,37 @@
     }
   }
 
-  // V16.16: o cliente respondeu depois da nossa resposta?
-  // Compara com a data (do servidor) da última mensagem recebida
-  // no momento da resposta, e não com o relógio do computador.
-  // Assim um relógio adiantado não esconde respostas do cliente.
-  function customerRepliedAfter(entry, item) {
+  function localAnsweredAfterLastReceived(item) {
+    const id = String(item?.id || "");
+    if (!id) return false;
+
+    const answered =
+      Number(
+        state.answeredAt.get(id) || 0
+      );
+
+    if (!answered) return false;
+
     const received =
       messageDateMs(
         item?.lastReceivedMessageDate
       );
 
-    if (!received) return false;
-
-    if (entry.recv) {
-      return received > entry.recv;
-    }
-
-    return received > entry.ts;
-  }
-
-  function localAnsweredAfterLastReceived(item) {
-    const id = String(item?.id || "");
-    if (!id) return false;
-
-    const entry =
-      state.answeredAt.get(id);
-
-    if (!entry?.ts) return false;
-
     // O cliente enviou algo depois da nossa resposta:
     // a conversa precisa voltar para as não lidas.
-    return !customerRepliedAfter(entry, item);
-  }
+    if (
+      received &&
+      received > answered
+    ) {
+      return false;
+    }
 
-  function knownLastReceivedMs(id) {
-    const item =
-      state.conversations.find(
-        x => String(x?.id) === String(id)
-      );
-
-    return messageDateMs(
-      item?.lastReceivedMessageDate
-    );
+    return true;
   }
 
   function markAnsweredLocally(
     id,
-    timestamp = Date.now(),
-    lastReceivedMs = null
+    timestamp = Date.now()
   ) {
     const key = String(id || "");
     if (!key) return;
@@ -2254,24 +2226,13 @@
       Number(timestamp || Date.now()) ||
       Date.now();
 
-    const recv =
-      Number(
-        lastReceivedMs != null
-          ? lastReceivedMs
-          : knownLastReceivedMs(key)
-      ) || 0;
-
     const previous =
-      state.answeredAt.get(key) || { ts: 0, recv: 0 };
+      Number(
+        state.answeredAt.get(key) || 0
+      );
 
-    if (
-      ts > previous.ts ||
-      recv > previous.recv
-    ) {
-      state.answeredAt.set(key, {
-        ts: Math.max(ts, previous.ts),
-        recv: Math.max(recv, previous.recv)
-      });
+    if (ts > previous) {
+      state.answeredAt.set(key, ts);
       void saveAnsweredAt();
     }
 
@@ -2307,12 +2268,22 @@
       const id = String(item?.id || "");
       if (!id) continue;
 
-      const entry =
-        state.answeredAt.get(id);
+      const answered =
+        Number(
+          state.answeredAt.get(id) || 0
+        );
 
-      if (!entry?.ts) continue;
+      if (!answered) continue;
 
-      if (customerRepliedAfter(entry, item)) {
+      const received =
+        messageDateMs(
+          item?.lastReceivedMessageDate
+        );
+
+      if (
+        received &&
+        received > answered
+      ) {
         state.answeredAt.delete(id);
         changed = true;
       }
@@ -2367,19 +2338,10 @@
     const ts =
       latest.ts || Date.now();
 
-    const lastReceivedTs =
-      directional
-        .filter(x => x.msg.received === true && x.ts)
-        .reduce((max, x) => Math.max(max, x.ts), 0);
-
     if (latest.msg.received === false) {
       // Última mensagem real da conversa foi uma saída do
       // atendente. Vale para texto, áudio, imagem e anexo.
-      markAnsweredLocally(
-        id,
-        ts,
-        Math.max(lastReceivedTs, knownLastReceivedMs(id))
-      );
+      markAnsweredLocally(id, ts);
     } else {
       // O cliente respondeu depois: volta automaticamente.
       clearAnsweredLocally(id);

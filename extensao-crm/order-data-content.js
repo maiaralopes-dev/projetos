@@ -4087,7 +4087,7 @@
         button.action{min-height:42px;border:0;border-radius:10px;padding:0;font-size:18px;font-weight:700;cursor:pointer;background:${vars.blue};color:#0e1820;display:flex;align-items:center;justify-content:center;line-height:1}
         button.action:hover{filter:brightness(1.03)}
         button.secondary{background:${vars.bg2};color:${vars.text};border:1px solid ${vars.border}}
-        button.five{background:${vars.blue};color:#0e1820;border:0}
+        button.skale{background:${vars.blue};color:#0e1820;border:0}
         .status{min-height:16px;margin-top:10px;color:${vars.muted};font-size:10px;line-height:1.4}
         .privacy{margin-top:12px;padding-top:10px;border-top:1px solid ${vars.border};color:${vars.muted};font-size:9px;line-height:1.45}
         .preview-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.58);display:none;align-items:center;justify-content:center;padding:16px;z-index:4}
@@ -4129,12 +4129,12 @@
               <button class="action secondary" id="missing" type="button" title="Copiar o que está faltando" aria-label="Copiar o que está faltando">❓</button>
               <button class="action secondary" id="fill" type="button" title="Preencher CRM" aria-label="Preencher CRM">📝</button>
               <button class="action secondary" id="refresh" type="button" title="Atualizar leitura" aria-label="Atualizar leitura">↻</button>
-              <button class="action secondary" id="image" type="button" title="Ler imagem do cliente com OCR da VPS" aria-label="Ler imagem do cliente">📷</button>
-              <button class="action five" id="five" type="button" title="Enviar para Five Delivery" aria-label="Enviar para Five Delivery">🚚</button>
+              <button class="action secondary" id="image" type="button" title="Ler imagem do cliente com Groq" aria-label="Ler imagem do cliente">📷</button>
+              <button class="action skale" id="skale" type="button" title="Preparar pedido na Skale" aria-label="Preparar pedido na Skale">🚚</button>
               <button class="action secondary" id="card" type="button" title="Gerar card de confirmação" aria-label="Gerar card de confirmação">🪪</button>
             </div>
             <div class="status" id="status"></div>
-            <div class="privacy">A leitura principal é feita localmente. A transcrição de áudio e o botão 📷 usam sua VPS. A imagem só é enviada ao OCR quando você clicar; o texto extraído é analisado pelo parser da extensão e o CEP continua sendo conferido pelo ViaCEP. O resultado do OCR fica em cache local para evitar reprocessamento. Ao usar “Enviar para Five Delivery”, os dados são preenchidos para conferência; a extensão não finaliza o pedido automaticamente.</div>
+            <div class="privacy">A leitura principal é feita localmente. A transcrição de áudio e a leitura manual de imagens usam a Groq Cloud somente quando você clicar nas respectivas ações. O CEP continua sendo conferido pelo ViaCEP. O resultado da leitura de imagem fica em cache local para evitar reprocessamento. Ao usar “Preparar pedido na Skale”, os dados do cliente são preenchidos e as próximas etapas são automatizadas somente quando houver informação segura; a extensão nunca clica em “Lançar pedido”.</div>
           </div>
           <div class="preview-backdrop" id="confirm-modal" aria-hidden="true">
             <div class="preview-sheet">
@@ -4189,7 +4189,7 @@
     shadow.getElementById("refresh").addEventListener("click", () => refreshExtraction(true));
     shadow.getElementById("image").addEventListener("click", () => readCustomerImage(true));
     shadow.getElementById("fill").addEventListener("click", fillCRM);
-    shadow.getElementById("five").addEventListener("click", () => sendToFiveDelivery(false));
+    shadow.getElementById("skale").addEventListener("click", () => sendToSkale(false));
     shadow.getElementById("card").addEventListener("click", openConfirmationCardPreview);
     shadow.getElementById("confirm-close-top").addEventListener("click", closeConfirmationCardPreview);
     shadow.getElementById("confirm-close").addEventListener("click", closeConfirmationCardPreview);
@@ -4288,7 +4288,7 @@
     if (foundEl) {
       const summary = orderValidation();
       foundEl.textContent = summary.ready
-        ? `✅ ${summary.found}/${summary.total} essenciais • pronto para Five`
+        ? `✅ ${summary.found}/${summary.total} essenciais • pronto para Skale`
         : `${summary.found}/${summary.total} essenciais encontrados`;
     }
 
@@ -4969,7 +4969,7 @@
       images[images.length - 1];
 
     const messageLoading =
-      "Lendo imagem com OCR da VPS…";
+      "Lendo imagem com Groq…";
 
     if (showInPanel) setStatus(messageLoading);
     postPanelStatus(messageLoading);
@@ -4993,9 +4993,9 @@
       }
 
       const normalized =
-        extractDataFromOcrText(
-          response.text || ""
-        );
+        response.fields && typeof response.fields === "object"
+          ? normalizeImageExtractedData(response.fields)
+          : extractDataFromOcrText(response.text || "");
 
       const useful =
         Object.values(normalized)
@@ -5066,15 +5066,15 @@
 
       const message =
         response.cached
-          ? `OCR já processado • ${fields} dados recuperados do cache.`
-          : `OCR concluído • ${fields} dados encontrados.`;
+          ? `Imagem já processada • ${fields} dados recuperados do cache Groq.`
+          : `Groq concluiu a leitura • ${fields} dados encontrados.`;
 
       if (showInPanel) setStatus(message);
       postPanelStatus(message);
       return true;
     } catch (err) {
       const message =
-        `Erro ao ler imagem pelo OCR da VPS: ${String(err?.message || err)}`;
+        `Erro ao ler imagem pela Groq: ${String(err?.message || err)}`;
 
       if (showInPanel) setStatus(message);
       postPanelStatus(message);
@@ -5164,7 +5164,7 @@
     if (!extracted.messageCount) {
       setStatus("Ainda não encontrei mensagens recebidas carregadas para esta conversa. Abra/role a conversa e tente Atualizar leitura.");
     } else {
-      setStatus("Mensagens e áudios transcritos foram analisados. Se o cliente enviou os dados em uma imagem, use o botão 📷 para ler pelo OCR da VPS.");
+      setStatus("Mensagens e áudios transcritos foram analisados. Áudios e imagens usam a Groq; se o cliente enviou dados em uma imagem, use o botão 📷 para fazer a leitura.");
     }
   }
 
@@ -5751,7 +5751,7 @@
   }
 
   function nationalBrazilPhone(value) {
-    // Five Delivery espera DDD + número, sem +55.
+    // A Skale espera telefone brasileiro; mantemos DDD + número normalizado, sem +55 no payload.
     // A normalização também adiciona o nono dígito quando o CRM
     // ainda possui um celular brasileiro no formato antigo de 8 dígitos.
     return normalizeBrazilNationalPhone(value);
@@ -5822,7 +5822,42 @@
     return extracted.messageCount;
   }
 
-  async function sendToFiveDelivery(notifyPanel = false) {
+  function detectSkaleProductMonths() {
+    const texts = allConversationMessages()
+      .slice(-40)
+      .map(m => normalize(m?.text || ""))
+      .filter(Boolean);
+
+    const found = new Set();
+    for (const text of texts) {
+      if (/\b(?:6|seis)\s*(?:mes|meses)\b/.test(text) || /azzure\s*[-–]?\s*6\s*meses/.test(text)) found.add(6);
+      if (/\b(?:4|quatro)\s*(?:mes|meses)\b/.test(text) || /azzure\s*[-–]?\s*4\s*meses/.test(text)) found.add(4);
+      if (/\b(?:2|dois)\s*(?:mes|meses)\b/.test(text) || /azzure\s*[-–]?\s*2\s*meses/.test(text)) found.add(2);
+    }
+
+    return found.size === 1 ? [...found][0] : null;
+  }
+
+  function detectSkalePaymentHint() {
+    const texts = allConversationMessages()
+      .slice(-30)
+      .map(m => normalize(m?.text || ""))
+      .filter(Boolean);
+
+    let after = false;
+    let prepaid = false;
+
+    for (const text of texts) {
+      if (/\b(?:na entrega|quando chegar|depois de receber|apos receber|após receber|after pay)\b/.test(text)) after = true;
+      if (/\b(?:pix|boleto|antecipad[oa]|pagar agora|pagamento antecipado)\b/.test(text)) prepaid = true;
+    }
+
+    if (after && !prepaid) return "after_pay";
+    if (prepaid && !after) return "antecipada";
+    return null;
+  }
+
+  async function sendToSkale(notifyPanel = false) {
     const v = state.values || {};
 
     const payload = {
@@ -5848,7 +5883,10 @@
       conversationId: state.currentConversationId || "",
       conversationName: state.currentConversation?.name || "",
       createdAt: new Date().toISOString(),
-      pending: true
+      pending: true,
+      productMonths: detectSkaleProductMonths(),
+      paymentHint: detectSkalePaymentHint(),
+      logisticsHint: "Five Delivery"
     };
 
     const meaningful = [
@@ -5862,7 +5900,7 @@
 
     if (!meaningful) {
       const message =
-        "Ainda não há dados suficientes para enviar à Five Delivery.";
+        "Ainda não há dados suficientes para preparar o pedido na Skale.";
 
       setStatus(message);
 
@@ -5875,16 +5913,16 @@
 
     try {
       await chrome.storage.local.set({
-        five_delivery_pending_v15_34: payload
+        skale_order_pending_v16: payload
       });
 
       const response = await chrome.runtime.sendMessage({
-        type: "open-five-delivery",
-        url: "https://app.fivedelivery.com.br/pedido/cadastrar"
+        type: "open-skale",
+        url: "https://skaletracking.com.br/pedidos"
       });
 
       if (!response?.ok) {
-        throw new Error(response?.error || "Não consegui abrir a Five Delivery.");
+        throw new Error(response?.error || "Não consegui abrir a Skale.");
       }
 
       const missing = REQUIRED_FIELDS
@@ -5893,7 +5931,7 @@
 
       if (missing.length) {
         const message =
-          `Five Delivery aberta • faltam: ${missing.join(", ")}`;
+          `Skale aberta • faltam: ${missing.join(", ")}`;
 
         setStatus(message);
 
@@ -5902,7 +5940,7 @@
         }
       } else {
         const message =
-          "Five Delivery aberta • dados enviados para conferência";
+          "Skale aberta • dados enviados para preparação do pedido";
 
         setStatus(message);
 
@@ -5912,7 +5950,7 @@
       }
     } catch (err) {
       const message =
-        `Não consegui enviar para a Five Delivery: ${String(err?.message || err)}`;
+        `Não consegui preparar a Skale: ${String(err?.message || err)}`;
 
       setStatus(message);
 
@@ -5961,7 +5999,7 @@
     }
   }
 
-  async function sendDirectToFiveDelivery() {
+  async function sendDirectToSkale() {
     try {
       postPanelStatus(
         "Lendo dados da conversa…"
@@ -5969,10 +6007,10 @@
 
       await refreshValuesForDirectAction();
 
-      await sendToFiveDelivery(true);
+      await sendToSkale(true);
     } catch (err) {
       postPanelStatus(
-        `Erro ao preparar Five Delivery: ${String(err?.message || err)}`
+        `Erro ao preparar Skale: ${String(err?.message || err)}`
       );
     }
   }
@@ -6063,9 +6101,9 @@
 
     if (
       e.data?.source === BRIDGE_SOURCE &&
-      e.data?.payload?.type === "send-five-direct"
+      e.data?.payload?.type === "send-skale-direct"
     ) {
-      sendDirectToFiveDelivery();
+      sendDirectToSkale();
     }
 
     if (

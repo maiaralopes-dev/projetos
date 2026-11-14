@@ -178,8 +178,36 @@
           white-space: pre-wrap;
           word-break: break-word;
           color: #e4e8eb;
-          font-size: 12px;
-          line-height: 1.48;
+          font-size: 15px;
+          line-height: 1.55;
+        }
+
+        .summary-box {
+          display: none;
+          margin-top: 10px;
+          padding: 10px 11px;
+          border-radius: 8px;
+          background: rgba(17, 24, 30, .42);
+          border: 1px solid rgba(142, 193, 229, .25);
+        }
+
+        .summary-box.show { display: block; }
+
+        .summary-label {
+          color: #8ec1e5;
+          font-size: 10px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: .05em;
+          margin-bottom: 5px;
+        }
+
+        .summary-text {
+          white-space: pre-wrap;
+          word-break: break-word;
+          color: #edf2f5;
+          font-size: 13px;
+          line-height: 1.5;
         }
 
         .footer {
@@ -223,8 +251,13 @@
           }
 
           .text {
-            font-size: 12px;
-            line-height: 1.45;
+            font-size: 16px;
+            line-height: 1.55;
+          }
+
+          .summary-text {
+            font-size: 14px;
+            line-height: 1.5;
           }
 
           .footer {
@@ -251,8 +284,14 @@
             <div class="text"></div>
           </div>
 
+          <div class="summary-box">
+            <div class="summary-label">Resumo</div>
+            <div class="summary-text"></div>
+          </div>
+
           <div class="footer">
             <button class="link copy" type="button">Copiar</button>
+            <button class="link summary" type="button">Resumo</button>
             <button class="link hide" type="button">Ocultar</button>
           </div>
         </div>
@@ -268,6 +307,11 @@
     const copy =
       shadow.querySelector(
         ".copy"
+      );
+
+    const summary =
+      shadow.querySelector(
+        ".summary"
       );
 
     const hide =
@@ -310,6 +354,84 @@
             shadow,
             "Não foi possível copiar."
           );
+        }
+      }
+    );
+
+    summary.addEventListener(
+      "click",
+      async () => {
+        const text =
+          shadow.querySelector(
+            ".text"
+          )?.textContent || "";
+
+        if (!text.trim()) {
+          setStatus(
+            shadow,
+            "Transcreva o áudio antes de resumir."
+          );
+          return;
+        }
+
+        summary.disabled = true;
+        const original = summary.textContent;
+        summary.textContent = "Resumindo…";
+        setStatus(
+          shadow,
+          "Gerando resumo com Groq…"
+        );
+
+        try {
+          const response =
+            await sendRuntime({
+              type: "summarize-transcript",
+              cacheKey:
+                meta.attachmentId ||
+                meta.messageId ||
+                key,
+              text
+            });
+
+          if (!response?.ok) {
+            throw new Error(
+              response?.error ||
+              "Falha ao gerar resumo."
+            );
+          }
+
+          const box =
+            shadow.querySelector(
+              ".summary-box"
+            );
+          const summaryText =
+            shadow.querySelector(
+              ".summary-text"
+            );
+
+          if (summaryText) {
+            summaryText.textContent =
+              escapeText(response.summary || "");
+          }
+          box?.classList.add("show");
+          setStatus(
+            shadow,
+            response.cached
+              ? "Resumo salvo."
+              : ""
+          );
+        } catch (err) {
+          setStatus(
+            shadow,
+            String(
+              err?.message ||
+              err ||
+              "Falha ao gerar resumo."
+            )
+          );
+        } finally {
+          summary.disabled = false;
+          summary.textContent = original;
         }
       }
     );
@@ -406,6 +528,16 @@
           : "nova";
     }
 
+    shadow.querySelector(
+      ".summary-box"
+    )?.classList.remove("show");
+
+    const summaryText =
+      shadow.querySelector(
+        ".summary-text"
+      );
+    if (summaryText) summaryText.textContent = "";
+
     result?.classList.add(
       "show"
     );
@@ -446,10 +578,10 @@
 
       if (
         !settings?.ok ||
-        !settings.hasVpsApiKey
+        !settings.hasGroqApiKey
       ) {
         openSettings(
-          "Adicione a chave da sua VPS para transcrever os áudios."
+          "Adicione sua chave da Groq para transcrever os áudios."
         );
 
         return;
@@ -461,7 +593,7 @@
 
       setStatus(
         shadow,
-        "Transcrevendo na VPS…"
+        "Transcrevendo com Groq…"
       );
 
       const response =
@@ -560,7 +692,9 @@
         }
 
         .card {
-          width: min(430px, calc(100vw - 32px));
+          width: min(470px, calc(100vw - 28px));
+          max-height: min(90vh, 820px);
+          overflow: auto;
           padding: 18px;
           border-radius: 14px;
           background: #ffffff;
@@ -576,8 +710,28 @@
         .sub {
           color: #68737d;
           font-size: 11px;
-          line-height: 1.4;
+          line-height: 1.45;
           margin-bottom: 14px;
+        }
+
+        .section {
+          padding: 12px;
+          margin-top: 10px;
+          border: 1px solid #e0e5e9;
+          border-radius: 10px;
+        }
+
+        .section-title {
+          font-size: 12px;
+          font-weight: 800;
+          margin-bottom: 2px;
+        }
+
+        .section-note {
+          color: #77818a;
+          font-size: 10px;
+          line-height: 1.35;
+          margin-bottom: 8px;
         }
 
         label {
@@ -590,8 +744,7 @@
         }
 
         input,
-        select,
-        textarea {
+        select {
           width: 100%;
           height: 38px;
           border: 1px solid #d4dbe1;
@@ -603,25 +756,18 @@
           font-size: 12px;
         }
 
-        textarea {
-          min-height: 58px;
-          height: 58px;
-          padding: 8px 10px;
-          resize: vertical;
+        .message {
+          min-height: 15px;
+          margin-top: 10px;
+          color: #66727c;
+          font-size: 10px;
           line-height: 1.35;
         }
 
-        .card {
-          max-height: min(88vh, 780px);
-          overflow: auto;
-        }
-
-
-        .message {
-          min-height: 15px;
-          margin-top: 8px;
-          color: #66727c;
-          font-size: 10px;
+        .test-row {
+          display: flex;
+          gap: 8px;
+          margin-top: 10px;
         }
 
         .actions {
@@ -642,7 +788,7 @@
         }
 
         .test {
-          margin-right: auto;
+          flex: 1;
           background: #e6f2ff;
           color: #2e6fa8;
           border: 1px solid #c8e0f5;
@@ -665,15 +811,20 @@
             border: 1px solid #3b4044;
           }
 
+          .section {
+            border-color: #3b4044;
+            background: #222527;
+          }
+
           .sub,
           .message,
-          label {
+          label,
+          .section-note {
             color: #aab1b7;
           }
 
           input,
-          select,
-          textarea {
+          select {
             background: #1d1f21;
             border-color: #43484d;
             color: #f2f5f7;
@@ -697,37 +848,52 @@
           <h3>Configurações da extensão</h3>
 
           <div class="sub">
-            Áudios e imagens: enviados somente para
-            <strong>trascricao.masterautomacoes.com.br</strong>
-            quando você clicar em "Transcrever" ou no botão 📷.<br><br>
-            A mesma chave da VPS é usada para transcrição e OCR.
+            Áudio e imagens usam somente a <strong>Groq Cloud</strong>.
+            A mesma GROQ_API_KEY é usada para transcrição e leitura visual.
           </div>
 
-          <label>Chave da API da VPS</label>
-          <input
-            class="vps-api-key"
-            type="password"
-            autocomplete="off"
-            placeholder="Bearer token da sua VPS"
-          />
+          <div class="section">
+            <div class="section-title">🎙️ Transcrição • Groq</div>
+            <div class="section-note">
+              O áudio só é enviado à Groq quando você clicar em “Transcrever”.
+            </div>
 
-          <label>Servidor de transcrição e OCR</label>
-          <input
-            class="vps-url"
-            type="text"
-            value="https://trascricao.masterautomacoes.com.br"
-            readonly
-          />
+            <label>GROQ_API_KEY</label>
+            <input
+              class="groq-api-key"
+              type="password"
+              autocomplete="off"
+              placeholder="gsk_..."
+            />
 
+            <label>Modelo de transcrição</label>
+            <select class="groq-model">
+              <option value="whisper-large-v3-turbo">
+                whisper-large-v3-turbo • rápido/econômico
+              </option>
+              <option value="whisper-large-v3">
+                whisper-large-v3 • maior precisão
+              </option>
+            </select>
+
+            <div class="test-row">
+              <button class="test test-groq" type="button">
+                Testar Groq
+              </button>
+            </div>
+          </div>
+
+
+          <div class="section">
+            <div class="section-title">📷 Leitura de imagens • Groq</div>
+            <div class="section-note">
+              As imagens são analisadas somente quando você clicar no botão 📷. Modelo: qwen/qwen3.8-27b.
+            </div>
+          </div>
 
           <div class="message"></div>
 
           <div class="actions">
-            <button class="test" type="button">
-              Testar VPS
-            </button>
-
-
             <button class="cancel" type="button">
               Cancelar
             </button>
@@ -760,18 +926,21 @@
           type: "get-settings"
         });
 
-      if (
-        settings?.ok &&
-        settings.hasVpsApiKey
-      ) {
-        shadow.querySelector(
-          ".vps-api-key"
-        ).placeholder =
-          "Chave da VPS já salva — digite outra apenas para trocar";
+      if (settings?.ok) {
+        if (settings.hasGroqApiKey) {
+          shadow.querySelector(
+            ".groq-api-key"
+          ).placeholder =
+            "Chave Groq já salva — digite outra apenas para trocar";
+        }
+
+
+        if (settings.groqModel) {
+          shadow.querySelector(
+            ".groq-model"
+          ).value = settings.groqModel;
+        }
       }
-
-
-
     } catch {}
 
     const close = () => {
@@ -802,58 +971,60 @@
     );
 
     shadow.querySelector(
-      ".test"
+      ".test-groq"
     ).addEventListener(
       "click",
       async () => {
         const btn =
           shadow.querySelector(
-            ".test"
+            ".test-groq"
           );
 
-        const vpsApiKey =
+        const groqApiKey =
           shadow.querySelector(
-            ".vps-api-key"
+            ".groq-api-key"
           ).value.trim();
+
+        const groqModel =
+          shadow.querySelector(
+            ".groq-model"
+          ).value;
 
         btn.disabled = true;
         message.textContent =
-          "Testando conexão com a VPS…";
+          "Testando conexão com a Groq…";
 
         try {
           const response =
             await sendRuntime({
-              type: "test-vps",
-              vpsApiKey
+              type: "test-groq",
+              groqApiKey,
+              groqModel
             });
 
           if (!response?.ok) {
             throw new Error(
               response?.error ||
-              "Falha ao testar VPS."
+              "Falha ao testar Groq."
             );
           }
 
-          const modelText =
-            response.model
-              ? ` • modelo ${response.model}`
-              : "";
-
-          const queueText =
-            Number.isFinite(
-              response.queueWaiting
-            )
-              ? ` • fila ${response.queueWaiting}`
-              : "";
-
-          message.textContent =
-            `VPS online${modelText}${queueText}.`;
+          if (response.modelAvailable === false) {
+            message.textContent =
+              `Groq conectada, mas o modelo ${response.model} não apareceu na conta.`;
+          } else if (response.visionAvailable === false) {
+            message.textContent =
+              `Groq conectada • áudio disponível. O modelo visual ${response.visionModel} não apareceu na conta.`;
+          } else {
+            message.textContent =
+              `Groq conectada • áudio e leitura de imagens disponíveis.`;
+          }
         } catch (err) {
           message.textContent =
             String(
               err?.message ||
               err ||
-              "Falha ao testar VPS."
+              "Falha ao testar Groq."
             );
         } finally {
           btn.disabled = false;
@@ -867,23 +1038,28 @@
     ).addEventListener(
       "click",
       async () => {
-        const vpsApiKey =
+        const groqApiKey =
           shadow.querySelector(
-            ".vps-api-key"
+            ".groq-api-key"
           ).value.trim();
+
+        const groqModel =
+          shadow.querySelector(
+            ".groq-model"
+          ).value;
 
 
         const response =
           await sendRuntime({
             type: "save-settings",
-            vpsApiKey
+            groqApiKey,
+            groqModel
           });
 
         if (!response?.ok) {
           message.textContent =
             response?.error ||
             "Não foi possível salvar.";
-
           return;
         }
 

@@ -1,21 +1,21 @@
 {
   "manifest_version": 3,
-  "name": "CRM - Não Lidas + Transcrição/OCR VPS + Dados + Five Delivery V16.16",
-  "version": "4.4.0",
-  "description": "V16.16: correções de estabilidade (timeouts, cache, paginação parcial, relógio do PC) mantendo todas as melhorias anteriores.",
+  "name": "CRM - Não Lidas + Groq + Dados + Skale V16.21",
+  "version": "4.6.3",
+  "description": "V16.21: preenchimento robusto da Skale por rótulos/React, transcrição com fonte maior e resumo Groq; mantém ViaCEP, não lidas e identidade fixa.",
   "permissions": [
-    "storage",
-    "unlimitedStorage"
+    "storage"
   ],
   "host_permissions": [
     "https://*.datacrazy.io/*",
     "https://crm.datacrazy.io/*",
     "https://messaging.g1.datacrazy.io/*",
     "https://viacep.com.br/*",
-    "https://app.fivedelivery.com.br/*",
     "https://*.whatsapp.net/*",
     "https://*.whatsapp.com/*",
-    "https://trascricao.masterautomacoes.com.br/*"
+    "https://api.groq.com/*",
+    "https://skaletracking.com.br/*",
+    "https://*.skaletracking.com.br/*"
   ],
   "content_scripts": [
     {
@@ -70,10 +70,11 @@
     },
     {
       "matches": [
-        "https://app.fivedelivery.com.br/*"
+        "https://skaletracking.com.br/*",
+        "https://*.skaletracking.com.br/*"
       ],
       "js": [
-        "five-delivery-content.js"
+        "skale-content.js"
       ],
       "run_at": "document_idle"
     }
