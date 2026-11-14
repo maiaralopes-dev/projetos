@@ -1,0 +1,85 @@
+{
+  "manifest_version": 3,
+  "name": "CRM - Não Lidas + Transcrição/OCR VPS + Dados + Five Delivery V16.15",
+  "version": "4.3.9",
+  "description": "V16.15: mantém todas as melhorias anteriores e remove das não lidas após resposta por texto, áudio, imagem ou anexo; volta automaticamente quando o cliente responde.",
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://*.datacrazy.io/*",
+    "https://crm.datacrazy.io/*",
+    "https://messaging.g1.datacrazy.io/*",
+    "https://viacep.com.br/*",
+    "https://app.fivedelivery.com.br/*",
+    "https://*.whatsapp.net/*",
+    "https://*.whatsapp.com/*",
+    "https://trascricao.masterautomacoes.com.br/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://crm.datacrazy.io/*"
+      ],
+      "js": [
+        "page-hook.js"
+      ],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": [
+        "https://crm.datacrazy.io/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "css": [
+        "styles.css"
+      ],
+      "run_at": "document_start"
+    },
+    {
+      "matches": [
+        "https://crm.datacrazy.io/*"
+      ],
+      "js": [
+        "audio-hook.js"
+      ],
+      "run_at": "document_idle",
+      "world": "MAIN"
+    },
+    {
+      "matches": [
+        "https://crm.datacrazy.io/*"
+      ],
+      "js": [
+        "audio-content.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://crm.datacrazy.io/*"
+      ],
+      "js": [
+        "order-data-content.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://app.fivedelivery.com.br/*"
+      ],
+      "js": [
+        "five-delivery-content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqwfK04ppQffWae/eChCiidXXxt9wqt8ImJzOoBGV5gaTYl1VEeIJRKeHwY/fnhXxs/RJDIoMj4ANBA3Ywqso1iVzEY6ulz8B8LCvxyL/3cShYM0xBwaaigwyTXHdE4Yo8Qu0Dnx+1iXXliSdcsYDW0Fy3HhNJl80ENKDpA/PZ9b5KYgy+h+kz5HPVIK4XmTqD4X12QO3Afj/YZAiMHMsgs/bsIS7g7TOLRjFsydUnZo4DF0+tFRZKkO6Vk46kr8CHwnvGSbvmKGBgS3ePkzuN5HT3pd6yTXoVQVYaFMchU9ZQaiqfyOAc3fTHJFtP0jjE0bOCosWHNwXjjsSXPG47QIDAQAB"
+}
