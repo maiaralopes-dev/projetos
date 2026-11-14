@@ -180,7 +180,7 @@ Passed!  - Failed: 0, Passed: 214, Total: 214
 - **sempre** publica os artefatos (resumo, logs, TRX e cobertura), inclusive quando falha;
 - o job **`publicar`** (`dotnet publish` da API) declara `needs: revisao`, então **não roda se a revisão falhar**.
 
-O workflow foi enviado ao GitHub e disparou a execução #1 em 14/11/2026. Resultado: **______** *(ver a seção "Resultado no GitHub Actions" abaixo)*. Para que um *pull request* não possa ser integrado com a revisão vermelha, falta marcar o check "Revisão automatizada" como obrigatório na proteção da branch principal, nas configurações do repositório.
+O workflow foi enviado ao GitHub e executado de verdade em 14/11/2026 (resultado na seção 5). Para que um *pull request* não possa ser integrado com a revisão vermelha, falta marcar o check "Revisão automatizada" como obrigatório na proteção da branch principal, nas configurações do repositório.
 
 ## 4. Testes e validações obrigatórias
 
@@ -202,7 +202,27 @@ Resultado local: **214 casos, 214 aprovados** (140 métodos). Desde a Atividade 
 
 ## 5. Resultado no GitHub Actions
 
-*(preenchido após a execução — ver resposta final)*
+Execuções reais no repositório `maiaralopes-dev/projetos`, branch `ccr-aa861ddb-xsu4bc`:
+
+| Execução | Gatilho | Resultado | Observação |
+|---|---|---|---|
+| #1 (commit `10a25ad`) | push | **cancelada** | um novo push chegou enquanto estava na fila; `concurrency` com `cancel-in-progress` cancelou a execução obsoleta, como configurado |
+| #2 (commit `ea41dcc`) | push | **sucesso** em cerca de 2 min | detalhes abaixo |
+
+Execução #2:
+
+- **Job "Build, analisadores, formatação e testes":** sucesso (66 s de revisão). O mesmo resumo do script local saiu no log do CI:
+  ```
+  | Testes | Aprovados | Falhas | Cobertura de linhas (informativa) | Duração |
+  | 214 | 214 | 0 | 90.8% | 66 s |
+  ✔ REVISÃO APROVADA
+  ```
+- **Artefato `resultados-revisao`:** 8 arquivos (resumo, logs, TRX e `coverage.cobertura.xml`), 141 KB, retidos por 14 dias.
+- **Job "Publicar API (só se a revisão passar)":** iniciou **depois** do primeiro e publicou o artefato `hubpedidos-api` (cerca de 20 MB).
+
+Os números do CI (214/214, 90,8%) são **iguais aos locais**, o que confirma que a revisão é reproduzível.
+
+**Aviso registrado:** o runner informou que `actions/checkout@v4`, `actions/setup-dotnet@v4` e `actions/upload-artifact@v4` usam Node.js 20, que está sendo descontinuado. Não quebrou a execução, mas é um item de manutenção: atualizar para as próximas versões maiores das actions e, idealmente, fixá-las por SHA.
 
 ## 6. Referências
 
