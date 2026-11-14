@@ -181,7 +181,7 @@
     document.documentElement.appendChild(el); return el;
   }
   function status(title,detail=''){
-    const el=toast(); el.innerHTML=`<strong>${title}</strong>${detail?`<div style="opacity:.78;margin-top:3px">${detail}</div>`:''}`;
+    const el=toast(); el.textContent=''; const t=document.createElement('strong'); t.textContent=String(title||''); el.appendChild(t); if(detail){ const d=document.createElement('div'); d.style.opacity='.78'; d.style.marginTop='3px'; d.textContent=String(detail); el.appendChild(d); }
     if(hideTimer) clearTimeout(hideTimer); hideTimer=setTimeout(()=>el.remove(),7000);
   }
 

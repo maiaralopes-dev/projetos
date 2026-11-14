@@ -21,6 +21,56 @@ const GROQ_IMAGE_CACHE_VERSION =
   "groq-vision-v1";
 
 
+// V16.22: nenhuma chamada de rede pode ficar pendurada para sempre.
+// Groq (transcrição, visão, resumo): 4 min; ViaCEP: 15 s; downloads: 60 s.
+function timeoutForUrl(url) {
+  let host = "";
+  try { host = new URL(String(url)).hostname; } catch {}
+  if (host === "api.groq.com") return 4 * 60 * 1000;
+  if (host === "viacep.com.br") return 15 * 1000;
+  return 60 * 1000;
+}
+
+async function fetchWithTimeout(url, options = {}) {
+  const timeoutMs = timeoutForUrl(url);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  let host = "o servidor";
+  try { host = new URL(String(url)).hostname; } catch {}
+  try {
+    const response = await fetch(url, { ...options, signal: controller.signal });
+    // Garante que o corpo também respeite o limite de tempo.
+    const body = await response.blob();
+    const noBody = [101, 204, 205, 304].includes(response.status);
+    return new Response(noBody ? null : body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: response.headers
+    });
+  } catch (err) {
+    if (err?.name === "AbortError") {
+      const e = new Error(
+        `Tempo esgotado (${Math.round(timeoutMs / 1000)}s) ao acessar ${host}.`
+      );
+      e.isTimeout = true;
+      throw e;
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// V16.22: falha ao gravar cache (ex.: armazenamento cheio) não pode
+// descartar uma transcrição/leitura/resumo que já foi feito com sucesso.
+async function cacheSet(values) {
+  try {
+    await storageSet(values);
+  } catch (err) {
+    console.warn("[CRM ext] Não consegui salvar no cache:", err?.message || err);
+  }
+}
+
 function storageGet(keys) {
   return new Promise(resolve => {
     chrome.storage.local.get(
@@ -253,7 +303,7 @@ async function summarizeTranscript(payload) {
 
   let response;
   try {
-    response = await fetch(
+    response = await fetchWithTimeout(
       `${GROQ_BASE_URL}/chat/completions`,
       {
         method: "POST",
@@ -284,7 +334,8 @@ ${text}`
         cache: "no-store"
       }
     );
-  } catch {
+  } catch (err) {
+    if (err?.isTimeout) throw err;
     throw new Error(
       "Não consegui conectar à Groq para gerar o resumo."
     );
@@ -326,7 +377,7 @@ ${text}`
   }
 
   if (storageKey) {
-    await storageSet({
+    await cacheSet({
       [storageKey]: summary
     });
   }
@@ -405,7 +456,7 @@ async function testGroqConnection(
   let response;
 
   try {
-    response = await fetch(
+    response = await fetchWithTimeout(
       `${GROQ_BASE_URL}/models`,
       {
         method: "GET",
@@ -418,7 +469,8 @@ async function testGroqConnection(
         cache: "no-store"
       }
     );
-  } catch {
+  } catch (err) {
+    if (err?.isTimeout) throw err;
     throw new Error(
       "Não consegui conectar à Groq. Verifique sua internet."
     );
@@ -538,7 +590,7 @@ async function transcribeAudio(
   }
 
   const audioResponse =
-    await fetch(
+    await fetchWithTimeout(
       audioUrl,
       {
         method: "GET",
@@ -604,7 +656,7 @@ async function transcribeAudio(
   let response;
 
   try {
-    response = await fetch(
+    response = await fetchWithTimeout(
       `${GROQ_BASE_URL}/audio/transcriptions`,
       {
         method: "POST",
@@ -616,7 +668,8 @@ async function transcribeAudio(
         cache: "no-store"
       }
     );
-  } catch {
+  } catch (err) {
+    if (err?.isTimeout) throw err;
     throw new Error(
       "Não consegui conectar à API de transcrição da Groq."
     );
@@ -669,7 +722,7 @@ async function transcribeAudio(
     );
   }
 
-  await storageSet({
+  await cacheSet({
     [cacheKeyStorage]:
       text
   });
@@ -774,7 +827,7 @@ function groqVisionTextFromFields(fields) {
 async function callGroqVision(dataUrl, apiKey) {
   let response;
   try {
-    response = await fetch(
+    response = await fetchWithTimeout(
       `${GROQ_BASE_URL}/chat/completions`,
       {
         method: "POST",
@@ -812,7 +865,8 @@ async function callGroqVision(dataUrl, apiKey) {
         cache: "no-store"
       }
     );
-  } catch {
+  } catch (err) {
+    if (err?.isTimeout) throw err;
     throw new Error(
       "Não consegui conectar à Groq para ler a imagem."
     );
@@ -915,7 +969,7 @@ async function readOrderDataFromImage(payload) {
   }
 
   const imageResponse =
-    await fetch(
+    await fetchWithTimeout(
       imageUrl,
       {
         method: "GET",
@@ -974,7 +1028,7 @@ async function readOrderDataFromImage(payload) {
     );
   }
 
-  await storageSet({
+  await cacheSet({
     [storageKey]: {
       fields,
       model: GROQ_VISION_MODEL,
@@ -1004,7 +1058,7 @@ async function lookupCep(zip) {
   }
 
   const response =
-    await fetch(
+    await fetchWithTimeout(
       `https://viacep.com.br/ws/${d}/json/`,
       {
         method: "GET",
@@ -1237,11 +1291,22 @@ chrome.runtime.onMessage.addListener(
           message?.type ===
           "open-skale"
         ) {
-          const url =
-            String(
-              message.url ||
-              "https://skaletracking.com.br/pedidos"
-            );
+          const fallbackUrl =
+            "https://skaletracking.com.br/pedidos";
+
+          let url = fallbackUrl;
+
+          // V16.22: só abre páginas da própria Skale.
+          try {
+            const parsed = new URL(String(message.url || fallbackUrl));
+            if (
+              parsed.protocol === "https:" &&
+              (parsed.hostname === "skaletracking.com.br" ||
+               parsed.hostname.endsWith(".skaletracking.com.br"))
+            ) {
+              url = parsed.toString();
+            }
+          } catch {}
 
           await chrome.tabs.create({
             url,

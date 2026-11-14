@@ -591,6 +591,8 @@
       let skip = 0;
       let pages = 0;
       let totalHint = null;
+      // V16.16: marca quando a paginação parou por erro no meio.
+      let failed = false;
 
       post({
         type: "refresh-start",
@@ -633,6 +635,7 @@
               )
           });
 
+          failed = true;
           break;
         }
 
@@ -646,6 +649,7 @@
               `HTTP ${resp.status} ${resp.statusText || ""}`.trim()
           });
 
+          failed = true;
           break;
         }
 
@@ -740,7 +744,17 @@
 
       // Snapshot completo: remove também itens que deixaram de existir
       // no resultado atual ou mudaram de status.
-      if (
+      if (failed) {
+        // V16.16: snapshot incompleto não pode apagar conversas que
+        // ficaram nas páginas não carregadas. Só atualiza o que chegou.
+        for (const [id, raw] of nextRaw) {
+          state.rawConversations.set(id, raw);
+        }
+
+        for (const [id, item] of nextNormalized) {
+          state.normalizedConversations.set(id, item);
+        }
+      } else if (
         nextNormalized.size > 0 ||
         pages > 0
       ) {
@@ -753,6 +767,7 @@
 
       publish({
         completed: true,
+        partial: failed,
         pagesLoaded: pages,
         totalHint,
         reason,
@@ -2332,7 +2347,9 @@
       const url =
         typeof input === "string"
           ? input
-          : (input?.url || "");
+          : input instanceof URL
+            ? input.toString()
+            : (input?.url || "");
 
       const requestMethod =
         String(
@@ -2346,10 +2363,45 @@
           ...args
         );
 
+      // V16.16: a análise roda em paralelo; o CRM recebe a resposta
+      // imediatamente, sem esperar a extensão ler o JSON.
+      inspectResponse(
+        input,
+        init,
+        url,
+        requestMethod,
+        response
+      ).catch(() => {});
+
+      return response;
+    };
+
+  async function inspectResponse(
+    input,
+    init,
+    url,
+    requestMethod,
+    response
+  ) {
       const messageConversationId =
         conversationIdFromMessagesUrl(
           url
         );
+
+      const isListRequest =
+        isConversationListUrl(url);
+
+      // Clona de forma síncrona, antes de o CRM consumir o corpo.
+      let bodyClone = null;
+
+      if (
+        response &&
+        (messageConversationId || isListRequest)
+      ) {
+        try {
+          bodyClone = response.clone();
+        } catch {}
+      }
 
       if (
         messageConversationId &&
@@ -2386,9 +2438,7 @@
 
         try {
           const messagePayload =
-            await response
-              .clone()
-              .json();
+            await bodyClone.json();
 
           const normalizedMessages =
             collectNormalizedMessages(
@@ -2443,11 +2493,7 @@
         });
       }
 
-      if (
-        isConversationListUrl(
-          url
-        )
-      ) {
+      if (isListRequest) {
         state.seedUrl =
           String(url || "");
 
@@ -2458,9 +2504,7 @@
 
         try {
           const data =
-            await response
-              .clone()
-              .json();
+            await bodyClone.json();
 
           if (
             Array.isArray(
@@ -2483,9 +2527,7 @@
           0
         );
       }
-
-      return response;
-    };
+  }
 
   setInterval(() => {
     if (

@@ -2119,7 +2119,18 @@
           const [id, value]
           of Object.entries(raw)
         ) {
-          const ts = Number(value || 0);
+          // V16.16: formato novo { ts, recv }; aceita o número antigo.
+          const ts = Number(
+            (value && typeof value === "object")
+              ? value.ts
+              : value
+          ) || 0;
+
+          const recv = Number(
+            (value && typeof value === "object")
+              ? value.recv
+              : 0
+          ) || 0;
 
           if (
             id &&
@@ -2128,7 +2139,7 @@
           ) {
             state.answeredAt.set(
               String(id),
-              ts
+              { ts, recv }
             );
           }
         }
@@ -2187,37 +2198,54 @@
     }
   }
 
-  function localAnsweredAfterLastReceived(item) {
-    const id = String(item?.id || "");
-    if (!id) return false;
-
-    const answered =
-      Number(
-        state.answeredAt.get(id) || 0
-      );
-
-    if (!answered) return false;
-
+  // V16.16: o cliente respondeu depois da nossa resposta?
+  // Compara com a data (do servidor) da última mensagem recebida
+  // no momento da resposta, e não com o relógio do computador.
+  // Assim um relógio adiantado não esconde respostas do cliente.
+  function customerRepliedAfter(entry, item) {
     const received =
       messageDateMs(
         item?.lastReceivedMessageDate
       );
 
-    // O cliente enviou algo depois da nossa resposta:
-    // a conversa precisa voltar para as não lidas.
-    if (
-      received &&
-      received > answered
-    ) {
-      return false;
+    if (!received) return false;
+
+    if (entry.recv) {
+      return received > entry.recv;
     }
 
-    return true;
+    return received > entry.ts;
+  }
+
+  function localAnsweredAfterLastReceived(item) {
+    const id = String(item?.id || "");
+    if (!id) return false;
+
+    const entry =
+      state.answeredAt.get(id);
+
+    if (!entry?.ts) return false;
+
+    // O cliente enviou algo depois da nossa resposta:
+    // a conversa precisa voltar para as não lidas.
+    return !customerRepliedAfter(entry, item);
+  }
+
+  function knownLastReceivedMs(id) {
+    const item =
+      state.conversations.find(
+        x => String(x?.id) === String(id)
+      );
+
+    return messageDateMs(
+      item?.lastReceivedMessageDate
+    );
   }
 
   function markAnsweredLocally(
     id,
-    timestamp = Date.now()
+    timestamp = Date.now(),
+    lastReceivedMs = null
   ) {
     const key = String(id || "");
     if (!key) return;
@@ -2226,13 +2254,24 @@
       Number(timestamp || Date.now()) ||
       Date.now();
 
-    const previous =
+    const recv =
       Number(
-        state.answeredAt.get(key) || 0
-      );
+        lastReceivedMs != null
+          ? lastReceivedMs
+          : knownLastReceivedMs(key)
+      ) || 0;
 
-    if (ts > previous) {
-      state.answeredAt.set(key, ts);
+    const previous =
+      state.answeredAt.get(key) || { ts: 0, recv: 0 };
+
+    if (
+      ts > previous.ts ||
+      recv > previous.recv
+    ) {
+      state.answeredAt.set(key, {
+        ts: Math.max(ts, previous.ts),
+        recv: Math.max(recv, previous.recv)
+      });
       void saveAnsweredAt();
     }
 
@@ -2268,22 +2307,12 @@
       const id = String(item?.id || "");
       if (!id) continue;
 
-      const answered =
-        Number(
-          state.answeredAt.get(id) || 0
-        );
+      const entry =
+        state.answeredAt.get(id);
 
-      if (!answered) continue;
+      if (!entry?.ts) continue;
 
-      const received =
-        messageDateMs(
-          item?.lastReceivedMessageDate
-        );
-
-      if (
-        received &&
-        received > answered
-      ) {
+      if (customerRepliedAfter(entry, item)) {
         state.answeredAt.delete(id);
         changed = true;
       }
@@ -2338,10 +2367,19 @@
     const ts =
       latest.ts || Date.now();
 
+    const lastReceivedTs =
+      directional
+        .filter(x => x.msg.received === true && x.ts)
+        .reduce((max, x) => Math.max(max, x.ts), 0);
+
     if (latest.msg.received === false) {
       // Última mensagem real da conversa foi uma saída do
       // atendente. Vale para texto, áudio, imagem e anexo.
-      markAnsweredLocally(id, ts);
+      markAnsweredLocally(
+        id,
+        ts,
+        Math.max(lastReceivedTs, knownLastReceivedMs(id))
+      );
     } else {
       // O cliente respondeu depois: volta automaticamente.
       clearAnsweredLocally(id);

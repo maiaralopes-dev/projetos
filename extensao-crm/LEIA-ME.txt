@@ -42,3 +42,14 @@ V16.21
 - Transcrição: fonte aumentada para 15px no desktop e 16px no celular.
 - Transcrição: novo botão Resumo por áudio, usando Groq openai/gpt-oss-20b e cache local.
 - Mantidos Groq Whisper, Groq Vision, ViaCEP, não lidas, card e identidade fixa.
+
+
+V16.22 — estabilidade e correções
+- Tempo limite em todas as chamadas de rede: Groq (transcrição, imagem, resumo) 4 min, download de áudio/imagem 60 s, ViaCEP 15 s. Antes, uma chamada travada deixava o botão "carregando" para sempre.
+- Permissão unlimitedStorage: o cache de transcrições, leituras de imagem e resumos não esbarra mais no limite de 10 MB do Chrome. Se gravar o cache falhar, o resultado continua sendo mostrado.
+- Lista de não lidas: se a API do CRM falhar no meio da paginação, as conversas das páginas não carregadas não somem mais da lista.
+- O CRM não espera mais a extensão ler as respostas da API; as conversas abrem sem atraso extra.
+- "Respondida" agora compara datas do servidor, não o relógio do computador. Com o relógio do PC adiantado, a resposta do cliente podia não trazer a conversa de volta.
+- O botão 🚚 só abre páginas de skaletracking.com.br.
+- O aviso da Skale mostra texto puro (sem HTML).
+- Identidade fixa mantida: substitua os arquivos na mesma pasta e clique em Recarregar. As configurações salvas continuam.

@@ -1,10 +1,11 @@
 {
   "manifest_version": 3,
-  "name": "CRM - Não Lidas + Groq + Dados + Skale V16.21",
-  "version": "4.6.3",
-  "description": "V16.21: preenchimento robusto da Skale por rótulos/React, transcrição com fonte maior e resumo Groq; mantém ViaCEP, não lidas e identidade fixa.",
+  "name": "CRM - Não Lidas + Groq + Dados + Skale V16.22",
+  "version": "4.6.4",
+  "description": "V16.22: correções de estabilidade (timeouts, cache, paginação parcial, relógio do PC) sobre a V16.21; mantém Groq, Skale, ViaCEP, não lidas e identidade fixa.",
   "permissions": [
-    "storage"
+    "storage",
+    "unlimitedStorage"
   ],
   "host_permissions": [
     "https://*.datacrazy.io/*",
