@@ -11,6 +11,40 @@ const LEGACY_OPENAI_TRANSCRIPTION_MODELS =
     "gpt-4o-mini-transcribe"
   ];
 
+// V16.16: nenhuma chamada de rede pode ficar pendurada para sempre.
+const TIMEOUT_DOWNLOAD_MS = 60 * 1000;
+const TIMEOUT_VPS_MS = 4 * 60 * 1000;
+const TIMEOUT_SHORT_MS = 15 * 1000;
+
+async function fetchWithTimeout(url, options = {}, timeoutMs = TIMEOUT_SHORT_MS) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } catch (err) {
+    if (err?.name === "AbortError") {
+      const e = new Error(
+        `Tempo esgotado (${Math.round(timeoutMs / 1000)}s) ao acessar ${new URL(url).hostname}.`
+      );
+      e.isTimeout = true;
+      throw e;
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// V16.16: falha ao gravar cache (ex.: armazenamento cheio) não pode
+// descartar uma transcrição/OCR que já foi feita com sucesso.
+async function cacheSet(values) {
+  try {
+    await storageSet(values);
+  } catch (err) {
+    console.warn("[CRM ext] Não consegui salvar no cache:", err?.message || err);
+  }
+}
+
 function storageGet(keys) {
   return new Promise(resolve => {
     chrome.storage.local.get(
@@ -220,7 +254,7 @@ async function cachedTranscript(
         "string" &&
       stored[key].trim()
     ) {
-      await storageSet({
+      await cacheSet({
         [primaryKey]:
           stored[key]
       });
@@ -263,15 +297,17 @@ async function testVpsConnection(
 
   try {
     response =
-      await fetch(
+      await fetchWithTimeout(
         `${VPS_BASE_URL}/health`,
         {
           method: "GET",
           headers,
           cache: "no-store"
-        }
+        },
+        TIMEOUT_SHORT_MS
       );
   } catch (err) {
+    if (err?.isTimeout) throw err;
     throw new Error(
       "Não consegui conectar à VPS. Verifique a internet e o domínio."
     );
@@ -377,13 +413,14 @@ async function transcribeAudio(
   }
 
   const audioResponse =
-    await fetch(
+    await fetchWithTimeout(
       audioUrl,
       {
         method: "GET",
         credentials: "include",
         cache: "no-store"
-      }
+      },
+      TIMEOUT_DOWNLOAD_MS
     );
 
   if (!audioResponse.ok) {
@@ -433,7 +470,7 @@ async function transcribeAudio(
 
   try {
     response =
-      await fetch(
+      await fetchWithTimeout(
         `${VPS_BASE_URL}/transcribe`,
         {
           method: "POST",
@@ -443,9 +480,11 @@ async function transcribeAudio(
           },
           body: form,
           cache: "no-store"
-        }
+        },
+        TIMEOUT_VPS_MS
       );
   } catch (err) {
+    if (err?.isTimeout) throw err;
     throw new Error(
       "Não consegui conectar à API de transcrição da VPS."
     );
@@ -488,7 +527,7 @@ async function transcribeAudio(
     );
   }
 
-  await storageSet({
+  await cacheSet({
     [cacheKeyStorage]:
       text
   });
@@ -682,7 +721,7 @@ async function callVpsOcr(blob, fileName, apiKey) {
 
   let response;
   try {
-    response = await fetch(
+    response = await fetchWithTimeout(
       `${VPS_BASE_URL}/ocr`,
       {
         method: "POST",
@@ -691,9 +730,11 @@ async function callVpsOcr(blob, fileName, apiKey) {
         },
         body: form,
         cache: "no-store"
-      }
+      },
+      TIMEOUT_VPS_MS
     );
-  } catch {
+  } catch (err) {
+    if (err?.isTimeout) throw err;
     throw new Error(
       "Não consegui conectar ao OCR da sua VPS."
     );
@@ -774,13 +815,14 @@ async function readOrderDataFromImage(payload) {
   }
 
   const imageResponse =
-    await fetch(
+    await fetchWithTimeout(
       imageUrl,
       {
         method: "GET",
         credentials: "include",
         cache: "no-store"
-      }
+      },
+      TIMEOUT_DOWNLOAD_MS
     );
 
   if (!imageResponse.ok) {
@@ -880,7 +922,7 @@ async function readOrderDataFromImage(payload) {
     score: bestScore
   };
 
-  await storageSet({
+  await cacheSet({
     [storageKey]: cachedValue
   });
 
@@ -904,12 +946,13 @@ async function lookupCep(zip) {
   }
 
   const response =
-    await fetch(
+    await fetchWithTimeout(
       `https://viacep.com.br/ws/${d}/json/`,
       {
         method: "GET",
         cache: "no-store"
-      }
+      },
+      TIMEOUT_SHORT_MS
     );
 
   if (!response.ok) {
@@ -1104,11 +1147,21 @@ chrome.runtime.onMessage.addListener(
           message?.type ===
           "open-five-delivery"
         ) {
-          const url =
-            String(
-              message.url ||
-              "https://app.fivedelivery.com.br/pedido/cadastrar"
-            );
+          const fallbackUrl =
+            "https://app.fivedelivery.com.br/pedido/cadastrar";
+
+          let url = fallbackUrl;
+
+          // V16.16: só abre páginas da própria Five Delivery.
+          try {
+            const parsed = new URL(String(message.url || fallbackUrl));
+            if (
+              parsed.protocol === "https:" &&
+              parsed.hostname === "app.fivedelivery.com.br"
+            ) {
+              url = parsed.toString();
+            }
+          } catch {}
 
           await chrome.tabs.create({
             url,

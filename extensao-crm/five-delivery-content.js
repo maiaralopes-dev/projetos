@@ -408,11 +408,22 @@
         'div'
       );
 
-    content.innerHTML =
-      `<div style="font-weight:700;margin-bottom:${detail ? '2px' : '0'}">${title}</div>` +
-      (detail
-        ? `<div style="opacity:.76;font-size:11px">${detail}</div>`
-        : '');
+    // V16.16: texto puro (sem innerHTML) para mensagens de erro.
+    const titleEl =
+      document.createElement('div');
+    titleEl.style.fontWeight = '700';
+    titleEl.style.marginBottom = detail ? '2px' : '0';
+    titleEl.textContent = String(title || '');
+    content.appendChild(titleEl);
+
+    if (detail) {
+      const detailEl =
+        document.createElement('div');
+      detailEl.style.opacity = '.76';
+      detailEl.style.fontSize = '11px';
+      detailEl.textContent = String(detail);
+      content.appendChild(detailEl);
+    }
 
     el.insertBefore(
       content,

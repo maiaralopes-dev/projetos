@@ -98,3 +98,14 @@ V16.15 — abertura móvel corrigida
 - Celular: ao tocar em uma conversa, o drawer fecha para revelar o chat recém-aberto.
 - O botão compacto de não lidas permanece disponível para reabrir a lista.
 - Nenhuma alteração nas regras de não lidas, OCR, ViaCEP, Five Delivery ou transcrição.
+
+
+V16.16 — estabilidade e correções
+- Tempo limite em todas as chamadas de rede: download de áudio/imagem (60 s), transcrição/OCR na VPS (4 min), ViaCEP e teste da VPS (15 s). Antes, uma VPS travada deixava o botão "carregando" para sempre.
+- Permissão unlimitedStorage: o cache de transcrições e OCR não esbarra mais no limite de 10 MB do Chrome. Se gravar o cache falhar, o resultado continua sendo mostrado.
+- Lista de não lidas: se a API do CRM falhar no meio da paginação, as conversas das páginas não carregadas não somem mais da lista.
+- O CRM não espera mais a extensão ler as respostas da API; as conversas abrem sem atraso extra.
+- "Respondida" agora compara datas do servidor, não o relógio do computador. Com o relógio do PC adiantado, a resposta do cliente podia não trazer a conversa de volta.
+- O botão da Five Delivery só abre páginas de app.fivedelivery.com.br.
+- O aviso da Five Delivery mostra texto puro (sem HTML).
+- A identidade fixa foi mantida: basta substituir os arquivos na mesma pasta e clicar em Recarregar. As configurações salvas continuam.

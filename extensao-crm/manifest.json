@@ -1,10 +1,11 @@
 {
   "manifest_version": 3,
-  "name": "CRM - Não Lidas + Transcrição/OCR VPS + Dados + Five Delivery V16.15",
-  "version": "4.3.9",
-  "description": "V16.15: mantém todas as melhorias anteriores e remove das não lidas após resposta por texto, áudio, imagem ou anexo; volta automaticamente quando o cliente responde.",
+  "name": "CRM - Não Lidas + Transcrição/OCR VPS + Dados + Five Delivery V16.16",
+  "version": "4.4.0",
+  "description": "V16.16: correções de estabilidade (timeouts, cache, paginação parcial, relógio do PC) mantendo todas as melhorias anteriores.",
   "permissions": [
-    "storage"
+    "storage",
+    "unlimitedStorage"
   ],
   "host_permissions": [
     "https://*.datacrazy.io/*",
