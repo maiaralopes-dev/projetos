@@ -1,5 +1,4 @@
 using HubPedidos.Application.Persistencia;
-using HubPedidos.Processamento.Processadores;
 using HubPedidos.Domain.Pedidos;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -135,7 +134,11 @@ public sealed partial class ConsumidorPedidos(
 
             sucesso = true;
             await NotificarAsync(job, cancellationToken);
-            LogProcessado(job.PedidoId, resultado.Processador, MetricasFila.Decorrido(inicio).TotalMilliseconds, espera.TotalMilliseconds);
+            if (log.IsEnabled(LogLevel.Information)) // CA1873: não calcular a duração se o log estiver desligado
+            {
+                var duracaoMs = MetricasFila.Decorrido(inicio).TotalMilliseconds;
+                LogProcessado(job.PedidoId, resultado.Processador, duracaoMs, espera.TotalMilliseconds);
+            }
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -146,7 +149,7 @@ public sealed partial class ConsumidorPedidos(
         catch (Exception ex)
         {
             // Falha de UM item não derruba o consumidor: registra com o id e segue.
-            LogFalha(ex, job.PedidoId, job.Categoria.ToString());
+            LogFalha(ex, job.PedidoId, job.Categoria);
         }
         finally
         {
@@ -211,7 +214,7 @@ public sealed partial class ConsumidorPedidos(
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
                 {
-                    LogFalha(ex, lote[i].PedidoId, lote[i].Categoria.ToString());
+                    LogFalha(ex, lote[i].PedidoId, lote[i].Categoria);
                 }
             }
 
@@ -279,5 +282,5 @@ public sealed partial class ConsumidorPedidos(
     private partial void LogInterrompido(Guid pedidoId);
 
     [LoggerMessage(Level = LogLevel.Error, Message = "Falha ao processar o pedido {PedidoId} (categoria {Categoria})")]
-    private partial void LogFalha(Exception ex, Guid pedidoId, string categoria);
+    private partial void LogFalha(Exception ex, Guid pedidoId, Application.Classificacao.CategoriaProcessamento categoria);
 }

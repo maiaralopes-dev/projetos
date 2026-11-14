@@ -1,0 +1,68 @@
+# Revisão automatizada do Hub de Pedidos (atividade 8).
+# Roda o MESMO script usado localmente (HubPedidos/revisao.sh): o que passa aqui passa
+# na máquina do desenvolvedor, e vice-versa. O job "publicar" depende da revisão: se
+# build, analisadores, formatação ou testes falharem, nada é publicado.
+name: Revisão automatizada
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: revisao-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  revisao:
+    name: Build, analisadores, formatação e testes
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: HubPedidos
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: HubPedidos/global.json
+
+      - name: Revisão (restore → build → format → testes)
+        run: ./revisao.sh
+
+      # Sempre publica os resultados, inclusive (principalmente) quando falha.
+      - name: Publicar resultados de teste e cobertura
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: resultados-revisao
+          path: |
+            HubPedidos/artifacts/resumo.md
+            HubPedidos/artifacts/*.log
+            HubPedidos/artifacts/testes/**/*.trx
+            HubPedidos/artifacts/testes/**/coverage.cobertura.xml
+          if-no-files-found: warn
+          retention-days: 14
+
+  publicar:
+    name: Publicar API (só se a revisão passar)
+    needs: revisao
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: HubPedidos
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: HubPedidos/global.json
+      - run: dotnet publish src/HubPedidos.Api -c Release -o ../publicacao
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hubpedidos-api
+          path: publicacao
+          retention-days: 7

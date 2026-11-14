@@ -1,0 +1,14 @@
+$ ./testes-repetidos.sh 10
+execução 1  semente=835963259  ok      Passed!  - Failed:     0, Passed:   214, Skipped:     0, Total:   214, Duration: 7 s
+execução 2  semente=405291433  ok      Passed!  - Failed:     0, Passed:   214, Skipped:     0, Total:   214, Duration: 6 s
+execução 3  semente=709515484  ok      Passed!  - Failed:     0, Passed:   214, Skipped:     0, Total:   214, Duration: 6 s
+execução 4  semente=362632426  ok      Passed!  - Failed:     0, Passed:   214, Skipped:     0, Total:   214, Duration: 10 s
+execução 5  semente=676594303  ok      Passed!  - Failed:     0, Passed:   214, Skipped:     0, Total:   214, Duration: 8 s
+execução 6  semente=966867213  ok      Passed!  - Failed:     0, Passed:   214, Skipped:     0, Total:   214, Duration: 6 s
+execução 7  semente=921696184  ok      Passed!  - Failed:     0, Passed:   214, Skipped:     0, Total:   214, Duration: 6 s
+execução 8  semente=225235444  ok      Passed!  - Failed:     0, Passed:   214, Skipped:     0, Total:   214, Duration: 9 s
+execução 9  semente=775992345  ok      Passed!  - Failed:     0, Passed:   214, Skipped:     0, Total:   214, Duration: 9 s
+execução 10  semente=316736108  ok      Passed!  - Failed:     0, Passed:   214, Skipped:     0, Total:   214, Duration: 9 s
+----
+10 execuções, 0 com falha.
+código de saída: 0

@@ -1,10 +1,10 @@
-using HubPedidos.Processamento;
 using BenchmarkDotNet.Attributes;
 using HubPedidos.Application.Classificacao;
 using HubPedidos.Application.Contratos;
 using HubPedidos.Application.Mapeamento;
-using HubPedidos.Processamento.Processadores;
+using HubPedidos.Processamento;
 using HubPedidos.Processamento.Fila;
+using HubPedidos.Processamento.Processadores;
 
 namespace HubPedidos.Benchmarks;
 

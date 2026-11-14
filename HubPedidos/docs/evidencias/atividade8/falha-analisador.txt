@@ -1,0 +1,17 @@
+# Falha provocada 1: analisador (CA2016 — CancellationToken não repassado)
+$ diff (antes → depois)
+104c104
+<         db.Pedidos.AsNoTracking().Where(p => p.Id == id).Select(ProjecaoResumo).FirstOrDefaultAsync(cancellationToken);
+---
+>         db.Pedidos.AsNoTracking().Where(p => p.Id == id).Select(ProjecaoResumo).FirstOrDefaultAsync();
+
+$ ./revisao.sh
+
+══════ [1/5] Restaurar ferramentas e pacotes
+
+══════ [2/5] Build Release com analisadores (regras elevadas a erro bloqueiam)
+src/HubPedidos.Infrastructure/Persistencia/ConsultasPedidos.cs(104,9): error CA2016: Forward the 'cancellationToken' parameter to the 'FirstOrDefaultAsync' method or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2016)
+
+✖ REVISÃO REPROVADA na etapa: build/analisadores
+  Motivo: 1 erro(s) distinto(s); detalhes em artifacts/build.log
+código de saída: 1

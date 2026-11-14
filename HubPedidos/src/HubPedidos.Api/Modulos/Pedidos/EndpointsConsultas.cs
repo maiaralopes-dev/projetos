@@ -1,9 +1,9 @@
+using HubPedidos.Api.Http;
 using HubPedidos.Application.Contratos;
+using HubPedidos.Application.Contratos.V2;
 using HubPedidos.Application.Mapeamento;
 using HubPedidos.Application.Persistencia;
 using HubPedidos.Domain.Pedidos;
-using HubPedidos.Api.Http;
-using HubPedidos.Application.Contratos.V2;
 using HubPedidos.Processamento;
 using Microsoft.AspNetCore.Http.HttpResults;
 

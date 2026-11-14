@@ -41,7 +41,7 @@ public static class Autenticacao
                 // manda o token na query "access_token" — aceito SÓ na rota do hub.
                 OnMessageReceived = ctx =>
                 {
-                    if (ctx.Request.Path.StartsWithSegments("/hubs") && ctx.Request.Query["access_token"] is { Count: > 0 } token)
+                    if (ctx.Request.Path.StartsWithSegments("/hubs", StringComparison.OrdinalIgnoreCase) && ctx.Request.Query["access_token"] is { Count: > 0 } token)
                     {
                         ctx.Token = token;
                     }

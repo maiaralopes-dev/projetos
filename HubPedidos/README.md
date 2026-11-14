@@ -30,7 +30,9 @@ Pré-requisito: SDK .NET 10 (ver `global.json`).
 
 ```bash
 dotnet build          # warnings são tratados como erro
-dotnet test           # 208 testes (atividades 1 a 7)
+dotnet test           # 214 testes (atividades 1 a 8)
+./revisao.sh          # revisão completa: build+analisadores, format, testes, resumo (igual ao CI)
+./testes-repetidos.sh 10   # suíte 10x em ordem aleatória
 dotnet run --project src/HubPedidos.Api --launch-profile http   # http://localhost:5080
 ```
 
@@ -63,6 +65,16 @@ dotnet dotnet-trace report saida/trace-depois.nettrace topN -n 20
 ```
 
 Requisições de exemplo em `src/HubPedidos.Api/HubPedidos.Api.http` (Visual Studio / VS Code).
+
+## Qualidade (atividade 8)
+
+- Analisadores Roslyn (`AnalysisLevel=latest-recommended`) e estilo no build; severidades e justificativas em
+  `.editorconfig` — só regras aceitas pela equipe bloqueiam (correção assíncrona, cultura, segurança, estilo estrutural em `src/`).
+- `dotnet format --verify-no-changes` na revisão.
+- Snapshot do contrato OpenAPI v1/v2 (`tests/.../Contratos/Snapshots`): mudança falha o teste;
+  aceite explícito com `ATUALIZAR_SNAPSHOTS=1 dotnet test --filter ContratoSnapshotTests` após revisar o diff.
+- CI: `.github/workflows/revisao.yml` (artefatos: TRX, cobertura, resumo; publicação só se a revisão passar).
+- Estratégia de testes e diferenças do banco efêmero: `docs/testes/estrategia.md`.
 
 ## Endpoints
 

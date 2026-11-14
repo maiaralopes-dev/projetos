@@ -45,10 +45,10 @@ public static class GeradorMassa
 
         var pedido = Pedido.Criar($"CLI-{rnd.Next(1, 2_000):D5}", Regioes[rnd.Next(Regioes.Length)], Prioridades[rnd.Next(Prioridades.Length)], itens, entrega, metadados, criadoEm)
             with
-            {
-                Id = PedidoId.De(Guid.CreateVersion7(criadoEm)),
-                Status = Status[rnd.Next(Status.Length)],
-            };
+        {
+            Id = PedidoId.De(Guid.CreateVersion7(criadoEm)),
+            Status = Status[rnd.Next(Status.Length)],
+        };
 
         return MapeadorRegistro.ParaRegistro(pedido, ClassificadorPedidos.Classificar(pedido));
     }

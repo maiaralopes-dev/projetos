@@ -1,0 +1,24 @@
+$ ./revisao.sh
+
+══════ [1/5] Restaurar ferramentas e pacotes
+
+══════ [2/5] Build Release com analisadores (regras elevadas a erro bloqueiam)
+ok (avisos não bloqueantes: 0)
+
+══════ [3/5] Formatação e estilo (dotnet format --verify-no-changes)
+ok
+
+══════ [4/5] Testes (ordem aleatória, TRX e cobertura)
+HubPedidos.Tests: [ordem-aleatoria] semente=684801904 (reproduza com HUB_SEMENTE_TESTES=684801904)
+Passed!  - Failed:     0, Passed:   214, Skipped:     0, Total:   214, Duration: 8 s - HubPedidos.Tests.dll (net10.0)
+
+══════ [5/5] Resumo
+## ✔ Revisão aprovada
+
+| Testes | Aprovados | Falhas | Cobertura de linhas (informativa) | Duração |
+|---:|---:|---:|---:|---:|
+| 214 | 214 | 0 | 90.8% | 43 s |
+
+
+✔ REVISÃO APROVADA
+código de saída: 0

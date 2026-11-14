@@ -4,6 +4,16 @@
     <LangVersion>14.0</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Avisos do compilador (nulabilidade etc.) bloqueiam o build. -->
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Atividade 8: analisadores Roslyn no build. Severidades em .editorconfig; avisos de
+         analisador NÃO bloqueiam, só as regras explicitamente elevadas a "error". -->
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <CodeAnalysisTreatWarningsAsErrors>false</CodeAnalysisTreatWarningsAsErrors>
+    <!-- Necessário para o IDE0005 (using desnecessário) rodar no build; CS1591 (falta de
+         comentário XML em membro público) não é política deste projeto. -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 </Project>

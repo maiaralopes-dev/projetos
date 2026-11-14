@@ -1,0 +1,6 @@
+Data: 2026-11-14T14:44Z
+SO: Ubuntu 24.04.5 LTS x86_64
+SDK: 10.0.114
+Microsoft.AspNetCore.App 10.0.14 [/usr/lib/dotnet/shared/Microsoft.AspNetCore.App]
+Microsoft.NETCore.App 10.0.14 [/usr/lib/dotnet/shared/Microsoft.NETCore.App]
+xUnit 2.9.3; coverlet.collector 6.0.4; Microsoft.AspNetCore.Mvc.Testing 10.0.14; dotnet format (SDK 10.0.114)

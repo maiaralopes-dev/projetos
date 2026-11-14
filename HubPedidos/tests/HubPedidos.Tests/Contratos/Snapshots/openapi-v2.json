@@ -1,0 +1,224 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "HubPedidos.Api | v2",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v2/pedidos/{id}": {
+      "get": {
+        "tags": [
+          "Versionamento"
+        ],
+        "operationId": "ObterPedidoV2",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PedidoDetalheV2Response"
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Not Modified"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "DinheiroV2": {
+        "required": [
+          "valor",
+          "moeda"
+        ],
+        "type": "object",
+        "properties": {
+          "valor": {
+            "type": "string"
+          },
+          "moeda": {
+            "type": "string"
+          }
+        }
+      },
+      "EnderecoDto": {
+        "required": [
+          "logradouro",
+          "cidade",
+          "uf",
+          "cep"
+        ],
+        "type": "object",
+        "properties": {
+          "logradouro": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "cidade": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "uf": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "cep": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "ItemPedidoV2": {
+        "required": [
+          "sku",
+          "quantidade",
+          "precoUnitario",
+          "subtotal"
+        ],
+        "type": "object",
+        "properties": {
+          "sku": {
+            "type": "string"
+          },
+          "quantidade": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "precoUnitario": {
+            "$ref": "#/components/schemas/DinheiroV2"
+          },
+          "subtotal": {
+            "$ref": "#/components/schemas/DinheiroV2"
+          }
+        }
+      },
+      "MetadadosDto": {
+        "required": [
+          "canal",
+          "origem",
+          "campanha"
+        ],
+        "type": "object",
+        "properties": {
+          "canal": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "origem": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "campanha": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "PedidoDetalheV2Response": {
+        "required": [
+          "id",
+          "clienteId",
+          "regiao",
+          "prioridade",
+          "status",
+          "categoria",
+          "total",
+          "criadoEm",
+          "entrega",
+          "metadados",
+          "itens"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "clienteId": {
+            "type": "string"
+          },
+          "regiao": {
+            "type": "string"
+          },
+          "prioridade": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "categoria": {
+            "type": "string"
+          },
+          "total": {
+            "$ref": "#/components/schemas/DinheiroV2"
+          },
+          "criadoEm": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "entrega": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/EnderecoDto"
+              }
+            ]
+          },
+          "metadados": {
+            "$ref": "#/components/schemas/MetadadosDto"
+          },
+          "itens": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemPedidoV2"
+            }
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Versionamento"
+    }
+  ]
+}

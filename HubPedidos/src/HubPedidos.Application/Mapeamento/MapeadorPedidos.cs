@@ -154,7 +154,7 @@ public static class MapeadorPedidos
         valor = default;
         return texto is { Length: > 0 }
             && !char.IsAsciiDigit(texto[0]) && texto[0] != '-'
-            && !texto.Contains(',')
+            && !texto.Contains(',', StringComparison.Ordinal)
             && Enum.TryParse(texto.Trim(), ignoreCase: true, out valor)
             && Enum.IsDefined(valor);
     }

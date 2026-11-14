@@ -1,6 +1,6 @@
 using HubPedidos.Application.Classificacao;
-using HubPedidos.Processamento.Processadores;
 using HubPedidos.Domain.Pedidos;
+using HubPedidos.Processamento.Processadores;
 
 // Tipos usados SOMENTE pelos testes do catálogo. Cada namespace simula um cenário.
 // Eles estão carregados no processo durante os testes, o que prova que o catálogo real

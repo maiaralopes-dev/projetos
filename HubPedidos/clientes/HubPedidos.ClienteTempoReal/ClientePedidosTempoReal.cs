@@ -28,9 +28,9 @@ public sealed class BackoffComTeto(TimeSpan[]? atrasos = null, TimeSpan? limiteT
     private readonly TimeSpan[] _atrasos = atrasos ?? [TimeSpan.Zero, TimeSpan.FromMilliseconds(250), TimeSpan.FromMilliseconds(500), TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5)];
     private readonly TimeSpan _limite = limiteTotal ?? TimeSpan.FromMinutes(2);
 
-    public TimeSpan? NextRetryDelay(RetryContext contexto) =>
-        contexto.ElapsedTime >= _limite ? null
-        : contexto.PreviousRetryCount < _atrasos.Length ? _atrasos[contexto.PreviousRetryCount]
+    public TimeSpan? NextRetryDelay(RetryContext retryContext) =>
+        retryContext.ElapsedTime >= _limite ? null
+        : retryContext.PreviousRetryCount < _atrasos.Length ? _atrasos[retryContext.PreviousRetryCount]
         : TimeSpan.FromSeconds(10);
 }
 

@@ -2,9 +2,9 @@ using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Http.Headers;
 using HubPedidos.ClienteTempoReal;
+using HubPedidos.Tests.Processamento;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
-using HubPedidos.Tests.Processamento;
 
 namespace HubPedidos.Tests.TempoReal;
 

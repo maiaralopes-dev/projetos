@@ -40,4 +40,5 @@ public static class MapeadorResultado
             Processador: processamento.Processador,
             VersaoProcessador: processamento.Versao,
             Mensagem: processamento.Mensagem,
-            Itens: [.. pedido.Itens.Select(i => new ItemPedidoResponse(i.Sku, i.Quantidade, i.PrecoUnitario, i.Subtotal))]);}
+            Itens: [.. pedido.Itens.Select(i => new ItemPedidoResponse(i.Sku, i.Quantidade, i.PrecoUnitario, i.Subtotal))]);
+}

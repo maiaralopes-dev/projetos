@@ -1,11 +1,10 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.Metrics;
+using HubPedidos.Api.Http;
 using HubPedidos.Application.Contratos;
 using HubPedidos.Application.Contratos.V2;
 using HubPedidos.Application.Persistencia;
-using HubPedidos.Api.Http;
 using HubPedidos.Notificacoes.TempoReal;
-using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace HubPedidos.Api.Modulos.Pedidos;
 

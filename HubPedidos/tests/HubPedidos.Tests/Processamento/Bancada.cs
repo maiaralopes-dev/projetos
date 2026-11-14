@@ -1,10 +1,10 @@
 using System.Collections.Concurrent;
 using HubPedidos.Application.Classificacao;
 using HubPedidos.Application.Persistencia;
-using HubPedidos.Processamento.Processadores;
+using HubPedidos.Domain.Pedidos;
 using HubPedidos.Processamento;
 using HubPedidos.Processamento.Fila;
-using HubPedidos.Domain.Pedidos;
+using HubPedidos.Processamento.Processadores;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -32,7 +32,7 @@ internal sealed class RepositorioFalso : IRepositorioPedidos
     public int MaximoConcorrente => Volatile.Read(ref _maximo);
 
     public Task AdicionarAsync(Pedido pedido, CategoriaProcessamento categoria, CancellationToken ct) =>
-        OperarAsync(pedido.Id.Valor, ct, () =>
+        OperarAsync(pedido.Id.Valor, () =>
         {
             if (FalharPara.Contains(pedido.Id.Valor))
             {
@@ -40,12 +40,12 @@ internal sealed class RepositorioFalso : IRepositorioPedidos
             }
 
             Gravacoes.AddOrUpdate(pedido.Id.Valor, 1, (_, n) => n + 1);
-        });
+        }, ct);
 
     public int ChamadasLote;
 
     public Task AdicionarLoteAsync(IReadOnlyList<(Pedido Pedido, CategoriaProcessamento Categoria)> pedidos, CancellationToken ct) =>
-        OperarAsync(Guid.Empty, ct, () =>
+        OperarAsync(Guid.Empty, () =>
         {
             Interlocked.Increment(ref ChamadasLote);
             if (pedidos.Any(p => FalharPara.Contains(p.Pedido.Id.Valor)))
@@ -57,21 +57,21 @@ internal sealed class RepositorioFalso : IRepositorioPedidos
             {
                 Gravacoes.AddOrUpdate(p.Pedido.Id.Valor, 1, (_, n) => n + 1);
             }
-        });
+        }, ct);
 
     public async Task<int> ConcluirLoteAsync(IReadOnlyCollection<Guid> ids, CancellationToken ct)
     {
-        await OperarAsync(Guid.Empty, ct, () => { });
+        await OperarAsync(Guid.Empty, () => { }, ct);
         return ids.Count;
     }
 
     public async Task<ResultadoAlteracaoStatus> AlterarStatusAsync(Guid id, StatusPedido novo, CancellationToken ct)
     {
-        await OperarAsync(id, ct, () => { });
+        await OperarAsync(id, () => { }, ct);
         return ResultadoAlteracaoStatus.Alterado;
     }
 
-    private async Task OperarAsync(Guid id, CancellationToken ct, Action acao)
+    private async Task OperarAsync(Guid id, Action acao, CancellationToken ct)
     {
         var atual = Interlocked.Increment(ref _dentro);
         int max;

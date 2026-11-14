@@ -1,0 +1,224 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "HubPedidos.Api | v1",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/pedidos/{id}": {
+      "get": {
+        "tags": [
+          "Versionamento"
+        ],
+        "operationId": "ObterPedidoV1",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PedidoDetalheResponse"
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Not Modified"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "EnderecoDto": {
+        "required": [
+          "logradouro",
+          "cidade",
+          "uf",
+          "cep"
+        ],
+        "type": "object",
+        "properties": {
+          "logradouro": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "cidade": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "uf": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "cep": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "ItemPedidoResponse": {
+        "required": [
+          "sku",
+          "quantidade",
+          "precoUnitario",
+          "subtotal"
+        ],
+        "type": "object",
+        "properties": {
+          "sku": {
+            "type": "string"
+          },
+          "quantidade": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "precoUnitario": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "subtotal": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          }
+        }
+      },
+      "MetadadosDto": {
+        "required": [
+          "canal",
+          "origem",
+          "campanha"
+        ],
+        "type": "object",
+        "properties": {
+          "canal": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "origem": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "campanha": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "PedidoDetalheResponse": {
+        "required": [
+          "id",
+          "clienteId",
+          "regiao",
+          "prioridade",
+          "status",
+          "categoria",
+          "total",
+          "criadoEmUtc",
+          "entrega",
+          "metadados",
+          "itens"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "clienteId": {
+            "type": "string"
+          },
+          "regiao": {
+            "type": "string"
+          },
+          "prioridade": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "categoria": {
+            "type": "string"
+          },
+          "total": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "criadoEmUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "entrega": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/EnderecoDto"
+              }
+            ]
+          },
+          "metadados": {
+            "$ref": "#/components/schemas/MetadadosDto"
+          },
+          "itens": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemPedidoResponse"
+            }
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Versionamento"
+    }
+  ]
+}

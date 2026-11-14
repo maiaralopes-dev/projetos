@@ -6,3 +6,5 @@ TestResults/
 *.db
 *.db-shm
 *.db-wal
+*.recebido.json
+artifacts/

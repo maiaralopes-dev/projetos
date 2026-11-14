@@ -1,6 +1,6 @@
+using HubPedidos.Api.Http;
 using HubPedidos.Api.Modulos.Notificacoes;
 using HubPedidos.Api.Modulos.Pedidos;
-using HubPedidos.Api.Http;
 using HubPedidos.Api.Modulos.Processamento;
 using HubPedidos.Api.Seguranca;
 using HubPedidos.Application;

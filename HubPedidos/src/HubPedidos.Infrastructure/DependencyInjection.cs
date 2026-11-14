@@ -13,6 +13,15 @@ public static class DependencyInjection
     {
         var connectionString = configuration.GetConnectionString("Hub")
             ?? throw new InvalidOperationException("ConnectionStrings:Hub não configurada.");
+        // Trava para testes de integração: com Banco:ExigirEmMemoria=true, um connection
+        // string que aponte para arquivo (ex.: o hubpedidos.db de desenvolvimento) derruba a
+        // inicialização em vez de apagar/sujar dados reais.
+        if (configuration.GetValue("Banco:ExigirEmMemoria", false)
+            && !(connectionString.Contains("Mode=Memory", StringComparison.OrdinalIgnoreCase) || connectionString.Contains(":memory:", StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new InvalidOperationException($"Banco:ExigirEmMemoria está ligado, mas ConnectionStrings:Hub não é um banco em memória ('{connectionString}').");
+        }
+
         var mapeamento = configuration.GetValue("Banco:MapeamentoMetadados", MapeamentoMetadados.Json);
 
         services.AddSingleton(new OpcoesModeloHub(mapeamento));

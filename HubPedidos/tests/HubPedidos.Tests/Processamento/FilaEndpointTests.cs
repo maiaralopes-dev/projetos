@@ -1,7 +1,7 @@
-using HubPedidos.Processamento;
 using System.Net;
 using System.Net.Http.Json;
 using HubPedidos.Application.Contratos;
+using HubPedidos.Processamento;
 using Microsoft.AspNetCore.Hosting;
 
 namespace HubPedidos.Tests.Processamento;
@@ -21,14 +21,10 @@ public class FilaEndpointTests(HubApiFactory factory) : IClassFixture<HubApiFact
         var corpo = await resposta.Content.ReadFromJsonAsync<PedidoEnfileiradoResponse>();
         Assert.Equal($"/pedidos/{corpo!.Id}", resposta.Headers.Location!.OriginalString);
 
-        PedidoDetalheResponse? detalhe = null;
-        await Bancada.AguardarAsync(async () =>
-        {
-            // 404 até o consumidor gravar: a criação é assíncrona (consistência eventual).
-            var r = await client.GetAsync($"/pedidos/{corpo.Id}");
-            detalhe = r.IsSuccessStatusCode ? await r.Content.ReadFromJsonAsync<PedidoDetalheResponse>() : null;
-            return detalhe?.Status == "Concluido";
-        }, "pedido concluído");
+        // O canal de captura da fábrica sinaliza a conclusão (sem polling).
+        await factory.Notificacoes.AguardarAsync(e => e.PedidoId == corpo.Id && e.Status == Domain.Pedidos.StatusPedido.Concluido);
+        var detalhe = await client.GetFromJsonAsync<PedidoDetalheResponse>($"/pedidos/{corpo.Id}");
+        Assert.Equal("Concluido", detalhe!.Status);
         Assert.Equal("Padrao", detalhe!.Categoria);
     }
 
@@ -63,8 +59,10 @@ public class NotificacoesEndpointTests(HubApiFactory factory) : IClassFixture<Hu
         var aceito = await (await client.PostAsJsonAsync("/pedidos/fila", new CriarPedidoRequest("CLI-N", "Norte", "Normal", [new("x", 1, 1m)])))
             .Content.ReadFromJsonAsync<PedidoEnfileiradoResponse>();
 
-        await Bancada.AguardarAsync(async () =>
-            (await client.GetFromJsonAsync<Notificacoes.NotificacaoResponse[]>("/notificacoes/recentes"))!
-                .Any(n => n.PedidoId == aceito!.Id && n.Status == "Concluido"), "notificação de conclusão");
+        await factory.Notificacoes.AguardarAsync(e => e.PedidoId == aceito!.Id && e.Status == Domain.Pedidos.StatusPedido.Concluido);
+
+        // O mesmo evento foi entregue aos outros canais, inclusive o registro consultável por HTTP.
+        var recentes = await client.GetFromJsonAsync<Notificacoes.NotificacaoResponse[]>("/notificacoes/recentes");
+        Assert.Contains(recentes!, n => n.PedidoId == aceito!.Id && n.Status == "Concluido");
     }
 }

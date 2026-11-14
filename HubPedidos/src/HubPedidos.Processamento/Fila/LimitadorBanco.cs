@@ -5,7 +5,7 @@ namespace HubPedidos.Processamento.Fila;
 /// <c>finally</c> e só se foi realmente obtido (se WaitAsync for cancelado, não há
 /// Release). Registra o máximo observado para os testes provarem o teto.
 /// </summary>
-public sealed class LimitadorBanco
+public sealed class LimitadorBanco : IDisposable
 {
     private readonly SemaphoreSlim _semaforo;
     private int _emUso;
@@ -51,6 +51,9 @@ public sealed class LimitadorBanco
         await ExecutarAsync(async ct => { resultado = await operacao(ct); }, cancellationToken);
         return resultado;
     }
+
+    /// <summary>Singleton: o contêiner chama Dispose no encerramento da aplicação.</summary>
+    public void Dispose() => _semaforo.Dispose();
 
     // "Máximo atômico": compare-and-swap em laço; um simples if/atribuição perderia valores.
     private void AtualizarMaximo(int valor)

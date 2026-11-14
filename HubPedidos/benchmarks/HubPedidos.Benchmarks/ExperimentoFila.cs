@@ -5,11 +5,11 @@ using System.Text;
 using System.Threading.Channels;
 using HubPedidos.Application.Classificacao;
 using HubPedidos.Application.Persistencia;
-using HubPedidos.Processamento.Processadores;
-using HubPedidos.Processamento;
-using HubPedidos.Processamento.Fila;
 using HubPedidos.Domain.Pedidos;
 using HubPedidos.Infrastructure.Persistencia;
+using HubPedidos.Processamento;
+using HubPedidos.Processamento.Fila;
+using HubPedidos.Processamento.Processadores;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -174,12 +174,14 @@ public static class ExperimentoFila
         Parallel.For(0, total, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }, i =>
         {
             var chave = i % 4;
+#pragma warning disable CA1854 // De PROPÓSITO: esta é a versão errada (check-then-act) que a demonstração mede.
             if (!ingenuo.ContainsKey(chave))
             {
                 ingenuo[chave] = 0;
             }
 
             ingenuo[chave] = ingenuo[chave] + 1;                    // ler-modificar-escrever NÃO atômico
+#pragma warning restore CA1854
             atomico.AddOrUpdate(chave, 1, static (_, v) => v + 1); // atômico
         });
         Console.WriteLine($"## Check-then-act com {Environment.ProcessorCount} threads, {total} incrementos");

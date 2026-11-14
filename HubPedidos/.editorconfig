@@ -1,0 +1,92 @@
+# Hub de Pedidos — regras de estilo e qualidade (atividade 8).
+# Política: AnalysisLevel = latest-recommended (Directory.Build.props). Avisos do
+# COMPILADOR bloqueiam (TreatWarningsAsErrors); avisos de ANALISADOR (CA/IDE) ficam
+# visíveis mas não bloqueiam (CodeAnalysisTreatWarningsAsErrors=false), EXCETO as
+# regras abaixo elevadas a "error" — as aceitas pela equipe, com justificativa.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+[*.{json,yml,yaml,csproj,props,slnx,xml}]
+indent_size = 2
+
+[*.cs]
+# ---------- Estilo (preferências; dotnet format aplica) ----------
+csharp_style_namespace_declarations = file_scoped:suggestion
+csharp_prefer_braces = true:suggestion
+csharp_style_var_for_built_in_types = true:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere = true:suggestion
+dotnet_style_require_accessibility_modifiers = for_non_interface_members:suggestion
+dotnet_sort_system_directives_first = true
+csharp_new_line_before_open_brace = all
+csharp_using_directive_placement = outside_namespace:suggestion
+
+# ---------- ERRO: correção e assíncrono ----------
+# Não repassar o CancellationToken disponível deixa operações rodando após o cliente desistir.
+dotnet_diagnostic.CA2016.severity = error
+# ValueTask consumido duas vezes/armazenado corrompe estado de objetos poolados.
+dotnet_diagnostic.CA2012.severity = error
+# CancellationToken por último: convenção que evita trocar argumentos de lugar.
+dotnet_diagnostic.CA1068.severity = error
+# Tipo com campo IDisposable deve ser IDisposable (vazamento de recurso).
+dotnet_diagnostic.CA1001.severity = error
+# Dupla busca em dicionário (ContainsKey + indexador) é também uma corrida em código concorrente.
+dotnet_diagnostic.CA1854.severity = error
+# Argumento caro de log avaliado mesmo com o nível desligado (hot path do consumidor).
+dotnet_diagnostic.CA1873.severity = error
+
+# ---------- ERRO: cultura (bug real já visto: "3,000,000.07" vs "3.000.000,07") ----------
+dotnet_diagnostic.CA1305.severity = error
+dotnet_diagnostic.CA1310.severity = error
+dotnet_diagnostic.CA1309.severity = error
+
+# ---------- ERRO: segurança ----------
+dotnet_diagnostic.CA2100.severity = error   # SQL montado com entrada do usuário
+dotnet_diagnostic.CA3075.severity = error   # XML inseguro (XXE)
+dotnet_diagnostic.CA5350.severity = error   # criptografia fraca
+dotnet_diagnostic.CA5351.severity = error   # criptografia quebrada (MD5/DES)
+dotnet_diagnostic.CA2326.severity = error   # TypeNameHandling inseguro em JSON
+dotnet_diagnostic.CA5369.severity = error   # XmlReader inseguro
+
+# ---------- Desligadas (justificativa) ----------
+# Interoperabilidade com linguagens não-CLS não é requisito deste projeto.
+dotnet_diagnostic.CA1014.severity = none
+
+# ---------- Visíveis, sem bloquear (justificativa) ----------
+# Fábricas estáticas em Resultado<T>.Ok/Falha são o padrão idiomático do tipo.
+dotnet_diagnostic.CA1000.severity = suggestion
+# Arrays literais em testes/benchmarks: chamados poucas vezes, legibilidade vence.
+dotnet_diagnostic.CA1861.severity = suggestion
+
+# ---------- Produção: estilo estrutural vira erro ----------
+[{src,clientes}/**.cs]
+dotnet_diagnostic.IDE0161.severity = error  # namespace com escopo de arquivo
+dotnet_diagnostic.IDE0011.severity = error  # chaves obrigatórias em if/else/for
+dotnet_diagnostic.IDE0005.severity = error  # using desnecessário
+dotnet_diagnostic.IDE0040.severity = error  # modificador de acesso explícito
+dotnet_diagnostic.CA1852.severity = error   # selar tipos internos (sem herança acidental)
+
+# ---------- Exceções por pasta ----------
+# Código GERADO pelo dotnet-ef: não se edita à mão.
+[src/HubPedidos.Infrastructure/Persistencia/Migrations/**.cs]
+generated_code = true
+
+# Testes: nomes descritivos com sublinhado (Metodo_faz_x_quando_y) são intencionais.
+[tests/**.cs]
+dotnet_diagnostic.CA1707.severity = none
+dotnet_diagnostic.CA1861.severity = none
+# Asserções com string em testes: a comparação ordinal padrão é a intenção.
+dotnet_diagnostic.CA1307.severity = suggestion
+
+# BenchmarkDotNet exige métodos de instância e controla o ciclo de vida (GlobalCleanup).
+[benchmarks/**.cs]
+dotnet_diagnostic.CA1707.severity = none  # nomes aparecem nas tabelas do BenchmarkDotNet
+dotnet_diagnostic.CA1822.severity = none
+dotnet_diagnostic.CA1001.severity = none

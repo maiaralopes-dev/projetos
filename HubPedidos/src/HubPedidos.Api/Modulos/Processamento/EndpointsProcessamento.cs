@@ -1,9 +1,9 @@
-using HubPedidos.Processamento;
 using HubPedidos.Application.Classificacao;
 using HubPedidos.Application.Contratos;
 using HubPedidos.Application.Mapeamento;
-using HubPedidos.Processamento.Processadores;
+using HubPedidos.Processamento;
 using HubPedidos.Processamento.Fila;
+using HubPedidos.Processamento.Processadores;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace HubPedidos.Api.Modulos.Processamento;

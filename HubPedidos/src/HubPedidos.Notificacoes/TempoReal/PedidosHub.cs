@@ -5,7 +5,10 @@ using Microsoft.AspNetCore.SignalR;
 namespace HubPedidos.Notificacoes.TempoReal;
 
 /// <summary>Contrato do evento enviado aos clientes: dados mínimos, nada do domínio.</summary>
+/// <param name="PedidoId">Pedido que mudou.</param>
+/// <param name="Status">Novo status, já persistido.</param>
 /// <param name="Sequencia">Crescente por processo: o cliente descarta duplicatas e eventos fora de ordem.</param>
+/// <param name="Em">Instante da mudança.</param>
 public sealed record PedidoAtualizadoMensagem(Guid PedidoId, string Status, long Sequencia, DateTimeOffset Em);
 
 public sealed record AcessoRevogadoMensagem(string Motivo);

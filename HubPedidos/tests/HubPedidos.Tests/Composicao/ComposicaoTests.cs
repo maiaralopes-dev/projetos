@@ -83,7 +83,7 @@ public class ComposicaoTests(HubApiFactory factory) : IClassFixture<HubApiFactor
         // O módulo de notificações substitui o padrão nulo por um composto de canais
         // (memória, SignalR e invalidação de cache da API).
         Assert.IsType<NotificadorComposto>(sp.GetRequiredService<INotificadorPedidos>());
-        Assert.Equal(["CanalInvalidacaoCache", "CanalSignalR", "RegistroNotificacoes"],
+        Assert.Equal(["CanalCaptura", "CanalInvalidacaoCache", "CanalSignalR", "RegistroNotificacoes"],
             sp.GetServices<ICanalNotificacao>().Select(c => c.GetType().Name).Order());
 
         // Scoped: mesmo escopo => mesma instância; escopos diferentes => instâncias diferentes.

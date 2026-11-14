@@ -1,0 +1,35 @@
+# Falha provocada 2: regressão de regra (limite de alto valor 5.000 → 5.001)
+$ git diff (trecho)
+29c29
+<     public const decimal LimiteAltoValor = 5_000m;
+---
+>     public const decimal LimiteAltoValor = 5_001m;
+
+$ ./revisao.sh
+
+══════ [1/5] Restaurar ferramentas e pacotes
+
+══════ [2/5] Build Release com analisadores (regras elevadas a erro bloqueiam)
+ok (avisos não bloqueantes: 0)
+
+══════ [3/5] Formatação e estilo (dotnet format --verify-no-changes)
+ok
+
+══════ [4/5] Testes (ordem aleatória, TRX e cobertura)
+HubPedidos.Tests: [ordem-aleatoria] semente=575245057 (reproduza com HUB_SEMENTE_TESTES=575245057)
+Failed!  - Failed:     1, Passed:   213, Skipped:     0, Total:   214, Duration: 11 s - HubPedidos.Tests.dll (net10.0)
+
+══════ [5/5] Resumo
+## ✖ Testes falharam
+
+| Testes | Aprovados | Falhas | Cobertura de linhas (informativa) | Duração |
+|---:|---:|---:|---:|---:|
+| 214 | 213 | 1 | 90.8% | 43 s |
+
+### Falhas
+- `HubPedidos.Tests.ClassificadorTests.Classifica_cada_classe_de_equivalencia(caso: "5.000 (limite alto valor)", valor: 5000, itens: 1, regiao: CentroOeste, prioridade: Normal, esperado: AltoValor)` — Caso '5.000 (limite alto valor)': esperado AltoValor, obtido Padrao.
+
+
+✖ REVISÃO REPROVADA na etapa: testes
+  Motivo: veja a lista acima, artifacts/testes.log e o TRX em artifacts/testes/
+código de saída: 1
