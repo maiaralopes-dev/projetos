@@ -914,12 +914,72 @@
 
     // V16.24: se o cliente ainda não respondeu depois do último pedido,
     // usa as respostas do pedido anterior em vez de mostrar tudo vazio.
-    for (let b = boundaries.length - 1; b >= 0; b--) {
-      const list = receivedAfter(boundaries[b]);
+    //
+    // V16.25: a janela escolhida precisa ter dado de pedido de verdade
+    // (CPF, CEP, e-mail ou imagem). Se a janela mais recente não tem,
+    // volta para a anterior, e por fim para a conversa inteira. Assim
+    // nenhuma mensagem do atendente consegue "esconder" a resposta do
+    // cliente.
+    const windows = [
+      ...boundaries
+        .slice()
+        .reverse()
+        .map(receivedAfter),
+      receivedAfter(-1)
+    ];
+
+    for (const list of windows) {
+      if (list.some(messageHasOrderSignal)) return list;
+    }
+
+    // V16.25: último recurso — mensagens que o CRM entregou sem indicar
+    // quem enviou, mas que trazem CPF ou CEP.
+    const unknownDirection =
+      all.filter(
+        m =>
+          typeof m.received !== "boolean" &&
+          (findCpf(String(m.text || "")) || findZip(String(m.text || "")))
+      );
+
+    if (unknownDirection.length) return unknownDirection;
+
+    for (const list of windows) {
       if (list.length) return list;
     }
 
-    return receivedAfter(-1);
+    return [];
+  }
+
+  function messageHasOrderSignal(m) {
+    const text = String(m?.text || "");
+
+    if (
+      findCpf(text) ||
+      findZip(text) ||
+      /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i.test(text)
+    ) {
+      return true;
+    }
+
+    return (
+      Array.isArray(m?.attachments) &&
+      m.attachments.some(isImageAttachment)
+    );
+  }
+
+  // V16.25: linha de diagnóstico mostrada na ficha 📋.
+  function messagesDiagnostic() {
+    const all = allConversationMessages();
+    const fromCustomer = all.filter(m => m.received === true).length;
+    const fromUs = all.filter(m => m.received === false).length;
+    const unknown = all.length - fromCustomer - fromUs;
+    const analyzed = relevantReceivedMessages().length;
+
+    return (
+      `${analyzed} analisadas • ${all.length} lidas do CRM ` +
+      `(${fromCustomer} do cliente, ${fromUs} nossas` +
+      `${unknown ? `, ${unknown} sem direção` : ""}) • V16.25`
+    );
   }
 
   function isImageAttachment(att) {
@@ -4361,7 +4421,7 @@
 
     if (messageCount != null) {
       const msgEl = state.host.shadowRoot.getElementById("messages");
-      if (msgEl) msgEl.textContent = `${messageCount} mensagens recebidas analisadas`;
+      if (msgEl) msgEl.textContent = messagesDiagnostic();
     }
 
     const subtitle = state.host.shadowRoot.getElementById("subtitle");

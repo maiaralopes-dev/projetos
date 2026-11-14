@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "CRM - Não Lidas + Groq + Dados + Skale V16.24",
-  "version": "4.6.6",
-  "description": "V16.24: corrige a leitura dos dados do pedido quando o atendente envia um print/imagem depois, e o número x apartamento; mantém resumo da conversa, Groq, Skale, ViaCEP e identidade fixa.",
+  "name": "CRM - Não Lidas + Groq + Dados + Skale V16.25",
+  "version": "4.6.7",
+  "description": "V16.25: leitura dos dados do pedido mais robusta e linha de diagnóstico na ficha; mantém resumo da conversa, Groq, Skale, ViaCEP e identidade fixa.",
   "permissions": [
     "storage",
     "unlimitedStorage"

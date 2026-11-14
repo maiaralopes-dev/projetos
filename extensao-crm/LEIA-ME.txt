@@ -72,3 +72,9 @@ V16.24 — leitura dos dados do pedido
 - Se o cliente ainda não respondeu ao último pedido de dados, a ficha usa as respostas do pedido anterior em vez de ficar vazia.
 - Corrigido: "N.305 .APT 104" era lido como número 104 e sem complemento. Agora sai número 305 e complemento Apt 104. Vale para "N.", "Nº", "numero" e para apt/casa/bloco/sala/torre.
 - Corrigido: "apto 12" virava complemento "Apt o".
+
+
+V16.25 — leitura dos dados mais robusta + diagnóstico
+- A ficha procura os dados na resposta mais recente que realmente tenha CPF, CEP, e-mail ou imagem. Se a parte mais recente da conversa não tiver, volta para as anteriores e, por fim, para a conversa inteira. Nenhuma mensagem do atendente consegue mais esconder a resposta do cliente.
+- Mensagens que o CRM entrega sem indicar quem enviou, mas que trazem CPF ou CEP, passam a ser lidas como último recurso.
+- A ficha 📋 mostra uma linha de diagnóstico: quantas mensagens foram analisadas, quantas a extensão leu do CRM (do cliente / nossas) e a versão. Se a ficha vier vazia, essa linha diz onde está o problema.
