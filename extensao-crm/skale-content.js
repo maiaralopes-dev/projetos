@@ -182,7 +182,9 @@
   }
   function status(title,detail=''){
     const el=toast(); el.textContent=''; const t=document.createElement('strong'); t.textContent=String(title||''); el.appendChild(t); if(detail){ const d=document.createElement('div'); d.style.opacity='.78'; d.style.marginTop='3px'; d.textContent=String(detail); el.appendChild(d); }
-    if(hideTimer) clearTimeout(hideTimer); hideTimer=setTimeout(()=>el.remove(),7000);
+    // V16.26: avisos de erro/revisão ficam 30 s na tela; os demais, 8 s.
+    const sticky=/erro|parcialmente|revise|nao encontrei|não encontrei/i.test(`${title} ${detail}`);
+    if(hideTimer) clearTimeout(hideTimer); hideTimer=setTimeout(()=>el.remove(), sticky?30000:8000);
   }
 
   async function payload(){ const r=await chrome.storage.local.get(STORAGE_KEY); return r?.[STORAGE_KEY]||null; }
@@ -320,24 +322,58 @@
     ].filter(v => String(v || '').trim()).length;
     status('Preparando cliente na Skale', `${receivedCount}/11 dados recebidos do CRM.`);
 
-    // 1) Busca inicial pelo CPF.
-    clickText('CPF',true);
-    const search=await waitFor(()=>fieldByPlaceholder(['000.000.000-00']),7000,180);
-    if(!search) throw new Error('Campo de busca por CPF não encontrado.');
-    if(!await fill(search,fmtCpf(data.cpf),'digits')) throw new Error('Não consegui preencher o CPF para busca.');
+    // V16.26: a Skale pode mostrar o resultado sozinha assim que o CPF é
+    // digitado, sem botão Buscar. O fluxo agora olha o estado da tela em
+    // vez de exigir cada passo: formulário já aberto, "não encontrado",
+    // cliente existente ou botão Buscar.
+    const profileFormVisible = () =>
+      Boolean(
+        byText('Novo perfil',false) &&
+        findField(['Nome completo'],['Como está no documento'])
+      );
 
-    const searchButton=await waitFor(()=>clickable(byText('Buscar',true)),5000,150);
-    if(!searchButton) throw new Error('Botão Buscar não encontrado.');
-    searchButton.click();
+    const searchOutcome = () => {
+      if (byText('Cliente não encontrado',false) || profileFormVisible()) return 'not-found';
+      return null;
+    };
+
+    // 1) Busca inicial pelo CPF (pulada se o formulário já está aberto).
+    if (!searchOutcome()) {
+      clickText('CPF',true);
+      const search=await waitFor(()=>fieldByPlaceholder(['000.000.000-00']),7000,180);
+      if(!search) throw new Error('Campo de busca por CPF não encontrado.');
+      const typed=await fill(search,fmtCpf(data.cpf),'digits');
+
+      // O campo de busca pode sumir logo após a digitação (busca automática);
+      // por isso a falha de confirmação só é erro se nada aconteceu na tela.
+      if(!typed && !searchOutcome()) throw new Error('Não consegui preencher o CPF para busca.');
+
+      // Clica em Buscar somente se o botão existir e o resultado ainda não veio.
+      const searchButton=await waitFor(
+        ()=> searchOutcome() ? 'done' : clickable(byText('Buscar',true)),
+        5000,150
+      );
+      if(searchButton && searchButton!=='done'){
+        try { searchButton.click(); } catch {}
+      }
+    }
+
+    status('Buscando cliente na Skale',`CPF ${fmtCpf(data.cpf)} • aguardando o resultado…`);
+
+    // V16.26: o botão "Próxima: Pedido" pode estar ativo antes de o
+    // resultado da busca chegar. Só conclui que o cliente já existe se,
+    // passados 4 s da busca, o aviso "Cliente não encontrado" não apareceu.
+    const searchStartedAt = Date.now();
 
     await waitFor(() => {
-      if (byText('Cliente não encontrado',false)) return 'not-found';
+      if (searchOutcome()) return 'not-found';
+      if (Date.now() - searchStartedAt < 4000) return null;
       const next=clickable(byText('Próxima: Pedido',false));
       if(next && !next.disabled && next.getAttribute('aria-disabled')!=='true') return 'existing';
       return null;
     },12000,200);
 
-    const notFound=Boolean(byText('Cliente não encontrado',false));
+    const notFound=Boolean(searchOutcome());
     if(!notFound){
       const next=clickable(byText('Próxima: Pedido',false));
       if(next && !next.disabled && next.getAttribute('aria-disabled')!=='true'){
@@ -419,7 +455,8 @@
 
     // Verificação final usando referências novas e comparação tolerante.
     const verifySpecs = [
-      ['Telefone',['Telefone (WhatsApp)','Telefone'],['(00) 00000-0000'],data.phone,'digits'],
+      // V16.26: compara com o telefone no formato digitado (sem o 55).
+      ['Telefone',['Telefone (WhatsApp)','Telefone'],['(00) 00000-0000'],fmtPhone(data.phone),'digits'],
       ['Nome',['Nome completo'],['Como está no documento'],data.name,'text'],
       ['CEP',['CEP'],['00000-000'],data.zip,'digits'],
       ['Número',['Número','Numero'],[],data.number,'text']

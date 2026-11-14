@@ -78,3 +78,10 @@ V16.25 — leitura dos dados mais robusta + diagnóstico
 - A ficha procura os dados na resposta mais recente que realmente tenha CPF, CEP, e-mail ou imagem. Se a parte mais recente da conversa não tiver, volta para as anteriores e, por fim, para a conversa inteira. Nenhuma mensagem do atendente consegue mais esconder a resposta do cliente.
 - Mensagens que o CRM entrega sem indicar quem enviou, mas que trazem CPF ou CEP, passam a ser lidas como último recurso.
 - A ficha 📋 mostra uma linha de diagnóstico: quantas mensagens foram analisadas, quantas a extensão leu do CRM (do cliente / nossas) e a versão. Se a ficha vier vazia, essa linha diz onde está o problema.
+
+
+V16.26 — Skale: preenchimento do Novo Perfil
+- Corrigido: depois de buscar o CPF, a extensão via o botão "Próxima: Pedido" ativo antes de o resultado chegar, concluía que o cliente já existia e parava. O formulário de Novo Perfil ficava só com o CPF. Agora ela espera o aviso "Cliente não encontrado" (até 4 s) antes de concluir que o cliente existe.
+- A busca funciona com ou sem o botão Buscar (a Skale pode buscar sozinha ao digitar o CPF) e também quando o formulário já está aberto.
+- Corrigido: a conferência final do telefone comparava com o "55" na frente e sempre acusava "Revise: Telefone", impedindo o avanço automático.
+- Avisos de erro ou de revisão ficam 30 s na tela (antes 7 s), para dar tempo de ler.
