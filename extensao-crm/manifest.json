@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "CRM - Não Lidas + Groq + Dados + Skale V16.22",
-  "version": "4.6.4",
-  "description": "V16.22: correções de estabilidade (timeouts, cache, paginação parcial, relógio do PC) sobre a V16.21; mantém Groq, Skale, ViaCEP, não lidas e identidade fixa.",
+  "name": "CRM - Não Lidas + Groq + Dados + Skale V16.23",
+  "version": "4.6.5",
+  "description": "V16.23: resumo da conversa inteira, nova tentativa automática na Groq e limpeza do cache antigo; mantém Groq, Skale, ViaCEP, não lidas e identidade fixa.",
   "permissions": [
     "storage",
     "unlimitedStorage"

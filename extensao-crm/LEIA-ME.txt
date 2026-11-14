@@ -53,3 +53,14 @@ V16.22 — estabilidade e correções
 - O botão 🚚 só abre páginas de skaletracking.com.br.
 - O aviso da Skale mostra texto puro (sem HTML).
 - Identidade fixa mantida: substitua os arquivos na mesma pasta e clique em Recarregar. As configurações salvas continuam.
+
+
+V16.23 — resumo da conversa, nova tentativa na Groq e limpeza do cache
+- Novo botão 📝 Resumo da conversa: resume a conversa aberta inteira (textos + áudios já transcritos) em quatro blocos: o que o cliente quer, negociação, dúvidas/objeções e pendências/próximo passo. Tem Copiar e Gerar de novo.
+- O resumo usa as mensagens que o CRM já carregou na tela. Em conversas longas, role para cima para carregar mensagens antigas antes de gerar.
+- Áudios ainda não transcritos ficam de fora e a janela avisa quantos são. Transcreva e clique em Gerar de novo.
+- O resumo fica salvo: abrir de novo sem mensagens novas não gasta a Groq.
+- A conversa só é enviada à Groq quando você clica em 📝.
+- Groq com limite atingido (429) ou instável (502/503): a extensão espera e tenta de novo sozinha, até 3 vezes. Se a espera pedida passar de 20 s, mostra o erro na hora.
+- Limpeza automática do cache: transcrições, resumos e leituras de imagem com mais de 90 dias são apagados, no máximo uma vez por dia. Itens já salvos por versões anteriores contam 90 dias a partir desta versão. Caches antigos da VPS, que não são mais usados, são apagados.
+- Identidade fixa mantida: substitua os arquivos na mesma pasta e clique em Recarregar.

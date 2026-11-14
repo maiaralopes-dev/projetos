@@ -29,7 +29,9 @@
     themeCandidateCount: 0,
     optimisticReadUntil: new Map(),
     answeredAt: new Map(),
-    orderSummary: null
+    orderSummary: null,
+    // V16.23: mensagens vistas por conversa, para o resumo da conversa.
+    conversationMessages: new Map()
   };
 
   // ---------------------------------------------------------
@@ -341,6 +343,7 @@
     #lnl-api-settings,
     #lnl-order-data,
     #lnl-image-data,
+    #lnl-conv-summary,
     #lnl-skale,
     #lnl-confirm-card,
     #lnl-copy-missing,
@@ -930,6 +933,13 @@
               >📷</button>
 
               <button
+                id="lnl-conv-summary"
+                type="button"
+                title="Resumo da conversa (Groq)"
+                aria-label="Resumo da conversa"
+              >📝</button>
+
+              <button
                 id="lnl-skale"
                 type="button"
                 title="Enviar dados atuais para Skale"
@@ -1034,6 +1044,13 @@
               type: "read-image-direct"
             }
           }, "*");
+        });
+
+      shadow
+        .getElementById("lnl-conv-summary")
+        .addEventListener("click", () => {
+          closeMobileMenu();
+          openConversationSummary(false);
         });
 
       shadow
@@ -2642,6 +2659,310 @@
   window.matchMedia?.("(prefers-color-scheme: dark)")
     ?.addEventListener?.("change", () => syncTheme(true));
 
+  // ---------------------------------------------------------
+  // V16.23: resumo da conversa inteira
+  // ---------------------------------------------------------
+
+  const SUMMARY_HOST_ID = "lnl-conv-summary-host";
+  const MAX_REMEMBERED_CONVERSATIONS = 8;
+
+  function rememberConversationMessages(conversationId, messages) {
+    const id = String(conversationId || "");
+
+    if (!id || !Array.isArray(messages) || !messages.length) return;
+
+    let bucket = state.conversationMessages.get(id);
+
+    // Reinsere para manter a conversa mais recente no fim do Map.
+    state.conversationMessages.delete(id);
+    if (!bucket) bucket = new Map();
+    state.conversationMessages.set(id, bucket);
+
+    for (const msg of messages) {
+      if (!msg?.id) continue;
+      bucket.set(String(msg.id), msg);
+    }
+
+    // Limita o tamanho por conversa e o número de conversas guardadas.
+    while (bucket.size > 600) {
+      bucket.delete(bucket.keys().next().value);
+    }
+
+    while (state.conversationMessages.size > MAX_REMEMBERED_CONVERSATIONS) {
+      state.conversationMessages.delete(
+        state.conversationMessages.keys().next().value
+      );
+    }
+  }
+
+  function messagesForSummary(conversationId) {
+    const bucket =
+      state.conversationMessages.get(String(conversationId || ""));
+
+    if (!bucket) return [];
+
+    return [...bucket.values()]
+      .map((msg, index) => ({ msg, index, ts: messageDateMs(msg?.createdAt) }))
+      .sort((a, b) => {
+        if (a.ts && b.ts && a.ts !== b.ts) return a.ts - b.ts;
+        return a.index - b.index;
+      })
+      .map(({ msg }) => ({
+        id: String(msg.id || ""),
+        received:
+          typeof msg.received === "boolean" ? msg.received : null,
+        text: String(msg.text || "").slice(0, 4000),
+        createdAt: msg.createdAt || null,
+        attachments:
+          (Array.isArray(msg.attachments) ? msg.attachments : [])
+            .map(att => ({
+              id: String(att?.id || ""),
+              type: String(att?.type || ""),
+              mimeType: String(att?.mimeType || ""),
+              fileName: String(att?.fileName || "")
+            }))
+      }));
+  }
+
+  function closeConversationSummary() {
+    document.getElementById(SUMMARY_HOST_ID)?.remove();
+  }
+
+  function summaryModal() {
+    closeConversationSummary();
+
+    const host = document.createElement("div");
+    host.id = SUMMARY_HOST_ID;
+
+    Object.assign(host.style, {
+      position: "fixed",
+      inset: "0",
+      zIndex: "2147483647"
+    });
+
+    setThemeOnHost(host, detectDarkTheme());
+
+    const shadow = host.attachShadow({ mode: "open" });
+
+    const style = document.createElement("style");
+    style.textContent = `
+      * { box-sizing: border-box; }
+      .backdrop {
+        position: fixed; inset: 0;
+        display: flex; align-items: center; justify-content: center;
+        padding: 14px;
+        background: rgba(0,0,0,.45);
+        font-family: Arial, Helvetica, sans-serif;
+        color: var(--lnl-text);
+      }
+      .card {
+        width: min(560px, 100%);
+        max-height: min(720px, calc(100dvh - 28px));
+        display: flex; flex-direction: column; overflow: hidden;
+        background: var(--lnl-bg);
+        border: 1px solid var(--lnl-border);
+        border-radius: 14px;
+        box-shadow: 0 16px 48px var(--lnl-shadow);
+      }
+      .head {
+        display: flex; align-items: flex-start; justify-content: space-between;
+        gap: 12px; padding: 13px 15px 11px;
+        background: var(--lnl-bg2);
+        border-bottom: 1px solid var(--lnl-border);
+      }
+      .title { font-size: 16px; font-weight: 700; }
+      .sub { margin-top: 4px; font-size: 11px; line-height: 1.4; color: var(--lnl-muted); }
+      .body {
+        overflow: auto; padding: 14px 15px;
+        font-size: 15px; line-height: 1.5;
+        white-space: pre-wrap; overflow-wrap: anywhere;
+      }
+      .body.muted { color: var(--lnl-muted); }
+      .body.error { color: #e0655c; }
+      .foot {
+        display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end;
+        padding: 11px 15px 13px;
+        border-top: 1px solid var(--lnl-border);
+        background: var(--lnl-bg2);
+      }
+      button {
+        appearance: none; cursor: pointer;
+        min-height: 36px; padding: 0 13px;
+        border-radius: 9px; font-size: 13px; font-weight: 700;
+        background: var(--lnl-bg3); color: var(--lnl-text);
+        border: 1px solid var(--lnl-border2);
+      }
+      button.primary { background: var(--lnl-blue); color: #0d1720; border-color: var(--lnl-blue); }
+      button:disabled { opacity: .5; cursor: wait; }
+      .close { flex: 0 0 32px; min-height: 32px; width: 32px; padding: 0; font-size: 17px; }
+      @media (max-width: 640px) { .body { font-size: 16px; } }
+    `;
+
+    const backdrop = document.createElement("div");
+    backdrop.className = "backdrop";
+
+    const card = document.createElement("div");
+    card.className = "card";
+    card.setAttribute("role", "dialog");
+    card.setAttribute("aria-label", "Resumo da conversa");
+
+    const head = document.createElement("div");
+    head.className = "head";
+
+    const headText = document.createElement("div");
+    const title = document.createElement("div");
+    title.className = "title";
+    title.textContent = "Resumo da conversa";
+    const sub = document.createElement("div");
+    sub.className = "sub";
+    headText.append(title, sub);
+
+    const close = document.createElement("button");
+    close.type = "button";
+    close.className = "close";
+    close.textContent = "×";
+    close.setAttribute("aria-label", "Fechar");
+
+    head.append(headText, close);
+
+    const body = document.createElement("div");
+    body.className = "body muted";
+
+    const foot = document.createElement("div");
+    foot.className = "foot";
+
+    const redo = document.createElement("button");
+    redo.type = "button";
+    redo.textContent = "Gerar de novo";
+
+    const copy = document.createElement("button");
+    copy.type = "button";
+    copy.className = "primary";
+    copy.textContent = "Copiar";
+
+    foot.append(redo, copy);
+    card.append(head, body, foot);
+    backdrop.appendChild(card);
+    shadow.append(style, backdrop);
+
+    close.addEventListener("click", closeConversationSummary);
+
+    backdrop.addEventListener("click", e => {
+      if (e.target === backdrop) closeConversationSummary();
+    });
+
+    host.addEventListener("keydown", e => {
+      if (e.key === "Escape") closeConversationSummary();
+    });
+
+    document.documentElement.appendChild(host);
+    close.focus();
+
+    return { host, sub, body, redo, copy };
+  }
+
+  async function openConversationSummary(force) {
+    const conversationId = String(state.selectedId || "");
+
+    if (!conversationId) {
+      status("Abra uma conversa para gerar o resumo.");
+      return;
+    }
+
+    const messages = messagesForSummary(conversationId);
+
+    if (!messages.length) {
+      status("Ainda não li as mensagens desta conversa. Abra a conversa de novo e tente outra vez.");
+      return;
+    }
+
+    const conversation =
+      state.conversations.find(
+        x => String(x?.id) === conversationId
+      );
+
+    const ui = summaryModal();
+    let summaryText = "";
+
+    ui.sub.textContent =
+      `${conversation?.name ? `${conversation.name} • ` : ""}${messages.length} mensagens carregadas`;
+
+    ui.body.className = "body muted";
+    ui.body.textContent = "Gerando resumo com Groq…";
+    ui.redo.disabled = true;
+    ui.copy.disabled = true;
+
+    ui.redo.addEventListener("click", () => openConversationSummary(true));
+
+    ui.copy.addEventListener("click", async () => {
+      if (!summaryText) return;
+
+      try {
+        await navigator.clipboard.writeText(summaryText);
+        ui.copy.textContent = "Copiado ✓";
+      } catch {
+        ui.copy.textContent = "Não consegui copiar";
+      }
+
+      setTimeout(() => { ui.copy.textContent = "Copiar"; }, 1800);
+    });
+
+    let response;
+
+    try {
+      response = await chrome.runtime.sendMessage({
+        type: "summarize-conversation",
+        conversationId,
+        customerName: String(conversation?.name || ""),
+        messages,
+        force: Boolean(force)
+      });
+    } catch (err) {
+      response = {
+        ok: false,
+        error:
+          "A extensão foi atualizada ou recarregada. Recarregue a página do CRM (F5) e tente de novo."
+      };
+    }
+
+    // O usuário fechou a janela ou pediu outro resumo enquanto esperava.
+    if (!ui.host.isConnected) return;
+
+    ui.redo.disabled = false;
+
+    if (!response?.ok) {
+      ui.body.className = "body error";
+      ui.body.textContent =
+        String(response?.error || "Falha ao gerar o resumo.");
+      return;
+    }
+
+    summaryText = String(response.summary || "").trim();
+
+    ui.body.className = "body";
+    ui.body.textContent = summaryText;
+    ui.copy.disabled = false;
+
+    const notes = [
+      `${response.messageCount} mensagens analisadas`
+    ];
+
+    if (response.audiosWithoutTranscript > 0) {
+      notes.push(
+        `${response.audiosWithoutTranscript} áudio(s) sem transcrição ficaram de fora — transcreva e gere de novo`
+      );
+    }
+
+    if (response.truncated) {
+      notes.push("conversa longa: só as mensagens mais recentes");
+    }
+
+    if (response.cached) notes.push("resumo salvo");
+
+    ui.sub.textContent =
+      `${conversation?.name ? `${conversation.name} • ` : ""}${notes.join(" • ")}`;
+  }
+
   function findMessageComposer() {
     const direct = [
       ...document.querySelectorAll(
@@ -2696,6 +3017,11 @@
       }
 
       if (p.type === "conversation-messages") {
+        rememberConversationMessages(
+          p.conversationId,
+          p.messages
+        );
+
         applyConversationMessagesState(
           p.conversationId,
           p.messages
