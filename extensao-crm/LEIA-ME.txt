@@ -92,3 +92,9 @@ V16.27 — botão Transcrever no celular
 - Agora basta a mensagem ser recebida do cliente. O player pode usar outro endereço para o mesmo áudio (blob/link assinado) ou nem ter a tag de áudio na página: a extensão localiza a mensagem pelo próprio player.
 - Corrigido: se a conversa já estava aberta quando a página carregava, o aviso do áudio podia chegar antes de a interface estar pronta e o botão nunca era montado. Agora a extensão confere e monta de novo.
 - Áudios enviados por nós continuam sem o botão.
+
+
+V16.28 — resumo do áudio substitui a transcrição
+- Ao clicar em Resumo, a transcrição completa some e fica só o resumo.
+- O botão vira "Ver transcrição": um clique volta para o texto completo.
+- Com o resumo aberto, Copiar copia o resumo; com a transcrição aberta, copia a transcrição.

@@ -193,6 +193,11 @@
 
         .summary-box.show { display: block; }
 
+        /* V16.28: com o resumo aberto, a transcrição completa some. */
+        .result.summary-mode .head,
+        .result.summary-mode .text-wrap { display: none; }
+        .result.summary-mode .summary-box { margin-top: 0; }
+
         .summary-label {
           color: #8ec1e5;
           font-size: 10px;
@@ -333,9 +338,14 @@
     copy.addEventListener(
       "click",
       async () => {
+        // V16.28: com o resumo aberto, copia o resumo.
+        const inSummaryMode =
+          shadow.querySelector(".result")
+            ?.classList.contains("summary-mode");
+
         const text =
           shadow.querySelector(
-            ".text"
+            inSummaryMode ? ".summary-text" : ".text"
           )?.textContent || "";
 
         if (!text) return;
@@ -374,8 +384,21 @@
           return;
         }
 
+        const resultEl =
+          shadow.querySelector(".result");
+
+        // V16.28: segundo clique volta para a transcrição completa.
+        if (resultEl?.classList.contains("summary-mode")) {
+          resultEl.classList.remove("summary-mode");
+          shadow.querySelector(".summary-box")
+            ?.classList.remove("show");
+          summary.textContent = "Resumo";
+          setStatus(shadow, "");
+          return;
+        }
+
         summary.disabled = true;
-        const original = summary.textContent;
+        let nextLabel = "Resumo";
         summary.textContent = "Resumindo…";
         setStatus(
           shadow,
@@ -414,6 +437,12 @@
               escapeText(response.summary || "");
           }
           box?.classList.add("show");
+
+          // V16.28: mostra só o resumo; a transcrição fica escondida
+          // até clicar em "Ver transcrição".
+          resultEl?.classList.add("summary-mode");
+          nextLabel = "Ver transcrição";
+
           setStatus(
             shadow,
             response.cached
@@ -431,7 +460,7 @@
           );
         } finally {
           summary.disabled = false;
-          summary.textContent = original;
+          summary.textContent = nextLabel;
         }
       }
     );
@@ -531,6 +560,11 @@
     shadow.querySelector(
       ".summary-box"
     )?.classList.remove("show");
+
+    // V16.28: transcrição nova sempre começa mostrando o texto completo.
+    result?.classList.remove("summary-mode");
+    const summaryBtn = shadow.querySelector(".summary");
+    if (summaryBtn) summaryBtn.textContent = "Resumo";
 
     const summaryText =
       shadow.querySelector(
