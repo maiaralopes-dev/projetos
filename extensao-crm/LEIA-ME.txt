@@ -85,3 +85,10 @@ V16.26 — Skale: preenchimento do Novo Perfil
 - A busca funciona com ou sem o botão Buscar (a Skale pode buscar sozinha ao digitar o CPF) e também quando o formulário já está aberto.
 - Corrigido: a conferência final do telefone comparava com o "55" na frente e sempre acusava "Revise: Telefone", impedindo o avanço automático.
 - Avisos de erro ou de revisão ficam 30 s na tela (antes 7 s), para dar tempo de ler.
+
+
+V16.27 — botão Transcrever no celular
+- O botão Transcrever não aparecia em alguns áudios recebidos, principalmente no celular. A extensão exigia três sinais ao mesmo tempo (recebida + status RECEIVED + tipo "received") e o endereço do player idêntico ao do anexo.
+- Agora basta a mensagem ser recebida do cliente. O player pode usar outro endereço para o mesmo áudio (blob/link assinado) ou nem ter a tag de áudio na página: a extensão localiza a mensagem pelo próprio player.
+- Corrigido: se a conversa já estava aberta quando a página carregava, o aviso do áudio podia chegar antes de a interface estar pronta e o botão nunca era montado. Agora a extensão confere e monta de novo.
+- Áudios enviados por nós continuam sem o botão.

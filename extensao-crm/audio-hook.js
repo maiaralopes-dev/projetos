@@ -53,8 +53,24 @@
 
     const type = String(a.type || "").toUpperCase();
     const mime = String(a.mimeType || a.mimetype || "").toLowerCase();
+    const file = String(a.fileName || a.filename || a.url || "")
+      .split("?")[0]
+      .toLowerCase();
 
-    return type === "AUDIO" || mime.startsWith("audio/");
+    return (
+      ["AUDIO", "PTT", "VOICE"].includes(type) ||
+      mime.startsWith("audio/") ||
+      /\.(?:ogg|oga|opus|mp3|m4a|wav)$/.test(file)
+    );
+  }
+
+  function urlPath(value) {
+    try {
+      const u = new URL(String(value || ""), location.href);
+      return u.origin + u.pathname;
+    } catch {
+      return "";
+    }
   }
 
   function attachmentForExactAudio(message, audioUrl) {
@@ -70,7 +86,24 @@
       normalizeUrl(a.url) === audioUrl
     );
 
-    return exact || null;
+    if (exact) return exact;
+
+    // V16.27: no celular o player pode usar outro endereço para o mesmo
+    // áudio (blob:, link assinado) ou nem ter <audio> com src. Aceita o
+    // mesmo caminho sem os parâmetros e, por fim, o único áudio da mensagem.
+    const wantedPath = audioUrl ? urlPath(audioUrl) : "";
+
+    if (wantedPath && !/^blob:/i.test(audioUrl)) {
+      const samePath = attachments.find(a =>
+        urlPath(a.url) === wantedPath
+      );
+
+      if (samePath) return samePath;
+    }
+
+    return attachments.length === 1
+      ? attachments[0]
+      : null;
   }
 
   function classifyMessageProps(props, audioUrl) {
@@ -105,15 +138,20 @@
         ""
       ).toUpperCase();
 
-    const received =
-      message.received === true &&
-      status === "RECEIVED" &&
-      directType === "received";
+    // V16.27: o campo "received" da própria mensagem decide. Antes eram
+    // exigidos também status RECEIVED e type "received", que nem sempre
+    // vêm no layout do celular — e o botão Transcrever não aparecia.
+    let received;
 
-    const sent =
-      message.received === false ||
-      ["SENT", "DELIVERED", "READ", "PLAYED"].includes(status) ||
-      directType === "sent";
+    if (typeof message.received === "boolean") {
+      received = message.received;
+    } else {
+      received =
+        status === "RECEIVED" ||
+        directType === "received";
+    }
+
+    const sent = !received;
 
     return {
       received,
@@ -157,7 +195,7 @@
     return null;
   }
 
-  function inspectNearestReactChain(audio, audioUrl) {
+  function inspectNearestReactChain(audio, audioUrl, maxLevels = 8) {
     let node = audio;
 
     // O React key pode estar no próprio <audio> ou em um ancestral DOM próximo.
@@ -167,7 +205,7 @@
       let level = 0;
       node &&
       node !== document.body &&
-      level < 8;
+      level < maxLevels;
       level++, node = node.parentElement
     ) {
       const result =
@@ -220,12 +258,12 @@
     delete audio.dataset.crmReceivedAudioKey;
   }
 
-  function ensureAnchor(audio, meta) {
+  function ensureAnchor(audio, meta, playerOverride = null) {
     const audioUrl =
       normalizeUrl(
-        audio.currentSrc ||
-        audio.getAttribute("src") ||
         meta.audioUrl ||
+        audio?.currentSrc ||
+        audio?.getAttribute?.("src") ||
         ""
       );
 
@@ -235,13 +273,32 @@
         audioUrl
       );
 
-    audio.dataset.crmReceivedAudioKey =
-      key;
+    if (audio) {
+      audio.dataset.crmReceivedAudioKey =
+        key;
+    }
+
+    // V16.27: se o botão deste áudio já existe na tela, só reavisa.
+    const existing =
+      document.querySelector(
+        `[data-crm-transcribe-anchor="${CSS.escape(key)}"]`
+      );
+
+    if (existing?.isConnected) {
+      post({
+        type: "received-audio-found",
+        key,
+        meta: { ...meta, audioUrl, duration: null }
+      });
+      return;
+    }
 
     let player =
+      playerOverride ||
       audio.parentElement;
 
     if (
+      !playerOverride &&
       player?.parentElement &&
       player.parentElement.getBoundingClientRect().height < 130
     ) {
@@ -298,7 +355,7 @@
         ...meta,
         audioUrl,
         duration:
-          Number.isFinite(audio.duration)
+          Number.isFinite(audio?.duration)
             ? audio.duration
             : null
       }
@@ -312,10 +369,9 @@
       normalizeUrl(
         audio.currentSrc ||
         audio.getAttribute("src") ||
+        audio.querySelector("source")?.getAttribute("src") ||
         ""
       );
-
-    if (!audioUrl) return;
 
     const classified =
       inspectNearestReactChain(
@@ -428,10 +484,131 @@
         previous.url === currentUrl &&
         previous.mode !== "unknown"
       ) {
+        // V16.27: áudio recebido já marcado, mas cujo botão não foi
+        // montado (aviso enviado antes de a interface estar pronta, ou
+        // o React apagou o botão): avisa de novo.
+        if (previous.mode === "received") {
+          const key = audio.dataset.crmReceivedAudioKey;
+          const anchor = key
+            ? document.querySelector(
+                `[data-crm-transcribe-anchor="${CSS.escape(key)}"]`
+              )
+            : null;
+
+          if (!anchor || !anchor.shadowRoot) {
+            inspectAudio(audio);
+          }
+        }
+
         continue;
       }
 
       inspectAudio(audio);
+    }
+
+    scanPlayersWithoutAudioTag();
+  }
+
+  // V16.27: players sem <audio> no DOM (comum no celular). Parte do
+  // botão de velocidade ("1x") e sobe até a mensagem dona do player.
+  const markedPlayers = new WeakMap();
+
+  function playerContainerFor(speedEl) {
+    let node = speedEl.parentElement;
+
+    for (let level = 0; node && node !== document.body && level < 6; level++, node = node.parentElement) {
+      const rect = node.getBoundingClientRect();
+      if (rect.height > 150) return null;
+
+      if (
+        rect.width > 140 &&
+        /\d{1,2}:\d{2}/.test(String(node.innerText || ""))
+      ) {
+        return node;
+      }
+    }
+
+    return null;
+  }
+
+  function scanPlayersWithoutAudioTag() {
+    const speedEls =
+      [...document.querySelectorAll("button, [role='button'], span, div")]
+        .filter(el =>
+          el.childElementCount === 0 &&
+          /^(?:1|1[.,]5|2)x$/i.test(String(el.textContent || "").trim())
+        );
+
+    for (const speedEl of speedEls) {
+      const previous = markedPlayers.get(speedEl);
+
+      if (previous === "sent") continue;
+
+      if (previous && previous !== "unknown") {
+        const anchor =
+          document.querySelector(
+            `[data-crm-transcribe-anchor="${CSS.escape(previous)}"]`
+          );
+
+        if (anchor?.shadowRoot) continue;
+      }
+
+      const player = playerContainerFor(speedEl);
+      if (!player) continue;
+
+      // O caminho normal (<audio> no DOM) já cuida deste player.
+      if (
+        player.querySelector("audio") ||
+        player.parentElement?.querySelector(":scope > audio")
+      ) {
+        continue;
+      }
+
+      const classified =
+        inspectNearestReactChain(speedEl, "", 14);
+
+      if (!classified) {
+        markedPlayers.set(speedEl, "unknown");
+        continue;
+      }
+
+      if (!classified.received) {
+        markedPlayers.set(speedEl, "sent");
+        continue;
+      }
+
+      const { message, attachment } = classified;
+
+      const meta = {
+        messageId: message.id ?? null,
+        conversationId: message.conversationId ?? null,
+        createdAt:
+          message.createdAt ??
+          message.created_at ??
+          message.timestamp ??
+          null,
+        received: true,
+        status: message.status ?? null,
+        audioUrl: normalizeUrl(attachment.url),
+        attachmentId: attachment.id ?? null,
+        fileName:
+          attachment.fileName ||
+          attachment.filename ||
+          "audio-cliente",
+        mimeType:
+          attachment.mimeType ||
+          attachment.mimetype ||
+          "audio/mpeg"
+      };
+
+      if (!meta.audioUrl) continue;
+
+      markedPlayers.set(
+        speedEl,
+        makeKey(meta, meta.audioUrl)
+      );
+
+      ensureAnchor(null, meta, player);
     }
   }
 
