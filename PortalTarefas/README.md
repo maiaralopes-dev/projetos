@@ -16,6 +16,8 @@ Aplicação full-stack construída de forma cumulativa nas 8 aulas práticas da 
 | 7 | Logs, métricas, traces, health checks, resiliência, rate limiting, cache | `Relatorio-07-*` | `atividade7` | `6a1dece` |
 | 8 | Configuração, segredos, contêineres, CI/CD | `Relatorio-08-*` | `atividade8` | `6c526ad` |
 
+Também há um relatório único com as 8 atividades: `docs/relatorios/Relatorio-Unico-Atividades-1-a-8.docx` / `.pdf` (gerado por `docs/relatorios/gerador/consolidado.py`).
+
 Antes de entregar, preencha na capa de cada relatório: **Nome, RA, Polo e Local da realização**.
 Os relatórios são gerados por `python3 docs/relatorios/gerador/gerar_relatorios.py` (python-docx + LibreOffice).
 
