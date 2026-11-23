@@ -98,3 +98,12 @@ V16.28 — resumo do áudio substitui a transcrição
 - Ao clicar em Resumo, a transcrição completa some e fica só o resumo.
 - O botão vira "Ver transcrição": um clique volta para o texto completo.
 - Com o resumo aberto, Copiar copia o resumo; com a transcrição aberta, copia a transcrição.
+
+
+V16.29 — conferência antes de enviar para a Skale
+- O botão 🚚 agora abre uma tela de conferência antes de abrir a Skale, com todos os dados que vão ser preenchidos e de onde cada um veio (mensagem, ViaCEP, imagem, perfil do CRM).
+- Campos faltando ou inválidos (CPF, CEP, telefone, e-mail) ficam em vermelho; campos vindos de imagem/áudio ou diferentes do que o cliente escreveu (divergência com o CEP) ficam em amarelo para conferir.
+- Dá para corrigir direto ali; as correções também ficam salvas na ficha 📋 e no card.
+- Produto (Azzure 2/4/6 meses) e pagamento (After Pay/Antecipada) aparecem já escolhidos quando a conversa deixa claro, e podem ser trocados antes de enviar.
+- Sem e-mail, a tela avisa que a extensão vai marcar "Não possui e-mail" na Skale.
+- Testes automáticos do leitor de dados ficam na pasta testes-extensao do repositório, fora da extensão. Não é preciso copiá-la para o Chrome.

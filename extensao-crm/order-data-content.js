@@ -5984,7 +5984,360 @@
     return null;
   }
 
+  // ---------------------------------------------------------
+  // V16.29: conferência antes de enviar para a Skale
+  // ---------------------------------------------------------
+
+  const SKALE_REVIEW_HOST_ID = "crm-skale-review-v16-29";
+
+  function closeSkaleReview() {
+    document.getElementById(SKALE_REVIEW_HOST_ID)?.remove();
+  }
+
+  // Fontes menos confiáveis pedem um olhar a mais.
+  function sourceNeedsCheck(source) {
+    const s = normalize(source || "");
+    return (
+      s.includes("imagem") ||
+      s.includes("ocr") ||
+      s.includes("groq") ||
+      s.includes("audio")
+    );
+  }
+
+  function skaleFieldWarning(key, value) {
+    const v = compact(value);
+    const required = REQUIRED_FIELDS.some(([k]) => k === key);
+
+    if (!v) return required ? "Faltando" : "";
+
+    if (key === "cpf" && !cpfValid(v)) return "CPF inválido";
+    if (key === "zip" && digits(v).length !== 8) return "CEP inválido";
+    if (key === "phone" && !phoneValid(v)) return "Telefone inválido";
+    if (key === "email" && !emailValid(v)) return "E-mail inválido";
+
+    const divs = state.cepAudit?.divergences || [];
+    const divLabel = {
+      street: "Rua",
+      neighborhood: "Bairro",
+      city: "Cidade",
+      state: "Estado"
+    }[key];
+
+    if (divLabel && divs.includes(divLabel)) {
+      return "Diferente do que o cliente escreveu";
+    }
+
+    if (sourceNeedsCheck(state.sources?.[key])) return "Conferir";
+
+    return "";
+  }
+
+  function openSkaleReview(notifyPanel) {
+    closeSkaleReview();
+
+    const host = document.createElement("div");
+    host.id = SKALE_REVIEW_HOST_ID;
+    Object.assign(host.style, {
+      position: "fixed",
+      inset: "0",
+      zIndex: "2147483647"
+    });
+
+    const dark = darkMode();
+    const c = dark ? {
+      bg:"#1d1f21", bg2:"#25282b", bg3:"#2b2f33", text:"#f3f5f7",
+      muted:"#aab2b8", border:"#3c4247", blue:"#62aef2", good:"#77c995",
+      warn:"#e3b864", bad:"#f08a80", backdrop:"rgba(0,0,0,.55)"
+    } : {
+      bg:"#ffffff", bg2:"#f6f8fa", bg3:"#ffffff", text:"#1d2730",
+      muted:"#66717b", border:"#dce2e7", blue:"#2f7fd0", good:"#2d8a55",
+      warn:"#9a6400", bad:"#c0392b", backdrop:"rgba(0,0,0,.32)"
+    };
+
+    const shadow = host.attachShadow({ mode: "open" });
+    const style = document.createElement("style");
+    style.textContent = `
+      *{box-sizing:border-box}
+      .backdrop{position:fixed;inset:0;background:${c.backdrop};display:flex;align-items:center;justify-content:center;padding:12px;font-family:Arial,Helvetica,sans-serif;color:${c.text}}
+      .card{width:min(620px,100%);max-height:calc(100dvh - 24px);display:flex;flex-direction:column;overflow:hidden;background:${c.bg};border:1px solid ${c.border};border-radius:14px;box-shadow:0 16px 48px rgba(0,0,0,.34)}
+      .head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:13px 15px 11px;background:${c.bg2};border-bottom:1px solid ${c.border}}
+      .title{font-size:16px;font-weight:700}
+      .sub{margin-top:4px;font-size:12px;line-height:1.4;color:${c.muted}}
+      .body{overflow:auto;padding:12px 15px 14px}
+      .alert{margin-bottom:12px;padding:9px 11px;border-radius:9px;font-size:13px;line-height:1.4;border:1px solid}
+      .alert.ok{border-color:${c.good};color:${c.good}}
+      .alert.warn{border-color:${c.warn};color:${c.warn}}
+      .alert.bad{border-color:${c.bad};color:${c.bad}}
+      .section{margin:4px 0 6px;font-size:11px;font-weight:700;letter-spacing:.06em;color:${c.muted};text-transform:uppercase}
+      .grid{display:grid;grid-template-columns:1fr 1fr;gap:9px 12px;margin-bottom:12px}
+      .field.wide{grid-column:1 / -1}
+      label{display:flex;justify-content:space-between;gap:8px;font-size:12px;font-weight:700;margin-bottom:4px}
+      .src{font-weight:400;color:${c.muted};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60%}
+      input,select{width:100%;height:36px;padding:0 10px;border-radius:8px;border:1px solid ${c.border};background:${c.bg3};color:${c.text};font-size:14px}
+      .field.warn input{border-color:${c.warn}}
+      .field.bad input{border-color:${c.bad}}
+      .note{min-height:14px;margin-top:3px;font-size:11px;color:${c.muted}}
+      .field.warn .note{color:${c.warn}}
+      .field.bad .note{color:${c.bad}}
+      .foot{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;padding:11px 15px 13px;border-top:1px solid ${c.border};background:${c.bg2}}
+      button{appearance:none;cursor:pointer;min-height:38px;padding:0 14px;border-radius:9px;font-size:13px;font-weight:700;background:${c.bg3};color:${c.text};border:1px solid ${c.border}}
+      button.primary{background:${c.blue};border-color:${c.blue};color:#0d1720}
+      button:disabled{opacity:.5;cursor:wait}
+      .close{width:32px;min-height:32px;padding:0;font-size:17px;flex:0 0 32px}
+      @media (max-width:560px){.grid{grid-template-columns:1fr}.field.wide{grid-column:auto}input,select{font-size:16px}}
+    `;
+
+    const v = state.values || {};
+    const backdrop = document.createElement("div");
+    backdrop.className = "backdrop";
+    const card = document.createElement("div");
+    card.className = "card";
+    card.setAttribute("role", "dialog");
+    card.setAttribute("aria-label", "Conferir antes de enviar para a Skale");
+
+    const head = document.createElement("div");
+    head.className = "head";
+    const headText = document.createElement("div");
+    const title = document.createElement("div");
+    title.className = "title";
+    title.textContent = "🚚 Conferir antes de enviar para a Skale";
+    const sub = document.createElement("div");
+    sub.className = "sub";
+    sub.textContent =
+      `${state.currentConversation?.name ? `${state.currentConversation.name} • ` : ""}Corrija aqui o que precisar; as correções também ficam salvas na ficha.`;
+    headText.append(title, sub);
+    const close = document.createElement("button");
+    close.type = "button";
+    close.className = "close";
+    close.textContent = "×";
+    close.setAttribute("aria-label", "Fechar");
+    head.append(headText, close);
+
+    const body = document.createElement("div");
+    body.className = "body";
+    const alert = document.createElement("div");
+    alert.className = "alert";
+    body.appendChild(alert);
+
+    const groups = [
+      ["Cliente", [
+        ["name", "Nome completo", true],
+        ["cpf", "CPF"],
+        ["phone", "Telefone (WhatsApp)"],
+        ["email", "E-mail", true]
+      ]],
+      ["Endereço de entrega", [
+        ["zip", "CEP"],
+        ["street", "Rua", true],
+        ["number", "Número"],
+        ["complement", "Complemento"],
+        ["neighborhood", "Bairro"],
+        ["city", "Cidade"],
+        ["state", "Estado (UF)"]
+      ]]
+    ];
+
+    const inputs = {};
+    const fieldEls = {};
+
+    for (const [groupName, fields] of groups) {
+      const section = document.createElement("div");
+      section.className = "section";
+      section.textContent = groupName;
+      const grid = document.createElement("div");
+      grid.className = "grid";
+
+      for (const [key, label, wide] of fields) {
+        const field = document.createElement("div");
+        field.className = `field${wide ? " wide" : ""}`;
+        const lab = document.createElement("label");
+        const labText = document.createElement("span");
+        labText.textContent = label;
+        const src = document.createElement("span");
+        src.className = "src";
+        lab.append(labText, src);
+        const input = document.createElement("input");
+        input.value =
+          key === "phone" && compact(v[key])
+            ? formatPhone(v[key])
+            : compact(v[key]);
+        input.autocomplete = "off";
+        input.dataset.key = key;
+        const note = document.createElement("div");
+        note.className = "note";
+        field.append(lab, input, note);
+        grid.appendChild(field);
+        inputs[key] = input;
+        fieldEls[key] = { field, src, note };
+      }
+
+      body.append(section, grid);
+    }
+
+    // Produto e pagamento: a extensão só escolhe sozinha quando a conversa
+    // deixa claro. Aqui o atendente pode definir antes de enviar.
+    const orderSection = document.createElement("div");
+    orderSection.className = "section";
+    orderSection.textContent = "Pedido";
+    const orderGrid = document.createElement("div");
+    orderGrid.className = "grid";
+
+    const makeSelect = (labelText, options, selected, hint) => {
+      const field = document.createElement("div");
+      field.className = "field";
+      const lab = document.createElement("label");
+      const t = document.createElement("span");
+      t.textContent = labelText;
+      const src = document.createElement("span");
+      src.className = "src";
+      src.textContent = hint;
+      lab.append(t, src);
+      const sel = document.createElement("select");
+      for (const [value, text] of options) {
+        const o = document.createElement("option");
+        o.value = value;
+        o.textContent = text;
+        if (String(value) === String(selected ?? "")) o.selected = true;
+        sel.appendChild(o);
+      }
+      field.append(lab, sel);
+      orderGrid.appendChild(field);
+      return sel;
+    };
+
+    const detectedMonths = detectSkaleProductMonths();
+    const detectedPayment = detectSkalePaymentHint();
+
+    const productSel = makeSelect(
+      "Produto",
+      [["", "Escolher na Skale"], ["2", "Azzure - 2 Meses"], ["4", "Azzure - 4 Meses"], ["6", "Azzure - 6 Meses"]],
+      detectedMonths,
+      detectedMonths ? "lido da conversa" : "não identificado"
+    );
+
+    const paymentSel = makeSelect(
+      "Pagamento",
+      [["", "Escolher na Skale"], ["after_pay", "After Pay (na entrega)"], ["antecipada", "Antecipada"]],
+      detectedPayment,
+      detectedPayment ? "lido da conversa" : "não identificado"
+    );
+
+    body.append(orderSection, orderGrid);
+
+    const foot = document.createElement("div");
+    foot.className = "foot";
+    const cancel = document.createElement("button");
+    cancel.type = "button";
+    cancel.textContent = "Cancelar";
+    const send = document.createElement("button");
+    send.type = "button";
+    send.className = "primary";
+    send.textContent = "Enviar para a Skale";
+    foot.append(cancel, send);
+
+    card.append(head, body, foot);
+    backdrop.appendChild(card);
+    shadow.append(style, backdrop);
+
+    const refresh = () => {
+      let missing = 0;
+      let invalid = 0;
+      let check = 0;
+
+      for (const [key, input] of Object.entries(inputs)) {
+        const { field, src, note } = fieldEls[key];
+        const value = input.value;
+        const warning = skaleFieldWarning(key, value);
+        const edited = state.edited.has(key);
+
+        src.textContent = compact(value)
+          ? (edited ? "corrigido por você" : (state.sources?.[key] || ""))
+          : "";
+        note.textContent = edited && warning === "Conferir" ? "" : warning;
+
+        if (key === "email" && !compact(value)) {
+          note.textContent = "Sem e-mail: a extensão marca “Não possui e-mail” na Skale";
+        }
+
+        const isBad = /inválido|Faltando/.test(warning);
+        const isWarn = !isBad && warning && !(edited && warning === "Conferir");
+        field.classList.toggle("bad", isBad);
+        field.classList.toggle("warn", Boolean(isWarn));
+
+        if (warning === "Faltando") missing += 1;
+        else if (isBad) invalid += 1;
+        else if (isWarn) check += 1;
+      }
+
+      if (missing || invalid) {
+        alert.className = "alert bad";
+        alert.textContent =
+          [missing ? `${missing} campo(s) obrigatório(s) faltando` : "", invalid ? `${invalid} campo(s) inválido(s)` : ""]
+            .filter(Boolean).join(" • ") +
+          ". Dá para enviar assim mesmo, mas a Skale vai pedir correção.";
+      } else if (check) {
+        alert.className = "alert warn";
+        alert.textContent = `Tudo preenchido. Confira os ${check} campo(s) em amarelo antes de enviar.`;
+      } else {
+        alert.className = "alert ok";
+        alert.textContent = "✓ Tudo preenchido e válido.";
+      }
+
+      send.textContent =
+        missing || invalid ? "Enviar mesmo assim" : "Enviar para a Skale";
+    };
+
+    for (const [key, input] of Object.entries(inputs)) {
+      input.addEventListener("input", () => {
+        state.values[key] = compact(input.value);
+        state.sources[key] = "editado";
+        state.edited.add(key);
+        revokeConfirmationCardUrl();
+        saveCurrent();
+        if (state.host) renderFields();
+        refresh();
+      });
+    }
+
+    close.addEventListener("click", closeSkaleReview);
+    cancel.addEventListener("click", closeSkaleReview);
+    backdrop.addEventListener("click", e => {
+      if (e.target === backdrop) closeSkaleReview();
+    });
+    host.addEventListener("keydown", e => {
+      if (e.key === "Escape") closeSkaleReview();
+    });
+
+    send.addEventListener("click", async () => {
+      send.disabled = true;
+      const months = Number(productSel.value) || null;
+      const payment = paymentSel.value || null;
+      closeSkaleReview();
+      await sendToSkaleNow(notifyPanel, {
+        productMonths: months,
+        paymentHint: payment
+      });
+    });
+
+    refresh();
+    document.documentElement.appendChild(host);
+
+    // Leva o cursor ao primeiro problema.
+    const first =
+      Object.values(fieldEls).find(x => x.field.classList.contains("bad")) ||
+      Object.values(fieldEls).find(x => x.field.classList.contains("warn"));
+    setTimeout(() => {
+      const input = first?.field.querySelector("input");
+      (input || send).focus();
+    }, 60);
+  }
+
   async function sendToSkale(notifyPanel = false) {
+    openSkaleReview(notifyPanel);
+  }
+
+  async function sendToSkaleNow(notifyPanel = false, overrides = {}) {
     const v = state.values || {};
 
     const payload = {
@@ -6011,8 +6364,14 @@
       conversationName: state.currentConversation?.name || "",
       createdAt: new Date().toISOString(),
       pending: true,
-      productMonths: detectSkaleProductMonths(),
-      paymentHint: detectSkalePaymentHint(),
+      productMonths:
+        overrides.productMonths !== undefined
+          ? overrides.productMonths
+          : detectSkaleProductMonths(),
+      paymentHint:
+        overrides.paymentHint !== undefined
+          ? overrides.paymentHint
+          : detectSkalePaymentHint(),
       logisticsHint: "Five Delivery"
     };
 

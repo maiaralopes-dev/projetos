@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "CRM - Não Lidas + Groq + Dados + Skale V16.28",
-  "version": "4.7.0",
-  "description": "V16.28: ao abrir o resumo do áudio, a transcrição completa some; mantém Transcrever no celular, Skale, leitura dos dados, resumo da conversa, Groq, ViaCEP e identidade fixa.",
+  "name": "CRM - Não Lidas + Groq + Dados + Skale V16.29",
+  "version": "4.7.1",
+  "description": "V16.29: conferência dos dados antes de enviar para a Skale; mantém resumo do áudio, Transcrever no celular, leitura dos dados, resumo da conversa, Groq, ViaCEP e identidade fixa.",
   "permissions": [
     "storage",
     "unlimitedStorage"
